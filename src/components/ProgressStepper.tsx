@@ -4,16 +4,17 @@ import { motion } from "framer-motion";
 
 interface ProgressStepperProps {
   currentStep?: number;
+  partialStep?: boolean;
 }
 
-const ProgressStepper = ({ currentStep = 1 }: ProgressStepperProps) => {
+const ProgressStepper = ({ currentStep = 1, partialStep = false }: ProgressStepperProps) => {
   const steps = [
-    { width: "50px", active: currentStep >= 1 },
-    { width: "50px", active: currentStep >= 2 },
-    { width: "50px", active: currentStep >= 3 },
-    { width: "50px", active: currentStep >= 4 },
-    { width: "50px", active: currentStep >= 5 },
-    { width: "50px", active: currentStep >= 6 },
+    { width: "50px", status: currentStep > 1 ? "full" : currentStep === 1 ? (partialStep ? "partial" : "full") : "empty" },
+    { width: "50px", status: currentStep > 2 ? "full" : currentStep === 2 ? (partialStep ? "partial" : "full") : "empty" },
+    { width: "50px", status: currentStep > 3 ? "full" : currentStep === 3 ? (partialStep ? "partial" : "full") : "empty" },
+    { width: "50px", status: currentStep > 4 ? "full" : currentStep === 4 ? (partialStep ? "partial" : "full") : "empty" },
+    { width: "50px", status: currentStep > 5 ? "full" : currentStep === 5 ? (partialStep ? "partial" : "full") : "empty" },
+    { width: "50px", status: currentStep > 6 ? "full" : currentStep === 6 ? (partialStep ? "partial" : "full") : "empty" },
   ];
 
   return (
@@ -21,9 +22,16 @@ const ProgressStepper = ({ currentStep = 1 }: ProgressStepperProps) => {
       {steps.map((step, idx) => (
         <div 
           key={idx} 
-          className={`h-[3px] rounded-full flex-none ${step.active ? "bg-gradient-to-r from-[#7C3AED] to-[#EC4899]" : "bg-white/10"}`}
+          className="relative h-[3px] rounded-full flex-none bg-white/10 overflow-hidden"
           style={{ width: step.width }}
-        />
+        >
+          {step.status === "full" && (
+            <div className="absolute inset-0 bg-gradient-to-r from-[#7C3AED] to-[#EC4899]" />
+          )}
+          {step.status === "partial" && (
+            <div className="absolute left-0 top-0 bottom-0 w-1/2 bg-gradient-to-r from-[#7C3AED] to-[#EC4899]" />
+          )}
+        </div>
       ))}
     </div>
   );

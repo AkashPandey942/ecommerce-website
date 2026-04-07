@@ -14,16 +14,22 @@ export default function StyleSelectionPage() {
   const segment = (params.segment as string) || "Ladies";
   const formattedSegment = segment.charAt(0).toUpperCase() + segment.slice(1);
 
+  const isGents = segment.toLowerCase() === "gents" || segment.toLowerCase() === "men";
+
   const styles = [
     { 
       title: "Ethnic Wear", 
       subtitle: "Traditional and festive styles", 
-      image: "/hero_slide_1.png" 
+      image: isGents 
+        ? "/assets/men/ethnic-wear/indian-man-traditional-wear-kurta-pyjama-cloths.jpg" 
+        : "/hero_slide_1.png" 
     },
     { 
       title: "Western Wear", 
       subtitle: "Modern and casual styles", 
-      image: "/assets/ladies/western-wear/western-clothes.jpg" 
+      image: isGents 
+        ? "/assets/men/western-wear/men-fashion-editorial-outdoors.jpg" 
+        : "/assets/ladies/western-wear/western-clothes.jpg" 
     },
     { 
       title: "Custom", 
@@ -33,11 +39,11 @@ export default function StyleSelectionPage() {
   ];
 
   return (
-    <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30 pb-[120px] lg:pb-0">
+    <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
       {/* Update title to Select Style as per Group 9 variation */}
       <ApparelHeader title="Select Wear Type" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 overflow-hidden">
+      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
         {/* Step 2 in progress */}
         <ProgressStepper currentStep={2} />
 

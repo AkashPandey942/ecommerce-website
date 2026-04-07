@@ -11,15 +11,15 @@ import { motion } from "framer-motion";
 export default function ApparelPage() {
   const segments = [
     { title: "Ladies", image: "/hero_image.png", fullWidth: false },
-    { title: "Gents", image: "/category_placeholder.png", fullWidth: false },
-    { title: "Kids", image: "/hero_image.png", fullWidth: true },
+    { title: "Gents", image: "/assets/men/western-wear/men-fashion-editorial-outdoors.jpg", fullWidth: false },
+    { title: "Kids", image: "/assets/kids/surreal-rendering-kid-bounding-with-giant-stuffed-toy.jpg", fullWidth: true },
   ];
 
   return (
-    <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 pb-[120px] lg:pb-0">
+    <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
       <ApparelHeader />
 
-      <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 overflow-hidden">
+      <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
         {/* Progress Indication (Stepper) */}
         <ProgressStepper />
 

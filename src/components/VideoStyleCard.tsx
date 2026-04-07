@@ -28,7 +28,7 @@ const VideoStyleCard = ({ title, image, selected, onClick }: VideoStyleCardProps
           alt={title}
           fill
           className="object-cover"
-        />
+         loading="lazy" />
 
         {/* Play Icon/Ellipse 6 Overlay */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 transition-colors">

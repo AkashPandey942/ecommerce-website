@@ -42,10 +42,10 @@ export default function UploadProductPage() {
   };
 
   return (
-    <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30 pb-[120px] lg:pb-0">
+    <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <ApparelHeader title="Upload Product" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 overflow-hidden">
+      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
         {/* Step 4 in progress */}
         <ProgressStepper currentStep={4} />
 
@@ -129,13 +129,13 @@ export default function UploadProductPage() {
           </div>
         </div>
 
-        {/* Responsive Generate Button */}
-        <div className="fixed bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black via-black/80 to-transparent z-50 lg:static lg:bg-none lg:p-0 lg:mt-16 lg:mb-16">
-          <div className="max-w-lg mx-auto lg:max-w-[400px]">
-            <Link href={`/apparel/${segment}/${style}/result`}>
+        {/* Inline Generate Button */}
+        <div className="w-full mt-10 mb-10 lg:mb-16">
+          <div className="w-full max-w-[353px] mx-auto lg:max-w-[400px]">
+            <Link href={`/apparel/${segment}/${style}/views`}>
               <button className="w-full h-[61px] bg-figma-gradient rounded-full shadow-[0_0_30px_rgba(124,77,255,0.4)] hover:brightness-110 transition-all flex items-center justify-center">
                 <span className="font-roboto font-semibold text-lg leading-[21px] text-white text-center">
-                  Generate Image
+                  Continue
                 </span>
               </button>
             </Link>

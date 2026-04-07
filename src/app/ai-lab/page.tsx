@@ -49,10 +49,10 @@ const tools = [
 
 export default function AILabPage() {
   return (
-    <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 pb-[120px] lg:pb-0">
+    <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
       <ApparelHeader title="AI Lab" />
 
-      <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
+      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
 
         {/* Heading Section */}
         <section className="mt-5 mb-8">
@@ -111,7 +111,7 @@ export default function AILabPage() {
                     alt={tool.name}
                     fill
                     className="object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-300 group-hover:scale-105"
-                  />
+                   loading="lazy" />
                   {/* Gradient overlay for smooth fade */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   {/* Coming soon badge */}
@@ -130,6 +130,7 @@ export default function AILabPage() {
         <div className="mt-20 hidden lg:block">
           <Footer />
         </div>
+        <div className="h-[120px] lg:hidden" />
       </main>
 
       <BottomNav />

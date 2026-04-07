@@ -36,7 +36,7 @@ const BackgroundGrid = ({ selectedTitle, onSelect }: BackgroundGridProps) => {
               alt={bg.title}
               fill
               className="object-cover"
-            />
+             loading="lazy" />
           </div>
           
           {/* Label (Group 15/48/49/etc) */}

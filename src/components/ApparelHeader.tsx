@@ -61,7 +61,7 @@ const ApparelHeader = ({ title = "Select Segment" }: ApparelHeaderProps) => {
 
           {/* Page Title — interior pages only */}
           {!isHome && title.trim() && (
-            <h1 className="font-roboto font-semibold text-xl leading-[23px] text-white truncate">
+            <h1 className="font-roboto font-semibold text-xl leading-[23px] text-white">
               {title}
             </h1>
           )}
@@ -87,32 +87,35 @@ const ApparelHeader = ({ title = "Select Segment" }: ApparelHeaderProps) => {
           })}
         </div>
 
-        {/* RIGHT: Credits + Avatar */}
+        {/* RIGHT: Credits */}
         <div className="flex items-center gap-2 flex-shrink-0">
           {/* Credit Badge */}
-          <div className="flex items-center px-[11px] h-[38px] rounded-full lg:rounded-l-full bg-[rgba(48,48,48,0.2)] border border-[#2F2751] gap-2">
+          <div className="flex items-center px-[11px] h-[38px] rounded-full bg-[rgba(48,48,48,0.2)] border border-[#2F2751] gap-2">
             <Coins className="w-[10.5px] h-[10.5px] text-[#7C4DFF] flex-shrink-0" />
             <span className="font-roboto font-medium text-[11px] tracking-[0.55px] uppercase text-[#7C4DFF] whitespace-nowrap">
               120 Credits
             </span>
           </div>
 
-          {/* Profile Avatar — all screens, smaller on mobile */}
-          <Link href="/profile">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-[36px] h-[36px] lg:w-[45px] lg:h-[45px] rounded-full border border-[#2F2751] overflow-hidden cursor-pointer flex-shrink-0"
-            >
-              <Image
-                src="/profile_avatar_placeholder.png"
-                alt="Profile"
-                width={45}
-                height={45}
-                className="object-cover w-full h-full"
-              />
-            </motion.div>
-          </Link>
+          {/* Profile Avatar — only on home screen to match reference layout */}
+          {isHome && (
+            <Link href="/profile">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-[36px] h-[36px] lg:w-[45px] lg:h-[45px] rounded-full border border-[#2F2751] overflow-hidden cursor-pointer flex-shrink-0"
+              >
+                <Image
+                  src="/profile_avatar_placeholder.png"
+                  alt="Profile"
+                  width={45}
+                  height={45}
+                  className="object-cover w-full h-full"
+                  loading="lazy"
+                />
+              </motion.div>
+            </Link>
+          )}
         </div>
 
       </div>

@@ -52,7 +52,7 @@ const TopNav = () => {
               width={45}
               height={45}
               className="object-cover"
-            />
+             loading="lazy" />
           </div>
         </div>
       </div>

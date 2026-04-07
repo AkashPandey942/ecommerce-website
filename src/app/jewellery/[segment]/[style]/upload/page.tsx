@@ -1,0 +1,137 @@
+"use client";
+
+import ApparelHeader from "@/components/ApparelHeader";
+import ProgressStepper from "@/components/ProgressStepper";
+import Footer from "@/components/Footer";
+import { useParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+
+const JEWELLERY_PRODUCT_TYPES = [
+  "Full Set",
+  "Choker Set",
+  "Maang Tikka",
+  "Bangles",
+  "Earrings",
+  "Necklace Set",
+  "Other"
+];
+
+const CAROUSEL_IMAGES = [
+  "/indian-bride-9-2025-12-2fd0a5885b204639c8156089c6d2ebad-16x9.avif",
+  "/assets/ladies/ethnic-wear/beautiful-indian-bride-wearing-bridal-lehenga-portrait.jpg",
+  "/assets/ladies/ethnic-wear/bride-wearing-gold-orange-sari-is-wearing-gold-headband.jpg"
+];
+
+export default function JewelleryProductSelectionPage() {
+  const [mounted, setMounted] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [selectedType, setSelectedType] = useState<string>("Full Set");
+
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) {
+    return (
+      <div className="relative flex flex-col min-h-screen bg-black text-white">
+        <ApparelHeader title="Select Product" />
+        <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[105px] px-5"></main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
+      <ApparelHeader title="Select Product" />
+
+      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[105px] px-5">
+        {/* Step 3 partial progress per Figma (Step 1&2 full, Step 3 50%) */}
+        <ProgressStepper currentStep={3} partialStep={true} />
+
+        {/* Image Carousel (Rectangle 13) */}
+        <section className="relative w-full aspect-square max-w-[353px] mx-auto mt-6 mb-10 group overflow-hidden rounded-[10px]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentSlide}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.5 }}
+              className="relative w-full h-full"
+            >
+              <Image
+                src={CAROUSEL_IMAGES[currentSlide]}
+                alt={`Product Preview ${currentSlide + 1}`}
+                fill
+                className="object-cover"
+                priority
+              />
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Pagination Dots (Group 36) */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
+            {CAROUSEL_IMAGES.map((_, idx) => (
+              <div
+                key={idx}
+                onClick={() => setCurrentSlide(idx)}
+                className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                  currentSlide === idx 
+                  ? "w-6 bg-gradient-to-r from-[#00C2FF] via-[#7C4DFF] to-[#FF00C7]" 
+                  : "w-1.5 bg-[#D9D9D9]"
+                }`}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* Product Type Selection */}
+        <section className="mb-10 lg:max-w-2xl lg:mx-auto">
+          <h2 className="font-roboto font-semibold text-xl leading-[23px] text-white mb-6">
+            Choose Product Type
+          </h2>
+          
+          <div className="flex flex-wrap gap-2.5">
+            {JEWELLERY_PRODUCT_TYPES.map((type) => {
+              const isSelected = selectedType === type;
+              return (
+                <motion.button
+                  key={type}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setSelectedType(type)}
+                  className={`px-5 py-[10px] rounded-full border transition-all ${
+                    isSelected 
+                    ? "bg-[#2E1C4D] border-[#46277C] text-[#FFFFFF]" 
+                    : "bg-white/5 border-white/10 text-[#C5B6DE]"
+                  }`}
+                >
+                  <span className="font-roboto font-medium text-[15px] leading-[18px]">
+                    {type}
+                  </span>
+                </motion.button>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Continue Button (Group 44) */}
+        <section className="mb-20">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full max-w-[353px] mx-auto h-[61px] rounded-full bg-gradient-to-r from-[#00C2FF] via-[#7C4DFF] to-[#FF00C7] flex items-center justify-center group relative overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
+            <span className="font-roboto font-semibold text-lg leading-[21px] text-white">
+              Continue
+            </span>
+          </motion.button>
+        </section>
+
+        <Footer />
+        <div className="h-[120px] lg:hidden" />
+      </main>
+    </div>
+  );
+}

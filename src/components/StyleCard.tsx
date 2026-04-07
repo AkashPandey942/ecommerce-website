@@ -21,7 +21,7 @@ const StyleCard = ({ title, subtitle, image, icon: Icon }: StyleCardProps) => {
             alt={title}
             fill
             className="object-cover transition-transform group-hover:scale-105"
-          />
+           loading="lazy" />
         ) : Icon ? (
           <div className="w-full h-full bg-[#0B0B0B] flex items-center justify-center">
             <div className="w-9 h-9 bg-[#00C2FF] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(35,161,255,0.5)]">

@@ -19,10 +19,10 @@ export default function Home() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 pb-[120px] lg:pb-0">
+    <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
       <ApparelHeader title=" " />
       
-      <main className="w-full max-w-none mx-auto overflow-hidden">
+      <main className="w-full max-w-none mx-auto">
         {/* Hero Section */}
         <Hero />
 
@@ -37,6 +37,16 @@ export default function Home() {
               cat.title === "Apparel" ? (
                 <Link href="/apparel" key={idx}>
                   <CategoryCard 
+                    title={cat.title} 
+                    icon={cat.icon} 
+                    image={cat.image} 
+                    svgOverlay={cat.svgOverlay}
+                  />
+                </Link>
+              ) : cat.title === "Jewellery" ? (
+                <Link href="/jewellery" key={idx}>
+                  <CategoryCard 
+                    key={idx} 
                     title={cat.title} 
                     icon={cat.icon} 
                     image={cat.image} 
@@ -61,6 +71,7 @@ export default function Home() {
 
         {/* Desktop Footer (fills empty space) */}
         <Footer />
+        <div className="h-[120px] lg:hidden" />
       </main>
 
       {/* Mobile Bottom Nav — Studio / Gallery / AI Lab / Profile */}

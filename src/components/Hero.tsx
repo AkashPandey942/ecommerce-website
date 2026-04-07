@@ -87,7 +87,7 @@ const Hero = () => {
               alt={`Hero Banner ${currentIndex + 1}`}
               fill
               className="object-cover"
-              priority
+              loading="lazy"
             />
           </motion.div>
         </AnimatePresence>

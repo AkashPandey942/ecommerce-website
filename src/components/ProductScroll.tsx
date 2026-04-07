@@ -18,7 +18,7 @@ const ProductCard = ({ title, image }: ProductCardProps) => {
           alt={title}
           fill
           className="object-cover transition-transform group-hover:scale-105"
-        />
+         loading="lazy" />
       </div>
       
       {/* Label (Red Saree/Gold Necklace/etc) - Roboto 13px, 500 weight */}
@@ -42,7 +42,7 @@ const ProductScroll = () => {
   ];
 
   return (
-    <section className="w-full px-5 mt-10 mb-[120px] max-w-7xl mx-auto">
+    <section className="w-full px-5 mt-10 mb-10 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-5">
         <h2 className="font-roboto font-semibold text-xl leading-[23px] text-white">
           Recent Projects

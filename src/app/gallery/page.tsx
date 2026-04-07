@@ -32,7 +32,7 @@ export default function GalleryPage() {
   const items = activeTab === "images" ? galleryImages : galleryVideos;
 
   return (
-    <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 pb-[120px] lg:pb-0">
+    <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
       <ApparelHeader title="Gallery" />
 
       {/* Sub-header Tab Toggle (Rectangle 39 / Group 56) */}
@@ -64,7 +64,7 @@ export default function GalleryPage() {
       </div>
 
       {/* Main Gallery Grid */}
-      <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[180px] px-5 overflow-hidden">
+      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[180px] px-5">
 
         {/* 2-column mobile grid, 4-column desktop with proper gaps */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
@@ -81,7 +81,7 @@ export default function GalleryPage() {
                 alt={item.alt}
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
+               loading="lazy" />
 
               {/* Video play icon overlay */}
               {activeTab === "videos" && (
@@ -104,6 +104,7 @@ export default function GalleryPage() {
         <div className="mt-20 hidden lg:block">
           <Footer />
         </div>
+        <div className="h-[120px] lg:hidden" />
       </main>
 
       <BottomNav />

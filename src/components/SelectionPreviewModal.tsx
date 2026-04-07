@@ -51,7 +51,7 @@ const SelectionPreviewModal = ({ isOpen, onClose, image }: SelectionPreviewModal
               src={image}
               alt="Model Preview"
               fill
-              priority
+              loading="lazy"
               className="object-cover"
             />
 

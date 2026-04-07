@@ -55,7 +55,7 @@ export default function FinalResultsPage() {
                   alt={res.title}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
+                 loading="lazy" />
                 
                 {/* Video Play Overlay */}
                 {res.isVideo && (

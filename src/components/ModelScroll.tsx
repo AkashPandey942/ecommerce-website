@@ -40,7 +40,7 @@ const ModelScroll = ({ selectedId, onSelect }: ModelScrollProps) => {
             alt={`Model ${model.id}`}
             fill
             className="object-cover"
-          />
+           loading="lazy" />
           
           {/* Selection Indicator (Group 60/61 etc) - Only visible on selected/hover */}
           <div className={`absolute top-1.5 right-1.5 w-[15px] h-[15px] rounded-sm bg-gradient-to-br from-[#00C2FF] via-[#7C4DFF] to-[#FF00C7] flex items-center justify-center transition-opacity ${

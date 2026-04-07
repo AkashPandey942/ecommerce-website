@@ -19,7 +19,7 @@ const CategoryCard = ({ title, icon: Icon, image, svgOverlay }: CategoryCardProp
         alt={title}
         fill
         className="object-cover"
-      />
+       loading="lazy" />
       
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/80" />

@@ -9,7 +9,7 @@ import Image from "next/image";
 
 export default function ProfilePage() {
   return (
-    <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 pb-[120px] lg:pb-0">
+    <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
       <ApparelHeader title="Profile" />
 
       <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
@@ -20,13 +20,13 @@ export default function ProfilePage() {
            className="flex flex-col items-center gap-4 mt-8 mb-12"
         >
           <div className="w-[100px] h-[100px] rounded-full border-2 border-figma-gradient p-1">
-            <div className="w-full h-full rounded-full overflow-hidden relative">
+            <div className="w-full h-full rounded-full relative">
               <Image
                 src="/profile_avatar_placeholder.png"
                 alt="John Doe"
                 fill
                 className="object-cover"
-              />
+               loading="lazy" />
             </div>
           </div>
           <div className="text-center">
@@ -130,6 +130,7 @@ export default function ProfilePage() {
         <div className="w-full mt-20 hidden lg:block">
           <Footer />
         </div>
+        <div className="h-[120px] lg:hidden" />
       </main>
 
       {/* Global Bottom Nav (Mobile Only) */}

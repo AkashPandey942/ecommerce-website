@@ -15,7 +15,7 @@ export default function VideoResultPage() {
   const style = (params.style as string) || "Ethnic Wear";
 
   return (
-    <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 pb-[100px] lg:pb-0">
+    <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <ApparelHeader title="Video Result" />
 
       <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
@@ -51,7 +51,7 @@ export default function VideoResultPage() {
             src="/hero_image.png"
             alt="AI Generated Video Result"
             fill
-            priority
+            loading="lazy"
             className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
 
@@ -81,7 +81,7 @@ export default function VideoResultPage() {
         </motion.div>
 
         {/* Final Actions */}
-        <div className="w-full max-w-[353px] flex flex-col gap-4 mt-12">
+        <div className="w-full max-w-[353px] flex flex-col gap-4 mt-10 mb-10">
           <Link href={`/apparel/${segment}/${style}/final-results`} className="w-full">
             <motion.button
               whileHover={{ scale: 1.02 }}

@@ -14,7 +14,7 @@ export default function ResultPage() {
   const style = (params.style as string) || "Ethnic Wear";
 
   return (
-    <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 pb-[100px] lg:pb-0">
+    <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <ApparelHeader title="AI Generation Result" />
 
       <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
@@ -24,7 +24,7 @@ export default function ResultPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <h2 className="font-manrope font-bold text-2xl md:text-3xl bg-figma-gradient bg-clip-text text-transparent italic">
+          <h2 className="w-fit mx-auto font-manrope font-bold text-2xl md:text-3xl text-figma-gradient italic leading-tight text-center">
             Your Fashion Masterpiece is Ready!
           </h2>
           <p className="font-roboto text-[#99A1AF] mt-2 text-sm md:text-base">
@@ -44,7 +44,7 @@ export default function ResultPage() {
             src="/hero_image.png" // Using hero_image as a high-fidelity result placeholder
             alt="AI Generated Fashion Result"
             fill
-            priority
+            loading="lazy"
             className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
 
@@ -60,54 +60,62 @@ export default function ResultPage() {
           </div>
         </motion.div>
 
-        {/* Action Buttons */}
-        <div className="w-full max-w-[353px] flex flex-col gap-4 mt-10">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full h-[61px] bg-figma-gradient rounded-full shadow-[0_0_30px_rgba(124,77,255,0.4)] flex items-center justify-center gap-3"
-          >
-            <Download className="w-5 h-5 text-white" />
-            <span className="font-roboto font-semibold text-lg text-white">
-              Download Image
-            </span>
-          </motion.button>
-
-          <Link href={`/apparel/${segment}/${style}/video`}>
-            <motion.button
-              whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.15)" }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full h-[61px] border-2 border-[#7C4DFF] rounded-full flex items-center justify-center gap-3 bg-[#7C4DFF]/10 transition-all font-roboto font-bold text-lg text-white"
-            >
-              <RefreshCcw className="w-5 h-5 text-white animate-spin-slow" />
-              Animate with AI Video
-            </motion.button>
-          </Link>
-
+        {/* Updated Action Buttons per Reference Image */}
+        <div className="w-full max-w-[353px] flex flex-col gap-4 mt-10 mb-10">
+          {/* Top Row: Regenerate & Edit Prompt */}
           <div className="grid grid-cols-2 gap-4">
             <motion.button
-              whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.1)" }}
+              whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.05)" }}
               whileTap={{ scale: 0.98 }}
-              className="h-[52px] border border-white/10 rounded-full flex items-center justify-center gap-2 bg-white/5 transition-colors"
+              className="h-[52px] border border-white/10 rounded-full flex items-center justify-center gap-2 bg-[#1A1F2E]/40 transition-colors"
             >
-              <Share2 className="w-4 h-4 text-[#C5B6DE]" />
+              <RefreshCcw className="w-4 h-4 text-[#C5B6DE]" />
               <span className="font-roboto font-medium text-sm text-[#C5B6DE]">
-                Share
+                Regenerate
               </span>
             </motion.button>
 
-            <Link href={`/apparel/${segment}/style`} className="h-[52px]">
-              <motion.button
-                whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.1)" }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full h-full border border-white/10 rounded-full flex items-center justify-center gap-2 bg-white/5 transition-colors"
+            <motion.button
+              whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.05)" }}
+              whileTap={{ scale: 0.98 }}
+              className="h-[52px] border border-white/10 rounded-full flex items-center justify-center gap-2 bg-[#1A1F2E]/40 transition-colors"
+            >
+              <svg 
+                width="16" height="16" viewBox="0 0 24 24" fill="none" 
+                stroke="#C5B6DE" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
               >
-                <RefreshCcw className="w-4 h-4 text-[#C5B6DE]" />
-                <span className="font-roboto font-medium text-sm text-[#C5B6DE]">
-                  Try Again
-                </span>
-              </motion.button>
-            </Link>
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              <span className="font-roboto font-medium text-sm text-[#C5B6DE]">
+                Edit Prompt
+              </span>
+            </motion.button>
+          </div>
+
+          {/* Primary Action: Approve & Continue */}
+          <Link href={`/apparel/${segment}/${style}/video`}>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full h-[61px] bg-figma-gradient rounded-full shadow-[0_0_30px_rgba(124,77,255,0.4)] flex items-center justify-center"
+            >
+              <span className="font-roboto font-semibold text-lg text-white">
+                Approve & Continue
+              </span>
+            </motion.button>
+          </Link>
+
+          {/* Secondary Actions (Download/Share) */}
+          <div className="flex items-center justify-center gap-8 mt-2">
+            <button className="flex items-center gap-2 text-[#99A1AF] hover:text-white transition-colors">
+              <Download className="w-4 h-4" />
+              <span className="font-roboto text-xs">Download</span>
+            </button>
+            <button className="flex items-center gap-2 text-[#99A1AF] hover:text-white transition-colors">
+              <Share2 className="w-4 h-4" />
+              <span className="font-roboto text-xs">Share</span>
+            </button>
           </div>
         </div>
 
