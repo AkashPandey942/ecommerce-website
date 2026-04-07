@@ -10,14 +10,25 @@ import AIDirectorNotes from "@/components/AIDirectorNotes";
 import Footer from "@/components/Footer";
 import SelectionPreviewModal from "@/components/SelectionPreviewModal";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import LoadingActionButton from "@/components/LoadingActionButton";
 
 export default function UploadProductPage() {
   const params = useParams();
+  const router = useRouter();
   const segment = (params.segment as string) || "Ladies";
   const style = (params.style as string) || "Ethnic Wear";
+
+  // ... (existing selection states)
+  const [isContinuing, setIsContinuing] = useState(false);
+
+  const handleContinue = async () => {
+    setIsContinuing(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    router.push(`/apparel/${segment}/${style}/views`);
+  };
 
   const [selectedStyle, setSelectedStyle] = useState<string>("Saree");
   const [selectedModel, setSelectedModel] = useState<string>("1");
@@ -132,13 +143,13 @@ export default function UploadProductPage() {
         {/* Inline Generate Button */}
         <div className="w-full mt-10 mb-10 lg:mb-16">
           <div className="w-full max-w-[353px] mx-auto lg:max-w-[400px]">
-            <Link href={`/apparel/${segment}/${style}/views`}>
-              <button className="w-full h-[61px] bg-figma-gradient rounded-full shadow-[0_0_30px_rgba(124,77,255,0.4)] hover:brightness-110 transition-all flex items-center justify-center">
-                <span className="font-roboto font-semibold text-lg leading-[21px] text-white text-center">
-                  Continue
-                </span>
-              </button>
-            </Link>
+            <LoadingActionButton
+              isLoading={isContinuing}
+              onClick={handleContinue}
+              className="w-full h-[61px]"
+            >
+              Continue
+            </LoadingActionButton>
           </div>
         </div>
       </main>

@@ -7,11 +7,13 @@ import { Check, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
+import LoadingActionButton from "@/components/LoadingActionButton";
 
 export default function SelectOutputViewsPage() {
   const params = useParams();
+  const router = useRouter();
   const segment = (params.segment as string) || "Ladies";
   const style = (params.style as string) || "Ethnic Wear";
 
@@ -26,6 +28,13 @@ export default function SelectOutputViewsPage() {
 
   const [selectedViews, setSelectedViews] = useState<string[]>(["front", "left", "closeup"]);
   const [isCustomMode, setIsCustomMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleGenerate = async () => {
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    router.push(`/apparel/${segment}/${style}/result`);
+  };
 
   const toggleView = (id: string) => {
     setSelectedViews(prev => 
@@ -152,17 +161,13 @@ export default function SelectOutputViewsPage() {
         {/* Inline Generate Button */}
         <div className="w-full mt-12 mb-10 lg:mb-16">
           <div className="w-full max-w-[353px] mx-auto lg:max-w-[400px]">
-            <Link href={`/apparel/${segment}/${style}/result`}>
-              <motion.button 
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full h-[61px] bg-figma-gradient rounded-full shadow-[0_0_30px_rgba(124,77,255,0.4)] hover:brightness-110 transition-all flex items-center justify-center"
-              >
-                <span className="font-roboto font-semibold text-lg leading-[21px] text-white text-center">
-                  Generate Outputs
-                </span>
-              </motion.button>
-            </Link>
+            <LoadingActionButton
+              isLoading={isLoading}
+              onClick={handleGenerate}
+              className="w-full h-[61px]"
+            >
+              Generate Outputs
+            </LoadingActionButton>
           </div>
         </div>
       </main>

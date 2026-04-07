@@ -7,11 +7,21 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useState } from "react";
+import LoadingActionButton from "@/components/LoadingActionButton";
 
 export default function ResultPage() {
   const params = useParams();
   const segment = (params.segment as string) || "Ladies";
   const style = (params.style as string) || "Ethnic Wear";
+  
+  const [isRegenerating, setIsRegenerating] = useState(false);
+
+  const handleRegenerate = async () => {
+    setIsRegenerating(true);
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    setIsRegenerating(false);
+  };
 
   return (
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30">
@@ -64,16 +74,15 @@ export default function ResultPage() {
         <div className="w-full max-w-[353px] flex flex-col gap-4 mt-10 mb-10">
           {/* Top Row: Regenerate & Edit Prompt */}
           <div className="grid grid-cols-2 gap-4">
-            <motion.button
-              whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.05)" }}
-              whileTap={{ scale: 0.98 }}
-              className="h-[52px] border border-white/10 rounded-full flex items-center justify-center gap-2 bg-[#1A1F2E]/40 transition-colors"
+            <LoadingActionButton
+              variant="secondary"
+              isLoading={isRegenerating}
+              onClick={handleRegenerate}
+              className="h-[52px]"
+              icon={<RefreshCcw className="w-4 h-4 text-[#C5B6DE]" />}
             >
-              <RefreshCcw className="w-4 h-4 text-[#C5B6DE]" />
-              <span className="font-roboto font-medium text-sm text-[#C5B6DE]">
-                Regenerate
-              </span>
-            </motion.button>
+              Regenerate
+            </LoadingActionButton>
 
             <motion.button
               whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.05)" }}

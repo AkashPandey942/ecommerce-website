@@ -3,11 +3,12 @@
 import ApparelHeader from "@/components/ApparelHeader";
 import ProgressStepper from "@/components/ProgressStepper";
 import Footer from "@/components/Footer";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import LoadingActionButton from "@/components/LoadingActionButton";
 
 const JEWELLERY_PRODUCT_TYPES = [
   "Full Set",
@@ -27,11 +28,19 @@ const CAROUSEL_IMAGES = [
 
 export default function JewelleryProductSelectionPage() {
   const params = useParams();
+  const router = useRouter();
   const segment = params?.segment as string;
   const style = params?.style as string;
   const [mounted, setMounted] = useState(false);
+  const [isContinuing, setIsContinuing] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedType, setSelectedType] = useState<string>("Full Set");
+
+  const handleContinue = async () => {
+    setIsContinuing(true);
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    router.push(`/jewellery/${segment}/${style}/views`);
+  };
 
   useEffect(() => setMounted(true), []);
 
@@ -121,18 +130,13 @@ export default function JewelleryProductSelectionPage() {
 
         {/* Continue Button (Group 44) */}
         <section className="mb-20">
-          <Link href={`/jewellery/${segment}/${style}/views`} className="block w-full max-w-[353px] mx-auto">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full h-[61px] rounded-full bg-gradient-to-r from-[#00C2FF] via-[#7C4DFF] to-[#FF00C7] flex items-center justify-center group relative overflow-hidden shadow-[0_4px_30px_rgba(124,77,255,0.4)]"
-            >
-              <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
-              <span className="font-roboto font-semibold text-lg leading-[21px] text-white">
-                Continue
-              </span>
-            </motion.button>
-          </Link>
+          <LoadingActionButton
+            isLoading={isContinuing}
+            onClick={handleContinue}
+            className="w-full max-w-[353px] mx-auto h-[61px]"
+          >
+            Continue
+          </LoadingActionButton>
         </section>
 
         <Footer />

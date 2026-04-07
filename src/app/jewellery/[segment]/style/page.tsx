@@ -9,6 +9,7 @@ import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import LoadingActionButton from "@/components/LoadingActionButton";
 
 export default function JewelleryStyleSelectionPage() {
   const params = useParams();
@@ -19,8 +20,20 @@ export default function JewelleryStyleSelectionPage() {
   const [mounted, setMounted] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // ... (existing dialogue/state logic remains same)
+
+  const handleGenerate = async () => {
+    setIsGenerating(true);
+    // Simulate AI thinking time for premium feel
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    router.push(`/jewellery/${segment}/custom/upload?prompt=${encodeURIComponent(customPrompt)}`);
+  };
 
   const jewelleryStyles = [
+// ... (lines truncated for brevity but remain unchanged in file)
+
     { 
       id: "sets",
       title: "Sets and pieces", 
@@ -152,14 +165,15 @@ export default function JewelleryStyleSelectionPage() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => router.push(`/jewellery/${segment}/custom/upload?prompt=${encodeURIComponent(customPrompt)}`)} 
+                  <LoadingActionButton
+                    isLoading={isGenerating}
+                    onClick={handleGenerate}
                     disabled={!customPrompt.trim()}
-                    className="w-full h-12 rounded-xl bg-gradient-to-r from-[#00C2FF] via-[#7C4DFF] to-[#FF00C7] flex items-center justify-center gap-2 group disabled:opacity-50 disabled:grayscale transition-all shadow-[0_4px_20px_rgba(124,77,255,0.3)]"
+                    className="w-full h-12"
+                    icon={<Wand2 className="w-4 h-4" />}
                   >
-                    <Wand2 className="w-4 h-4 text-white group-hover:rotate-12 transition-transform" />
-                    <span className="font-roboto font-bold text-sm text-white uppercase tracking-wider">Generate Style</span>
-                  </button>
+                    GENERATE STYLE
+                  </LoadingActionButton>
                 </div>
               </motion.div>
             )}

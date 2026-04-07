@@ -8,12 +8,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import LoadingActionButton from "@/components/LoadingActionButton";
 
 export default function JewelleryResultPage() {
   const params = useParams();
   const segment = (params.segment as string) || "bridal";
   const style = (params.style as string) || "sets-and-pieces";
   const [mounted, setMounted] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+
+  const handleRegenerate = async () => {
+    setIsRegenerating(true);
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    setIsRegenerating(false);
+  };
 
   useEffect(() => setMounted(true), []);
 
@@ -83,14 +91,15 @@ export default function JewelleryResultPage() {
         {/* Action Buttons */}
         <div className="w-full max-w-[353px] flex flex-col gap-4 mt-10 mb-10">
           <div className="grid grid-cols-2 gap-4">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="h-[52px] bg-[#1A1F2E] border border-white/5 rounded-full flex items-center justify-center gap-2 hover:bg-[#252B3D] transition-colors"
+            <LoadingActionButton
+              variant="secondary"
+              isLoading={isRegenerating}
+              onClick={handleRegenerate}
+              className="h-[52px]"
+              icon={<RefreshCcw className="w-4 h-4 text-[#C5B6DE]" />}
             >
-              <RefreshCcw className="w-4 h-4 text-[#C5B6DE]" />
-              <span className="font-medium text-sm text-[#C5B6DE]">Regenerate</span>
-            </motion.button>
+              Regenerate
+            </LoadingActionButton>
 
             <motion.button
               whileHover={{ scale: 1.02 }}
