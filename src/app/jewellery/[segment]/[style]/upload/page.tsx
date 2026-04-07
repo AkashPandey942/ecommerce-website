@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import ProductTag from "@/components/ProductTag";
 import LoadingActionButton from "@/components/LoadingActionButton";
 
 // Taxonomy Level 4: Leaf examples per screenshot 3
@@ -39,15 +40,15 @@ const CAROUSEL_IMAGES = [
 export default function JewelleryProductSelectionPage() {
   const params = useParams();
   const router = useRouter();
-  const segment = params?.segment as string;
-  const style = params?.style as string;
+  const segment = (params?.segment as string) || "bridal";
+  const style = (params?.style as string) || "sets-and-pieces";
   
   const productTypes = getJewelleryProductTypes(segment);
 
   const [mounted, setMounted] = useState(false);
   const [isContinuing, setIsContinuing] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [selectedType, setSelectedType] = useState<string>(productTypes[0]);
+  const [selectedType, setSelectedType] = useState<string | null>(null);
 
   const handleContinue = async () => {
     setIsContinuing(true);
@@ -118,34 +119,23 @@ export default function JewelleryProductSelectionPage() {
           </h2>
           
           <div className="flex flex-wrap gap-2.5">
-            {productTypes.map((type) => {
-              const isSelected = selectedType === type;
-              return (
-                <motion.button
-                  key={type}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setSelectedType(type)}
-                  className={`px-5 py-[10px] rounded-full border transition-all ${
-                    isSelected 
-                    ? "bg-[#2E1C4D] border-[#46277C] text-[#FFFFFF]" 
-                    : "bg-white/5 border-white/10 text-[#C5B6DE]"
-                  }`}
-                >
-                  <span className="font-roboto font-medium text-[15px] leading-[18px]">
-                    {type}
-                  </span>
-                </motion.button>
-              );
-            })}
+            {productTypes.map((type) => (
+              <ProductTag
+                key={type}
+                label={type}
+                selected={selectedType === type}
+                onClick={() => setSelectedType(prev => prev === type ? null : type)}
+              />
+            ))}
           </div>
         </section>
 
-        {/* Continue Button (Group 44) */}
+        {/* Continue Button */}
         <section className="mb-20">
           <LoadingActionButton
             isLoading={isContinuing}
             onClick={handleContinue}
+            disabled={!selectedType || isContinuing}
             className="w-full max-w-[353px] mx-auto h-[61px]"
           >
             Continue

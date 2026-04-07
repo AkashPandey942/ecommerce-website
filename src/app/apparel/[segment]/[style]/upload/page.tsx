@@ -53,7 +53,7 @@ export default function UploadProductPage() {
   };
 
   const productTypes = getProductTypes();
-  const [selectedProduct, setSelectedProduct] = useState<string>(productTypes[0]);
+  const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
 
   const handleContinue = async () => {
     setIsContinuing(true);
@@ -140,7 +140,7 @@ export default function UploadProductPage() {
                     key={item}
                     label={item}
                     selected={selectedProduct === item}
-                    onClick={() => setSelectedProduct(item)}
+                    onClick={() => setSelectedProduct(prev => prev === item ? null : item)}
                   />
                 ))}
               </div>
@@ -167,6 +167,7 @@ export default function UploadProductPage() {
             <LoadingActionButton
               isLoading={isContinuing}
               onClick={handleContinue}
+              disabled={!selectedProduct || isContinuing}
               className="w-full h-[61px]"
             >
               Continue
