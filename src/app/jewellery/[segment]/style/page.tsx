@@ -4,19 +4,25 @@ import ApparelHeader from "@/components/ApparelHeader";
 import ProgressStepper from "@/components/ProgressStepper";
 import StyleCard from "@/components/StyleCard";
 import Footer from "@/components/Footer";
-import { Sparkles } from "lucide-react";
-import { useParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { Sparkles, X, Wand2 } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function JewelleryStyleSelectionPage() {
   const params = useParams();
+  const router = useRouter();
   const segmentParam = params?.segment;
   const segment = typeof segmentParam === 'string' ? decodeURIComponent(segmentParam).toLowerCase() : 'bridal';
   
+  const [mounted, setMounted] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState("");
+
   const jewelleryStyles = [
     { 
+      id: "sets",
       title: "Sets and pieces", 
       subtitle: "Traditional and festive styles", 
       image: (segment.includes("bridal") || segment === "bridal")
@@ -24,14 +30,22 @@ export default function JewelleryStyleSelectionPage() {
         : "/elegant-woman-showcasing-silver-necklace-with-vibrant-amethyst-aquamarine-stones-set-against-deep-background-dramatic-effect.jpg" 
     },
     { 
+      id: "custom",
       title: "Custom", 
       subtitle: "Unlisted styles or custom workflow", 
       icon: Sparkles 
     },
   ];
 
-  const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  const handleStyleSelect = (styleId: string, styleTitle: string) => {
+    if (styleId === "custom") {
+      setShowPrompt(true);
+    } else {
+      router.push(`/jewellery/${segment}/${styleTitle.toLowerCase().replace(' ', '-')}/upload`);
+    }
+  };
 
   if (!mounted) {
     return (
@@ -66,29 +80,90 @@ export default function JewelleryStyleSelectionPage() {
           </motion.div>
         </section>
 
-        {/* Style Selection List */}
+        {/* Style Selection List / Prompt UI */}
         <section className="mb-20">
-          <div className="flex flex-col gap-4 max-w-[353px] mx-auto">
-            {jewelleryStyles.map((style, idx) => (
+          <AnimatePresence mode="wait">
+            {!showPrompt ? (
               <motion.div
-                key={idx}
+                key="list"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: idx * 0.1 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="flex flex-col gap-4 max-w-[353px] mx-auto"
               >
-                <Link href={`/jewellery/${segment}/${style.title.toLowerCase().replace(' ', '-')}/upload`}>
-                  <StyleCard 
-                    title={style.title} 
-                    subtitle={style.subtitle} 
-                    image={style.image} 
-                    icon={style.icon} 
-                  />
-                </Link>
+                {jewelleryStyles.map((style, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: idx * 0.1 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleStyleSelect(style.id, style.title)}
+                  >
+                    <StyleCard 
+                      title={style.title} 
+                      subtitle={style.subtitle} 
+                      image={style.image} 
+                      icon={style.icon} 
+                    />
+                  </motion.div>
+                ))}
               </motion.div>
-            ))}
-          </div>
+            ) : (
+              <motion.div
+                key="prompt"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-[353px] mx-auto"
+              >
+                <div className="relative p-6 bg-[#1A1E29] border border-white/10 rounded-[20px] shadow-2xl overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-4">
+                    <button 
+                      onClick={() => setShowPrompt(false)} 
+                      className="p-1 rounded-full hover:bg-white/10 transition-colors"
+                    >
+                      <X className="w-5 h-5 text-white/50" />
+                    </button>
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-figma-gradient/20 rounded-lg">
+                        <Sparkles className="w-5 h-5 text-[#00C2FF]" />
+                      </div>
+                      <h3 className="font-roboto font-semibold text-lg text-white">Custom Style Prompt</h3>
+                    </div>
+                    <p className="text-[#C2C6D6] text-xs leading-relaxed">
+                      Describe the specific type of jewellery you want to generate. Be as detailed as possible (e.g. "Diamond choker with emerald drops").
+                    </p>
+                  </div>
+
+                  <div className="relative mb-6">
+                    <textarea
+                      value={customPrompt}
+                      onChange={(e) => setCustomPrompt(e.target.value)}
+                      placeholder="Enter your custom request..."
+                      className="w-full h-32 bg-black/40 border border-white/5 rounded-xl p-4 text-white placeholder:text-white/20 focus:outline-none focus:border-figma-gradient/50 transition-all resize-none text-sm"
+                    />
+                    <div className="absolute bottom-3 right-3 text-[10px] text-white/20 uppercase tracking-widest font-medium">
+                      AI ENGINE READY
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => router.push(`/jewellery/${segment}/custom/upload?prompt=${encodeURIComponent(customPrompt)}`)} 
+                    disabled={!customPrompt.trim()}
+                    className="w-full h-12 rounded-xl bg-gradient-to-r from-[#00C2FF] via-[#7C4DFF] to-[#FF00C7] flex items-center justify-center gap-2 group disabled:opacity-50 disabled:grayscale transition-all shadow-[0_4px_20px_rgba(124,77,255,0.3)]"
+                  >
+                    <Wand2 className="w-4 h-4 text-white group-hover:rotate-12 transition-transform" />
+                    <span className="font-roboto font-bold text-sm text-white uppercase tracking-wider">Generate Style</span>
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </section>
 
         <Footer />
