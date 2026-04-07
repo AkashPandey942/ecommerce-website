@@ -4,11 +4,19 @@ import ApparelHeader from "@/components/ApparelHeader";
 import BottomNav from "@/components/BottomNav";
 import Hero from "@/components/Hero";
 import CategoryCard from "@/components/CategoryCard";
-import ProductScroll from "@/components/ProductScroll";
-import Footer from "@/components/Footer";
 import Link from "next/link";
 import { Shirt, Gem, Watch, Package } from "lucide-react";
-import { JewelleryOverlaySVG } from "@/components/JewelleryOverlaySVG";
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
+import { CardSkeleton } from "@/components/ui/Skeleton";
+
+// Performance Optimization: Defer non-critical components
+const ProductScroll = dynamic(() => import("@/components/ProductScroll"), { 
+  ssr: false, 
+  loading: () => <div className="px-5"><CardSkeleton /></div> 
+});
+const JewelleryOverlaySVG = dynamic(() => import("@/components/JewelleryOverlaySVG").then(mod => mod.JewelleryOverlaySVG), { ssr: false });
+const Footer = dynamic(() => import("@/components/Footer"), { ssr: false });
 
 export default function Home() {
   const categories = [

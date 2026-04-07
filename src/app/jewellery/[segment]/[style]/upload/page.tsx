@@ -2,14 +2,20 @@
 
 import ApparelHeader from "@/components/ApparelHeader";
 import ProgressStepper from "@/components/ProgressStepper";
-import Footer from "@/components/Footer";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import ProductTag from "@/components/ProductTag";
-import LoadingActionButton from "@/components/LoadingActionButton";
+import dynamic from "next/dynamic";
+import { useEffect, useState, Suspense } from "react";
+import { Skeleton } from "@/components/ui/Skeleton";
+
+// Dynamic components for high performance
+const ProductTag = dynamic(() => import("@/components/ProductTag"), {
+  loading: () => <Skeleton className="w-20 h-10 rounded-full" />
+});
+const LoadingActionButton = dynamic(() => import("@/components/LoadingActionButton"), { ssr: false });
+const Footer = dynamic(() => import("@/components/Footer"), { ssr: false });
 
 // Taxonomy Level 4: Leaf examples per screenshot 3
 function getJewelleryProductTypes(segment: string) {

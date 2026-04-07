@@ -2,18 +2,31 @@
 
 import ApparelHeader from "@/components/ApparelHeader";
 import ProgressStepper from "@/components/ProgressStepper";
-import UploadZone from "@/components/UploadZone";
-import ModelScroll from "@/components/ModelScroll";
-import BackgroundGrid from "@/components/BackgroundGrid";
 import ProductTag from "@/components/ProductTag";
-import AIDirectorNotes from "@/components/AIDirectorNotes";
 import Footer from "@/components/Footer";
-import SelectionPreviewModal from "@/components/SelectionPreviewModal";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import dynamic from "next/dynamic";
+import { Suspense, useState } from "react";
 import { motion } from "framer-motion";
 import LoadingActionButton from "@/components/LoadingActionButton";
+import { Skeleton } from "@/components/ui/Skeleton";
+
+// Dynamic imports with specific skeletons for Zero-CLS
+const UploadZone = dynamic(() => import("@/components/UploadZone"), { 
+  ssr: false, 
+  loading: () => <Skeleton className="w-full h-[240px] rounded-2xl" /> 
+});
+const ModelScroll = dynamic(() => import("@/components/ModelScroll"), { 
+  ssr: false, 
+  loading: () => <Skeleton className="w-full h-[200px] rounded-xl" /> 
+});
+const BackgroundGrid = dynamic(() => import("@/components/BackgroundGrid"), { 
+  ssr: false, 
+  loading: () => <div className="grid grid-cols-2 gap-4"><Skeleton className="h-[120px]" /><Skeleton className="h-[120px]" /></div> 
+});
+const SelectionPreviewModal = dynamic(() => import("@/components/SelectionPreviewModal"), { ssr: false });
+const AIDirectorNotes = dynamic(() => import("@/components/AIDirectorNotes"), { ssr: false });
 
 export default function UploadProductPage() {
   const params = useParams();
