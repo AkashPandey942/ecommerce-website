@@ -10,15 +10,25 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import LoadingActionButton from "@/components/LoadingActionButton";
 
-const JEWELLERY_PRODUCT_TYPES = [
-  "Full Set",
-  "Choker Set",
-  "Maang Tikka",
-  "Bangles",
-  "Earrings",
-  "Necklace Set",
-  "Other"
-];
+// Taxonomy Level 4: Leaf examples per screenshot 3
+function getJewelleryProductTypes(segment: string) {
+  const s = segment.toLowerCase();
+  
+  if (s.includes("bridal")) {
+    return ["Full Set", "Choker Set", "Necklace Set", "Earrings", "Bangles", "Maang Tikka", "Other"];
+  }
+  if (s.includes("fashion")) {
+    return ["Earrings", "Rings", "Bracelets", "Necklaces", "Office-wear Sets", "Other"];
+  }
+  if (s.includes("traditional") || s.includes("vintage")) {
+    return ["Temple", "Kundan", "Antique Finish", "Polki-style", "Festive Sets", "Other"];
+  }
+  if (s.includes("daily") || s.includes("minimal")) {
+    return ["Studs", "Thin Chains", "Light Bracelets", "Minimal Rings", "Other"];
+  }
+  
+  return ["Necklace", "Earrings", "Ring", "Bracelet", "Other"];
+}
 
 const CAROUSEL_IMAGES = [
   "/indian-bride-9-2025-12-2fd0a5885b204639c8156089c6d2ebad-16x9.avif",
@@ -31,10 +41,13 @@ export default function JewelleryProductSelectionPage() {
   const router = useRouter();
   const segment = params?.segment as string;
   const style = params?.style as string;
+  
+  const productTypes = getJewelleryProductTypes(segment);
+
   const [mounted, setMounted] = useState(false);
   const [isContinuing, setIsContinuing] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [selectedType, setSelectedType] = useState<string>("Full Set");
+  const [selectedType, setSelectedType] = useState<string>(productTypes[0]);
 
   const handleContinue = async () => {
     setIsContinuing(true);
@@ -105,7 +118,7 @@ export default function JewelleryProductSelectionPage() {
           </h2>
           
           <div className="flex flex-wrap gap-2.5">
-            {JEWELLERY_PRODUCT_TYPES.map((type) => {
+            {productTypes.map((type) => {
               const isSelected = selectedType === type;
               return (
                 <motion.button

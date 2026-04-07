@@ -21,16 +21,7 @@ export default function UploadProductPage() {
   const segment = (params.segment as string) || "Ladies";
   const style = (params.style as string) || "Ethnic Wear";
 
-  // ... (existing selection states)
   const [isContinuing, setIsContinuing] = useState(false);
-
-  const handleContinue = async () => {
-    setIsContinuing(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    router.push(`/apparel/${segment}/${style}/views`);
-  };
-
-  const [selectedStyle, setSelectedStyle] = useState<string>("Saree");
   const [selectedModel, setSelectedModel] = useState<string>("1");
   const [selectedBackground, setSelectedBackground] = useState<string>("White Studio");
 
@@ -38,7 +29,37 @@ export default function UploadProductPage() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
-  const styles = ["Saree", "Western", "Fusion", "Minimal", "Premium", "Other"];
+  // Taxonomy Level 4: Leaf examples per screenshot 2
+  const getProductTypes = () => {
+    const s = segment.toLowerCase();
+    const isEthnic = style.toLowerCase().includes("ethnic");
+    
+    if (s === "gents" || s === "men") {
+      return isEthnic 
+        ? ["Kurta", "Sherwani", "Nehru Jacket", "Ethnic Set", "Other"]
+        : ["Shirt", "T-shirt", "Blazer", "Jacket", "Trousers", "Casual Set", "Other"];
+    }
+    
+    if (s === "kids") {
+      return isEthnic
+        ? ["Kids Kurta Set", "Kids Lehenga", "Festive Set", "Other"]
+        : ["Frock", "Shirt", "Top", "Bottomwear", "Partywear Set", "Other"];
+    }
+
+    // Default: Ladies
+    return isEthnic
+      ? ["Saree", "Kurti", "Kurta Set", "Salwar Suit", "Lehenga", "Dupatta Set", "Blouse", "Other"]
+      : ["Dress", "Top", "Shirt", "Blouse", "Skirt", "Co-ord Set", "Gown / Partywear", "Other"];
+  };
+
+  const productTypes = getProductTypes();
+  const [selectedProduct, setSelectedProduct] = useState<string>(productTypes[0]);
+
+  const handleContinue = async () => {
+    setIsContinuing(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    router.push(`/apparel/${segment}/${style}/views`);
+  };
 
   const handleModelSelect = (model: { id: string; image: string }) => {
     setSelectedModel(model.id);
@@ -57,8 +78,8 @@ export default function UploadProductPage() {
       <ApparelHeader title="Upload Product" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
-        {/* Step 4 in progress */}
-        <ProgressStepper currentStep={4} />
+        {/* Step 3 in progress */}
+        <ProgressStepper currentStep={3} partialStep={true} />
 
         <div className="md:grid md:grid-cols-[1.2fr_1.8fr] lg:grid-cols-[1fr_2fr] gap-8 lg:gap-16 mt-8">
           {/* Column 1: Main Input (Sticky on Desktop) */}
@@ -111,15 +132,15 @@ export default function UploadProductPage() {
             {/* 4. Output Style Selection */}
             <section>
               <h2 className="font-roboto font-semibold text-xl leading-[23px] text-white mb-6">
-                Output Style
+                Choose Product Type
               </h2>
               <div className="flex flex-wrap gap-3">
-                {styles.map((item) => (
+                {productTypes.map((item) => (
                   <ProductTag
                     key={item}
                     label={item}
-                    selected={selectedStyle === item}
-                    onClick={() => setSelectedStyle(item)}
+                    selected={selectedProduct === item}
+                    onClick={() => setSelectedProduct(item)}
                   />
                 ))}
               </div>

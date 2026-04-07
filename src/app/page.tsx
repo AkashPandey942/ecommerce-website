@@ -12,10 +12,10 @@ import { JewelleryOverlaySVG } from "@/components/JewelleryOverlaySVG";
 
 export default function Home() {
   const categories = [
-    { title: "Apparel", icon: Shirt, image: "/category_placeholder.png" },
-    { title: "Jewellery", icon: Gem, image: "/category_placeholder.png", svgOverlay: <JewelleryOverlaySVG /> },
-    { title: "Accessories", icon: Watch, image: "/category_placeholder.png" },
-    { title: "Products", icon: Package, image: "/category_placeholder.png" },
+    { title: "Apparel", icon: Shirt, image: "/home_apparel.png" },
+    { title: "Jewellery", icon: Gem, image: "/home_jewellery.png", svgOverlay: <JewelleryOverlaySVG /> },
+    { title: "Accessories", icon: Watch, image: "/home_accessories.png" },
+    { title: "Products", icon: Package, image: "/home_products.png" },
   ];
 
   return (

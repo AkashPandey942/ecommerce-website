@@ -50,8 +50,8 @@ export default function JewelleryOutputViewsPage() {
       <ApparelHeader title="Choose Views" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[105px] px-5">
-        {/* Step 5 - Finalizing output details */}
-        <ProgressStepper currentStep={5} />
+        {/* Step 4 - Finalizing output details */}
+        <ProgressStepper currentStep={4} />
 
         {/* Heading Section */}
         <section className="mt-8 mb-10">

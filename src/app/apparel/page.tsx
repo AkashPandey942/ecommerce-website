@@ -12,7 +12,7 @@ export default function ApparelPage() {
   const segments = [
     { title: "Ladies", image: "/hero_image.png", fullWidth: false },
     { title: "Gents", image: "/assets/men/western-wear/men-fashion-editorial-outdoors.jpg", fullWidth: false },
-    { title: "Kids", image: "/assets/kids/surreal-rendering-kid-bounding-with-giant-stuffed-toy.jpg", fullWidth: true },
+    { title: "Kids", image: "/apparel_kids.png", fullWidth: true },
   ];
 
   return (

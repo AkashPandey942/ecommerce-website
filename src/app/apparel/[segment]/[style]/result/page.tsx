@@ -103,7 +103,7 @@ export default function ResultPage() {
           </div>
 
           {/* Primary Action: Approve & Continue */}
-          <Link href={`/apparel/${segment}/${style}/video`}>
+          <Link href="/gallery">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}

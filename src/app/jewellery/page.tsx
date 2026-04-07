@@ -11,9 +11,9 @@ import { useEffect, useState } from "react";
 
 const JEWELLERY_SEGMENTS = [
   { title: "Bridal", image: "/indian-bride-9-2025-12-2fd0a5885b204639c8156089c6d2ebad-16x9.avif", fullWidth: false },
-  { title: "Fashion", image: "/elegant-woman-showcasing-silver-necklace-with-vibrant-amethyst-aquamarine-stones-set-against-deep-background-dramatic-effect.jpg", fullWidth: false },
-  { title: "Traditional / Vintage", image: "/young-indian-woman-wearing-sari.jpg", fullWidth: false },
-  { title: "Daily Wear / Minimal", image: "/WhatsApp Image 2026-04-07 at 3.28.31 PM.jpeg", fullWidth: false },
+  { title: "Fashion", image: "/jewellery_fashion.png", fullWidth: false },
+  { title: "Traditional / Vintage", image: "/jewellery_traditional.png", fullWidth: false },
+  { title: "Daily Wear / Minimal", image: "/jewellery_daily.png", fullWidth: false },
   { title: "Custom / Other", image: "/hero_image.png", fullWidth: true },
 ];
 
