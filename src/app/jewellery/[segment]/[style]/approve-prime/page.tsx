@@ -1,6 +1,6 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
+import FlowHeader from "@/components/FlowHeader";
 import ProgressStepper from "@/components/ProgressStepper";
 import Footer from "@/components/Footer";
 import LoadingActionButton from "@/components/LoadingActionButton";
@@ -8,7 +8,8 @@ import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Check, RefreshCcw, Sparkles, Gem } from "lucide-react";
+import { Check, RefreshCcw, Sparkles, Gem, MessageSquare } from "lucide-react";
+import { useProject } from "@/context/ProjectContext";
 
 export default function JewelleryApprovePrimePage() {
   const params = useParams();
@@ -18,6 +19,14 @@ export default function JewelleryApprovePrimePage() {
 
   const [isGenerating, setIsGenerating] = useState(true);
   const [isApproving, setIsApproving] = useState(false);
+  const [selectedChips, setSelectedChips] = useState<string[]>([]);
+  const [showTextBox, setShowTextBox] = useState(false);
+
+  const { spendCredits } = useProject();
+
+  const feedbackChips = [
+    "More Brilliance", "True Gold Tone", "Better Skin Match", "Sharper Focus", "Less Shadow", "Antique Patina"
+  ];
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -26,7 +35,17 @@ export default function JewelleryApprovePrimePage() {
     return () => clearTimeout(timer);
   }, []);
 
+  const toggleChip = (chip: string) => {
+    setSelectedChips(prev => prev.includes(chip) ? prev.filter(c => c !== chip) : [...prev, chip]);
+  };
+
   const handleApprove = async () => {
+    const success = spendCredits(5);
+    if (!success) {
+      alert("Insufficient credits. Please top up.");
+      return;
+    }
+
     setIsApproving(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
     router.push(`/jewellery/${segment}/${style}/views`);
@@ -34,10 +53,10 @@ export default function JewelleryApprovePrimePage() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
-      <ApparelHeader title="Approve Base Asset" />
+      <FlowHeader title="Approve Base Asset" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
-        <ProgressStepper currentStep={6} />
+        <ProgressStepper currentStep={5} />
 
         <AnimatePresence mode="wait">
           {isGenerating ? (
@@ -71,7 +90,7 @@ export default function JewelleryApprovePrimePage() {
               <section className="mt-8 mb-6 text-center">
                 <h1 className="font-roboto font-semibold text-2xl text-white mb-2">Review Primary Asset</h1>
                 <p className="text-[#C2C6D6] text-sm max-w-[300px]">
-                  Confirm the lighting and placement. This will lead the look for your entire catalog.
+                  Confirm the look. This leads the style for your entire catalog.
                 </p>
               </section>
 
@@ -89,6 +108,52 @@ export default function JewelleryApprovePrimePage() {
                 </div>
               </div>
 
+              {/* SaaS Rule 6.7: Feedback UI */}
+              <div className="w-full max-w-[353px] mb-12">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-roboto font-semibold text-base text-white">Improve this result</h3>
+                  <button 
+                    onClick={() => setShowTextBox(!showTextBox)}
+                    className="flex items-center gap-1 text-[#00C2FF] text-sm font-medium"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    {showTextBox ? "Hide Note" : "Add Note"}
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {feedbackChips.map(chip => (
+                    <button
+                      key={chip}
+                      onClick={() => toggleChip(chip)}
+                      className={`px-4 py-2 rounded-full border text-xs font-medium transition-all ${
+                        selectedChips.includes(chip)
+                        ? "bg-[#00C2FF] border-transparent text-black"
+                        : "bg-white/5 border-white/10 text-[#C2C6D6] hover:border-white/20"
+                      }`}
+                    >
+                      {chip}
+                    </button>
+                  ))}
+                </div>
+
+                <AnimatePresence>
+                  {showTextBox && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <textarea 
+                        placeholder="E.g. Make the stones reflect more blue light..."
+                        className="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white focus:border-[#00C2FF] outline-none transition-all placeholder:text-[#C2C6D6]/40 resize-none"
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
               <div className="w-full max-w-[353px] flex flex-col gap-4 mb-20">
                 <LoadingActionButton
                   isLoading={isApproving}
@@ -96,15 +161,22 @@ export default function JewelleryApprovePrimePage() {
                   className="w-full h-[61px] text-[18px]"
                   icon={<Check className="w-5 h-5" />}
                 >
-                  Approve & Expand Catalog
+                  Approve & Spend 5 Credits
                 </LoadingActionButton>
 
                 <button 
-                  onClick={() => setIsGenerating(true)}
-                  className="flex items-center justify-center gap-2 h-14 rounded-full border border-white/10 text-white/40 hover:text-white transition-all hover:bg-white/5"
+                  onClick={() => {
+                    const success = spendCredits(1);
+                    if (success) {
+                      setIsGenerating(true);
+                    } else {
+                      alert("Insufficient credits. Please top up.");
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 h-14 rounded-full border border-white/10 text-white/40 hover:text-white transition-all hover:bg-white/5 bg-white/[0.02]"
                 >
                   <RefreshCcw className="w-4 h-4" />
-                  <span className="font-medium">Regenerate</span>
+                  <span className="font-medium text-[14px]">Regenerate (1 Credit)</span>
                 </button>
               </div>
             </motion.div>

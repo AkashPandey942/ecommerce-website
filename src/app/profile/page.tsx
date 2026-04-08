@@ -1,6 +1,6 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
+import FlowHeader from "@/components/FlowHeader";
 import Footer from "@/components/Footer";
 import BottomNav from "@/components/BottomNav";
 import { Coins, FolderKanban, Images, Settings, LogOut, Wallet } from "lucide-react";
@@ -10,7 +10,7 @@ import Image from "next/image";
 export default function ProfilePage() {
   return (
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
-      <ApparelHeader title="Profile" />
+      <FlowHeader title="Profile" />
 
       <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
         {/* User Info Section (John Doe) */}

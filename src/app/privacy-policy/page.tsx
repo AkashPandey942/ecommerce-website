@@ -1,13 +1,13 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
+import FlowHeader from "@/components/FlowHeader";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
 
 export default function PrivacyPolicyPage() {
   return (
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 font-inter">
-      <ApparelHeader title="Legal" />
+      <FlowHeader title="Legal" />
 
       <main className="w-full max-w-4xl mx-auto pt-[120px] px-6 pb-20">
         <motion.div

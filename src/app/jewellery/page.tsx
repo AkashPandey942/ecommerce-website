@@ -1,6 +1,5 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
 import ProgressStepper from "@/components/ProgressStepper";
 import SegmentCard from "@/components/SegmentCard";
 import ProductScroll from "@/components/ProductScroll";
@@ -8,6 +7,8 @@ import Footer from "@/components/Footer";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import FlowHeader from "@/components/FlowHeader";
+import { useRecentBranch } from "@/hooks/useRecentBranch";
 
 const JEWELLERY_SEGMENTS = [
   { title: "Bridal", image: "/indian-bride-9-2025-12-2fd0a5885b204639c8156089c6d2ebad-16x9.avif", fullWidth: false },
@@ -18,9 +19,11 @@ const JEWELLERY_SEGMENTS = [
 ];
 
 export default function JewelleryPage() {
+  useRecentBranch("Jewellery", "/jewellery");
+
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
-      <ApparelHeader title="Select Jewellery" />
+      <FlowHeader title="Select Genre" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[105px] px-5">
         <div className="mb-2">

@@ -11,7 +11,7 @@ interface ModelItem {
 }
 
 interface ModelScrollProps {
-  selectedId: string;
+  selectedId: string | null;
   onSelect: (model: ModelItem) => void;
   onPreview?: (model: ModelItem) => void;
 }

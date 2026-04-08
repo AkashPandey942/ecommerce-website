@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useInteraction } from "@/hooks/useInteraction";
 
 interface BackgroundGridProps {
-  selectedTitle: string;
+  selectedTitle: string | null;
   onSelect: (bg: { title: string; image: string }) => void;
   onPreview?: (bg: { title: string; image: string }) => void;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
+import FlowHeader from "@/components/FlowHeader";
 import BottomNav from "@/components/BottomNav";
 import Footer from "@/components/Footer";
 import Image from "next/image";
@@ -50,7 +50,7 @@ const tools = [
 export default function AILabPage() {
   return (
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
-      <ApparelHeader title="AI Lab" />
+      <FlowHeader title="AI Lab" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
 

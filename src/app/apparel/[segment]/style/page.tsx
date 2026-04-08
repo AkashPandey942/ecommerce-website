@@ -1,6 +1,6 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
+import FlowHeader from "@/components/FlowHeader";
 import ProgressStepper from "@/components/ProgressStepper";
 import StyleCard from "@/components/StyleCard";
 import Footer from "@/components/Footer";
@@ -120,7 +120,7 @@ export default function StyleSelectionPage() {
   if (!mounted) {
     return (
       <div className="relative flex flex-col min-h-screen bg-black text-white">
-        <ApparelHeader title="Select Wear Type" />
+        <FlowHeader title="Select Wear Type" />
         <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5" />
       </div>
     );
@@ -128,7 +128,7 @@ export default function StyleSelectionPage() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
-      <ApparelHeader title="Select Wear Type" />
+      <FlowHeader title="Select Wear Type" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
         <ProgressStepper currentStep={2} />

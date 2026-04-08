@@ -1,6 +1,6 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
+import FlowHeader from "@/components/FlowHeader";
 import ProgressStepper from "@/components/ProgressStepper";
 import Footer from "@/components/Footer";
 import { Download, Plus, Play } from "lucide-react";
@@ -23,7 +23,7 @@ export default function FinalResultsPage() {
 
   return (
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 pb-[100px] lg:pb-0">
-      <ApparelHeader title="Results" />
+      <FlowHeader title="Results" />
 
       <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
         {/* Step 6: Fully Completed */}

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Roboto, Manrope } from "next/font/google";
+import { ProjectProvider } from "@/context/ProjectContext";
 import "./globals.css";
 
 const fontInter = Inter({
@@ -46,7 +47,11 @@ export default function RootLayout({
       lang="en"
       className={`${fontInter.variable} ${fontRoboto.variable} ${fontManrope.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <ProjectProvider>
+          {children}
+        </ProjectProvider>
+      </body>
     </html>
   );
 }

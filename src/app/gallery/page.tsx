@@ -1,6 +1,6 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
+import FlowHeader from "@/components/FlowHeader";
 import BottomNav from "@/components/BottomNav";
 import Footer from "@/components/Footer";
 import Image from "next/image";
@@ -33,7 +33,7 @@ export default function GalleryPage() {
 
   return (
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
-      <ApparelHeader title="Gallery" />
+      <FlowHeader title="Gallery" />
 
       {/* Sub-header Tab Toggle (Rectangle 39 / Group 56) */}
       <div className="fixed top-[99px] left-0 right-0 z-40 bg-[#0C101C] px-5 pt-[7px] pb-[7px]">

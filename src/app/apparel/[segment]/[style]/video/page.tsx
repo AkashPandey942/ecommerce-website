@@ -1,6 +1,6 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
+import FlowHeader from "@/components/FlowHeader";
 import ProgressStepper from "@/components/ProgressStepper";
 import VideoStyleCard from "@/components/VideoStyleCard";
 import Footer from "@/components/Footer";
@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Film } from "lucide-react";
 
 export default function VideoStylePage() {
   const params = useParams();
@@ -18,19 +18,18 @@ export default function VideoStylePage() {
   const [selectedVideoStyle, setSelectedVideoStyle] = useState<string>("Straight Walk");
 
   const videoStyles = [
-    { title: "Straight Walk", image: "/hero_image.png" },
-    { title: "Slow Turn", image: "/category_placeholder.png" },
-    { title: "Elegant Reveal", image: "/hero_image.png" },
-    { title: "Fabric Flow", image: "/category_placeholder.png" },
+    { title: "Straight Walk", image: "/hero_image.png", desc: "Classic runway walk directly towards camera." },
+    { title: "Slow Turn", image: "/category_placeholder.png", desc: "360-degree rotation to show all garment angles." },
+    { title: "Elegant Reveal", image: "/hero_image.png", desc: "Soft pan up from feet to head with pose change." },
+    { title: "Fabric Flow", image: "/category_placeholder.png", desc: "Focus on cloth movement and physics." },
   ];
 
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
-      <ApparelHeader title="Video Style" />
+      <FlowHeader title="Motion Treatment" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
-        {/* Step 5 in progress */}
-        <ProgressStepper currentStep={5} />
+        <ProgressStepper currentStep={6} />
 
         <div className="mt-8">
           <motion.h1
@@ -38,7 +37,7 @@ export default function VideoStylePage() {
             animate={{ opacity: 1, x: 0 }}
             className="font-roboto font-semibold text-[36px] leading-[45px] text-[#E2E2E8] tracking-[-0.9px]"
           >
-            Select Video Style
+            Video Storyboard
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, x: -20 }}
@@ -46,7 +45,7 @@ export default function VideoStylePage() {
             transition={{ delay: 0.1 }}
             className="font-roboto font-normal text-[16px] leading-[19px] text-[#C2C6D6] mt-2"
           >
-            Choose video animation style
+            Select a motion preset for your AI animation
           </motion.p>
         </div>
 
