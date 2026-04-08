@@ -1,6 +1,6 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
+import FlowHeader from "@/components/FlowHeader";
 import ProgressStepper from "@/components/ProgressStepper";
 import StyleCard from "@/components/StyleCard";
 import Footer from "@/components/Footer";
@@ -142,7 +142,7 @@ export default function JewelleryStyleSelectionPage() {
   if (!mounted) {
     return (
       <div className="relative flex flex-col min-h-screen bg-black text-white">
-        <ApparelHeader title="Select Style" />
+        <FlowHeader title="Select Style" />
         <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5" />
       </div>
     );
@@ -156,7 +156,7 @@ export default function JewelleryStyleSelectionPage() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
-      <ApparelHeader title="Select Style" />
+      <FlowHeader title="Select Style" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
         <ProgressStepper currentStep={2} partialStep={true} />

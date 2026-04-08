@@ -1,6 +1,6 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
+import FlowHeader from "@/components/FlowHeader";
 import ProgressStepper from "@/components/ProgressStepper";
 import Footer from "@/components/Footer";
 import { Play, CheckCircle2, Download, Share2 } from "lucide-react";
@@ -16,7 +16,7 @@ export default function VideoResultPage() {
 
   return (
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30">
-      <ApparelHeader title="Video Result" />
+      <FlowHeader title="Video Result" />
 
       <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
         {/* Step 6: Fully Completed */}

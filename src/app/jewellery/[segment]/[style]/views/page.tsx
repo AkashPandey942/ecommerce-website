@@ -1,6 +1,6 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
+import FlowHeader from "@/components/FlowHeader";
 import ProgressStepper from "@/components/ProgressStepper";
 import Footer from "@/components/Footer";
 import { Check, Sparkles, Wand2 } from "lucide-react";
@@ -47,7 +47,7 @@ export default function JewelleryOutputViewsPage() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30 font-roboto">
-      <ApparelHeader title="Choose Views" />
+      <FlowHeader title="Choose Views" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[105px] px-5">
         {/* Step 4 - Finalizing output details */}

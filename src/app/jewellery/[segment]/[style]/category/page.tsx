@@ -1,30 +1,17 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
+import FlowHeader from "@/components/FlowHeader";
 import ProgressStepper from "@/components/ProgressStepper";
 import ProductTag from "@/components/ProductTag";
 import Footer from "@/components/Footer";
 import LoadingActionButton from "@/components/LoadingActionButton";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
-
-// Taxonomy Level 4: Leaf examples per screenshot 3
-function getJewelleryProductTypes(segment: string) {
-  const s = segment.toLowerCase();
-  if (s.includes("bridal")) return ["Full Set", "Choker Set", "Necklace Set", "Earrings", "Bangles", "Maang Tikka", "Other"];
-  if (s.includes("fashion")) return ["Earrings", "Rings", "Bracelets", "Necklaces", "Office-wear Sets", "Other"];
-  if (s.includes("traditional") || s.includes("vintage")) return ["Temple", "Kundan", "Antique Finish", "Polki-style", "Festive Sets", "Other"];
-  if (s.includes("daily") || s.includes("minimal")) return ["Studs", "Thin Chains", "Light Bracelets", "Minimal Rings", "Other"];
-  return ["Necklace", "Earrings", "Ring", "Bracelet", "Other"];
-}
-
-const CAROUSEL_IMAGES = [
-  "/golden-jewlary.jpg",
-  "/assets/ladies/ethnic-wear/beautiful-indian-bride-wearing-bridal-lehenga-portrait.jpg",
-  "/assets/ladies/ethnic-wear/bride-wearing-gold-orange-sari-is-wearing-gold-headband.jpg"
-];
+import { useRecentBranch } from "@/hooks/useRecentBranch";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { TAXONOMY } from "@/registry/taxonomy";
 
 export default function JewelleryCategoryPage() {
   const params = useParams();
@@ -35,8 +22,26 @@ export default function JewelleryCategoryPage() {
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [isContinuing, setIsContinuing] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showAll, setShowAll] = useState(false);
 
-  const productTypes = getJewelleryProductTypes(segment);
+  // SaaS Rule 6.1: Memory
+  useRecentBranch(`${segment} ${style}`, `/jewellery/${segment}/${style}/category`);
+
+  const getTaxonomyTypes = () => {
+    // Staff level improvement: Data-driven lookup
+    const s = segment.charAt(0).toUpperCase() + segment.slice(1).toLowerCase();
+    return TAXONOMY.jewellery.styles.leafNodes[s] || ["Necklace", "Earrings", "Other"];
+  };
+
+  const productTypes = getTaxonomyTypes();
+  const visibleTypes = showAll ? productTypes : productTypes.slice(0, 7);
+  const hasMore = productTypes.length > 8;
+
+  const CAROUSEL_IMAGES = [
+    "/golden-jewlary.jpg",
+    "/assets/ladies/ethnic-wear/beautiful-indian-bride-wearing-bridal-lehenga-portrait.jpg",
+    "/assets/ladies/ethnic-wear/bride-wearing-gold-orange-sari-is-wearing-gold-headband.jpg"
+  ];
 
   const handleContinue = async () => {
     setIsContinuing(true);
@@ -46,14 +51,13 @@ export default function JewelleryCategoryPage() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
-      <ApparelHeader title="Select Product" />
+      <FlowHeader title="Select Product" />
 
-      <main className="w-full flex-1 max-w-[393px] md:max-w-7xl mx-auto pt-[99px] px-5 flex flex-col">
+      <main className="w-full flex-1 max-w-[393px] md:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
         <div className="mt-4 mb-2">
           <ProgressStepper currentStep={3} />
         </div>
 
-        {/* Hero Visual Section (Rectangle 13) */}
         <section className="relative w-full aspect-square max-h-[353px] mb-8 group">
           <AnimatePresence mode="wait">
             <motion.div 
@@ -68,12 +72,11 @@ export default function JewelleryCategoryPage() {
                 alt="Jewellery Preview"
                 fill
                 className="object-cover"
-                priority
+                priority={currentSlide === 0}
               />
             </motion.div>
           </AnimatePresence>
 
-          {/* Pagination Dots (Group 36) */}
           <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
             {CAROUSEL_IMAGES.map((_, idx) => (
               <div
@@ -82,28 +85,49 @@ export default function JewelleryCategoryPage() {
                 className={`h-1.5 rounded-full transition-all cursor-pointer ${
                   currentSlide === idx 
                   ? "w-8 bg-figma-gradient rounded-full" 
-                  : "w-1.5 bg-[#D9D9D9]"
+                  : "w-1.5 bg-[#D9D9D9]/20"
                 }`}
               />
             ))}
           </div>
         </section>
 
-        {/* Category Selection Area */}
         <section className="mt-8 mb-10 flex-1">
-          <h2 className="font-roboto font-semibold text-xl leading-[23px] text-white mb-6">
-            Choose Product Type
-          </h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="font-roboto font-semibold text-xl leading-[23px] text-white">
+              Choose Product Type
+            </h2>
+            {hasMore && (
+              <button 
+                onClick={() => setShowAll(!showAll)}
+                className="flex items-center gap-1 text-[#7C4DFF] text-sm font-medium hover:opacity-80 transition-opacity"
+              >
+                {showAll ? (
+                  <><ChevronUp className="w-4 h-4" /> Less</>
+                ) : (
+                  <><ChevronDown className="w-4 h-4" /> See More</>
+                )}
+              </button>
+            )}
+          </div>
 
           <div className="flex flex-wrap gap-[14px]">
-            {productTypes.map((type) => (
-              <ProductTag 
-                key={type}
-                label={type}
-                selected={selectedType === type}
-                onClick={() => setSelectedType(type)}
-              />
-            ))}
+            <AnimatePresence>
+              {(showAll ? productTypes : visibleTypes).map((type: string, idx: number) => (
+                <motion.div
+                  key={type}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                >
+                  <ProductTag 
+                    label={type}
+                    selected={selectedType === type}
+                    onClick={() => setSelectedType(prev => prev === type ? null : type)}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </section>
 

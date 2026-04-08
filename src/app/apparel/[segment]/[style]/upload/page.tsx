@@ -1,6 +1,6 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
+import FlowHeader from "@/components/FlowHeader";
 import ProgressStepper from "@/components/ProgressStepper";
 import Footer from "@/components/Footer";
 import { useParams, useRouter } from "next/navigation";
@@ -36,9 +36,9 @@ export default function UnifiedUploadSetupPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   
   // Selection States
-  const [selectedModel, setSelectedModel] = useState<string>("1");
-  const [selectedBackground, setSelectedBackground] = useState<string>("White Studio");
-  const [selectedOutputStyle, setSelectedOutputStyle] = useState<string>("Catalog");
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
+  const [selectedBackground, setSelectedBackground] = useState<string | null>(null);
+  const [selectedOutputStyle, setSelectedOutputStyle] = useState<string | null>(null);
   
   // Preview States
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -47,7 +47,7 @@ export default function UnifiedUploadSetupPage() {
   const outputStyles = ["Catalog", "Premium", "Social Media", "Lifestyle"];
 
   const handleModelSelect = (model: { id: string; image: string }) => {
-    setSelectedModel(model.id);
+    setSelectedModel(prev => prev === model.id ? null : model.id);
   };
 
   const handleModelPreview = (model: { id: string; image: string }) => {
@@ -56,7 +56,7 @@ export default function UnifiedUploadSetupPage() {
   };
 
   const handleBackgroundSelect = (bg: { title: string; image: string }) => {
-    setSelectedBackground(bg.title);
+    setSelectedBackground(prev => prev === bg.title ? null : bg.title);
   };
 
   const handleBackgroundPreview = (bg: { title: string; image: string }) => {
@@ -65,6 +65,7 @@ export default function UnifiedUploadSetupPage() {
   };
 
   const handleGenerate = async () => {
+    if (!selectedModel || !selectedBackground || !selectedOutputStyle) return;
     setIsGenerating(true);
     await new Promise(resolve => setTimeout(resolve, 2500));
     router.push(`/apparel/${segment}/${style}/approve-prime`);
@@ -72,7 +73,7 @@ export default function UnifiedUploadSetupPage() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
-      <ApparelHeader title="Upload Product" />
+      <FlowHeader title="Upload Product" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
         {/* Step Progression (Steps reduced to 6 since we merged 4 & 5) */}
@@ -119,7 +120,7 @@ export default function UnifiedUploadSetupPage() {
                   key={item}
                   label={item}
                   selected={selectedOutputStyle === item}
-                  onClick={() => setSelectedOutputStyle(item)}
+                  onClick={() => setSelectedOutputStyle(prev => prev === item ? null : item)}
                 />
               ))}
             </div>
@@ -141,7 +142,7 @@ export default function UnifiedUploadSetupPage() {
             <LoadingActionButton
               isLoading={isGenerating}
               onClick={handleGenerate}
-              disabled={isGenerating}
+              disabled={isGenerating || !selectedModel || !selectedBackground || !selectedOutputStyle}
               className="w-full h-[61px] text-[18px]"
             >
               Generate Prime Image

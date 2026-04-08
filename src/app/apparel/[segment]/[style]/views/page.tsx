@@ -1,6 +1,5 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
 import ProgressStepper from "@/components/ProgressStepper";
 import Footer from "@/components/Footer";
 import { Check, Sparkles } from "lucide-react";
@@ -10,6 +9,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import LoadingActionButton from "@/components/LoadingActionButton";
+import FlowHeader from "@/components/FlowHeader";
 
 export default function SelectOutputViewsPage() {
   const params = useParams();
@@ -44,7 +44,7 @@ export default function SelectOutputViewsPage() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
-      <ApparelHeader title="Output Views" />
+      <FlowHeader title="Output Views" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
         {/* Step 7: Alternate Views selection */}

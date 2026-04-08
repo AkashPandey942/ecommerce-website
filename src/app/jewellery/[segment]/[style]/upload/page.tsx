@@ -1,6 +1,6 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
+import FlowHeader from "@/components/FlowHeader";
 import ProgressStepper from "@/components/ProgressStepper";
 import Footer from "@/components/Footer";
 import { useParams, useRouter } from "next/navigation";
@@ -34,10 +34,10 @@ export default function JewelleryUnifiedSetupPage() {
   const style = (params.style as string) || "sets-and-pieces";
 
   const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<string>("1");
-  const [selectedBackground, setSelectedBackground] = useState<string>("Premium Studio");
-  const [selectedOutputStyle, setSelectedOutputStyle] = useState<string>("Catalog");
-
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
+  const [selectedBackground, setSelectedBackground] = useState<string | null>(null);
+  const [selectedOutputStyle, setSelectedOutputStyle] = useState<string | null>(null);
+  
   // Selection Preview Modal
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -45,7 +45,7 @@ export default function JewelleryUnifiedSetupPage() {
   const outputStyles = ["Catalog", "Premium", "Social Media", "Lifestyle"];
 
   const handleModelSelect = (model: { id: string; image: string }) => {
-    setSelectedModel(model.id);
+    setSelectedModel(prev => prev === model.id ? null : model.id);
   };
 
   const handleModelPreview = (model: { id: string; image: string }) => {
@@ -54,7 +54,7 @@ export default function JewelleryUnifiedSetupPage() {
   };
 
   const handleBackgroundSelect = (bg: { title: string; image: string }) => {
-    setSelectedBackground(bg.title);
+    setSelectedBackground(prev => prev === bg.title ? null : bg.title);
   };
 
   const handleBackgroundPreview = (bg: { title: string; image: string }) => {
@@ -63,6 +63,7 @@ export default function JewelleryUnifiedSetupPage() {
   };
 
   const handleGenerate = async () => {
+    if (!selectedModel || !selectedBackground || !selectedOutputStyle) return;
     setIsGenerating(true);
     await new Promise(resolve => setTimeout(resolve, 2500));
     router.push(`/jewellery/${segment}/${style}/approve-prime`);
@@ -70,7 +71,7 @@ export default function JewelleryUnifiedSetupPage() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
-      <ApparelHeader title="Upload Product" />
+      <FlowHeader title="Upload Product" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
         <ProgressStepper currentStep={4} />
@@ -116,7 +117,7 @@ export default function JewelleryUnifiedSetupPage() {
                   key={item}
                   label={item}
                   selected={selectedOutputStyle === item}
-                  onClick={() => setSelectedOutputStyle(item)}
+                  onClick={() => setSelectedOutputStyle(prev => prev === item ? null : item)}
                 />
               ))}
             </div>
@@ -137,6 +138,7 @@ export default function JewelleryUnifiedSetupPage() {
             <LoadingActionButton
               isLoading={isGenerating}
               onClick={handleGenerate}
+              disabled={isGenerating || !selectedModel || !selectedBackground || !selectedOutputStyle}
               className="w-full h-[61px] text-[18px]"
             >
               Generate AI Asset

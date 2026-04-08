@@ -33,12 +33,12 @@ const ProductCard = ({ title, image }: ProductCardProps) => {
 
 const ProductScroll = () => {
   const products = [
-    { title: "Red Saree", image: "/hero_image.png" },
-    { title: "Gold Necklace", image: "/category_placeholder.png" },
-    { title: "Products", image: "/category_placeholder.png" },
-    { title: "Blue Saree", image: "/hero_image.png" },
-    { title: "Green Lehenga", image: "/hero_image.png" },
-    { title: "Bag", image: "/category_placeholder.png" },
+    { title: "Leather Handbag", image: "/assets/categories/handbag.png" },
+    { title: "Designer Heels", image: "/assets/categories/footwear.png" },
+    { title: "Luxury Chrono", image: "/assets/categories/watch.png" },
+    { title: "Premium Eyewear", image: "/assets/categories/eyewear.png" },
+    { title: "Home Aesthetics", image: "/assets/categories/home_decor.png" },
+    { title: "Beauty Kit", image: "/assets/categories/beauty.png" },
   ];
 
   return (

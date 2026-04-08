@@ -1,6 +1,6 @@
 "use client";
 
-import ApparelHeader from "@/components/ApparelHeader";
+import FlowHeader from "@/components/FlowHeader";
 import ProgressStepper from "@/components/ProgressStepper";
 import Footer from "@/components/Footer";
 import { useParams, useRouter } from "next/navigation";
@@ -29,15 +29,15 @@ export default function JewelleryAISetupPage() {
   const style = (params.style as string) || "sets-and-pieces";
 
   const [isContinuing, setIsContinuing] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<string>("1");
-  const [selectedBackground, setSelectedBackground] = useState<string>("Premium Studio");
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
+  const [selectedBackground, setSelectedBackground] = useState<string | null>(null);
 
   // Selection Preview Modal
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const handleModelSelect = (model: { id: string; image: string }) => {
-    setSelectedModel(model.id);
+    setSelectedModel(prev => prev === model.id ? null : model.id);
   };
 
   const handleModelPreview = (model: { id: string; image: string }) => {
@@ -46,7 +46,7 @@ export default function JewelleryAISetupPage() {
   };
 
   const handleBackgroundSelect = (bg: { title: string; image: string }) => {
-    setSelectedBackground(bg.title);
+    setSelectedBackground(prev => prev === bg.title ? null : bg.title);
   };
 
   const handleBackgroundPreview = (bg: { title: string; image: string }) => {
@@ -55,6 +55,7 @@ export default function JewelleryAISetupPage() {
   };
 
   const handleGenerate = async () => {
+    if (!selectedModel || !selectedBackground) return;
     setIsContinuing(true);
     await new Promise(resolve => setTimeout(resolve, 2000));
     router.push(`/jewellery/${segment}/${style}/approve-prime`);
@@ -62,7 +63,7 @@ export default function JewelleryAISetupPage() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
-      <ApparelHeader title="AI Setup" />
+      <FlowHeader title="AI Setup" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
         <ProgressStepper currentStep={5} />
@@ -112,7 +113,7 @@ export default function JewelleryAISetupPage() {
             <LoadingActionButton
               isLoading={isContinuing}
               onClick={handleGenerate}
-              disabled={isContinuing}
+              disabled={isContinuing || !selectedModel || !selectedBackground}
               className="w-full h-[61px]"
             >
               Generate Jewelry Asset
