@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 
 export default function ApparelPage() {
   const segments = [
-    { title: "Ladies", image: "/hero_image.png", fullWidth: false },
+    { title: "Ladies", image: "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg", fullWidth: false },
     { title: "Gents", image: "/assets/men/western-wear/men-fashion-editorial-outdoors.jpg", fullWidth: false },
     { title: "Kids", image: "/apparel_kids.png", fullWidth: true },
   ];

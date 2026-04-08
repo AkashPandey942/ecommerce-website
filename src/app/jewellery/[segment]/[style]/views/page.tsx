@@ -24,7 +24,7 @@ export default function JewelleryOutputViewsPage() {
     { id: "creative", title: "Creative Hub", image: "/hero_image.png" },
   ];
 
-  const [selectedViews, setSelectedViews] = useState<string[]>(["front", "closeup", "model"]);
+  const [selectedViews, setSelectedViews] = useState<string[]>([]);
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -164,6 +164,7 @@ export default function JewelleryOutputViewsPage() {
             onClick={handleGenerate}
             className="w-full max-w-[353px] h-[61px]"
             icon={<Wand2 className="w-5 h-5" />}
+            disabled={selectedViews.length === 0}
           >
             Generate Photoshoot
           </LoadingActionButton>

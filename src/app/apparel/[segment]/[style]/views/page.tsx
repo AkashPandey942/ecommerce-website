@@ -26,7 +26,7 @@ export default function SelectOutputViewsPage() {
     { id: "detail", title: "Detail Shot", image: "/assets/ladies/ethnic-wear/ChatGPT%20Image%20Apr%201,%202026,%2006_21_52%20PM.png" },
   ];
 
-  const [selectedViews, setSelectedViews] = useState<string[]>(["front", "left", "closeup"]);
+  const [selectedViews, setSelectedViews] = useState<string[]>([]);
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -165,6 +165,7 @@ export default function SelectOutputViewsPage() {
               isLoading={isLoading}
               onClick={handleGenerate}
               className="w-full h-[61px]"
+              disabled={selectedViews.length === 0}
             >
               Generate Outputs
             </LoadingActionButton>

@@ -20,7 +20,7 @@ const Footer = dynamic(() => import("@/components/Footer"), { ssr: false });
 
 export default function Home() {
   const categories = [
-    { title: "Apparel", icon: Shirt, image: "/home_apparel.png" },
+    { title: "Apparel", icon: Shirt, image: "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg" },
     { title: "Jewellery", icon: Gem, image: "/home_jewellery.png", svgOverlay: <JewelleryOverlaySVG /> },
     { title: "Accessories", icon: Watch, image: "/home_accessories.png" },
     { title: "Products", icon: Package, image: "/home_products.png" },
