@@ -47,8 +47,8 @@ export default function SelectOutputViewsPage() {
       <ApparelHeader title="Output Views" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
-        {/* Step 4 in progress */}
-        <ProgressStepper currentStep={4} />
+        {/* Step 7: Alternate Views selection */}
+        <ProgressStepper currentStep={6} />
 
         {/* Heading Section */}
         <section className="mt-8 mb-10">

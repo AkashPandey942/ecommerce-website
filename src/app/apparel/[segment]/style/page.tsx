@@ -105,7 +105,7 @@ export default function StyleSelectionPage() {
     if (styleId === "custom") {
       setShowPrompt(true);
     } else {
-      router.push(`/apparel/${segment}/${styleId}/upload`);
+      router.push(`/apparel/${segment}/${styleId}/category`);
     }
   };
 
@@ -113,7 +113,7 @@ export default function StyleSelectionPage() {
     setIsGenerating(true);
     await new Promise((resolve) => setTimeout(resolve, 1500));
     router.push(
-      `/apparel/${segment}/custom/upload?prompt=${encodeURIComponent(customPrompt)}`
+      `/apparel/${segment}/custom/category?prompt=${encodeURIComponent(customPrompt)}`
     );
   };
 

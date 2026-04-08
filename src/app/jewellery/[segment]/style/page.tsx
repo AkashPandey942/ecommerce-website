@@ -127,7 +127,7 @@ export default function JewelleryStyleSelectionPage() {
     setIsGenerating(true);
     await new Promise((resolve) => setTimeout(resolve, 1500));
     router.push(
-      `/jewellery/${segment}/custom/upload?prompt=${encodeURIComponent(customPrompt)}`
+      `/jewellery/${segment}/custom/category?prompt=${encodeURIComponent(customPrompt)}`
     );
   };
 
@@ -135,7 +135,7 @@ export default function JewelleryStyleSelectionPage() {
     if (styleId === "custom") {
       setShowPrompt(true);
     } else {
-      router.push(`/jewellery/${segment}/${styleId}/upload`);
+      router.push(`/jewellery/${segment}/${styleId}/category`);
     }
   };
 

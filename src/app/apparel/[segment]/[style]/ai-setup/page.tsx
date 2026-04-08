@@ -9,40 +9,32 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import LoadingActionButton from "@/components/LoadingActionButton";
 import { Skeleton } from "@/components/ui/Skeleton";
-import ProductTag from "@/components/ProductTag";
 
 // Dynamic components
-const UploadZone = dynamic(() => import("@/components/UploadZone"), { 
-  ssr: false, 
-  loading: () => <Skeleton className="w-full h-[240px] rounded-2xl" /> 
-});
 const ModelScroll = dynamic(() => import("@/components/ModelScroll"), { 
   ssr: false, 
-  loading: () => <Skeleton className="w-full h-[170px] rounded-xl" /> 
+  loading: () => <Skeleton className="w-full h-[200px] rounded-xl" /> 
 });
 const BackgroundGrid = dynamic(() => import("@/components/BackgroundGrid"), { 
   ssr: false, 
-  loading: () => <div className="grid grid-cols-2 gap-4"><Skeleton className="h-[100px]" /><Skeleton className="h-[100px]" /></div> 
+  loading: () => <div className="grid grid-cols-2 gap-4"><Skeleton className="h-[120px]" /><Skeleton className="h-[120px]" /></div> 
 });
-const AIDirectorNotes = dynamic(() => import("@/components/AIDirectorNotes"), { ssr: false });
 const SelectionPreviewModal = dynamic(() => import("@/components/SelectionPreviewModal"), { ssr: false });
+const AIDirectorNotes = dynamic(() => import("@/components/AIDirectorNotes"), { ssr: false });
 
-export default function JewelleryUnifiedSetupPage() {
+export default function AISetupPage() {
   const params = useParams();
   const router = useRouter();
-  const segment = (params.segment as string) || "bridal";
-  const style = (params.style as string) || "sets-and-pieces";
+  const segment = (params.segment as string) || "Ladies";
+  const style = (params.style as string) || "Ethnic-Wear";
 
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isContinuing, setIsContinuing] = useState(false);
   const [selectedModel, setSelectedModel] = useState<string>("1");
-  const [selectedBackground, setSelectedBackground] = useState<string>("Premium Studio");
-  const [selectedOutputStyle, setSelectedOutputStyle] = useState<string>("Catalog");
+  const [selectedBackground, setSelectedBackground] = useState<string>("White Studio");
 
   // Selection Preview Modal
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-
-  const outputStyles = ["Catalog", "Premium", "Social Media", "Lifestyle"];
 
   const handleModelSelect = (model: { id: string; image: string }) => {
     setSelectedModel(model.id);
@@ -63,29 +55,31 @@ export default function JewelleryUnifiedSetupPage() {
   };
 
   const handleGenerate = async () => {
-    setIsGenerating(true);
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    router.push(`/jewellery/${segment}/${style}/approve-prime`);
+    setIsContinuing(true);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    router.push(`/apparel/${segment}/${style}/approve-prime`);
   };
 
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
-      <ApparelHeader title="Upload Product" />
+      <ApparelHeader title="AI Setup" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
-        <ProgressStepper currentStep={4} />
+      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
+        {/* Step 5: AI Setup */}
+        <ProgressStepper currentStep={5} />
 
-        <div className="flex flex-col gap-12 mt-10 mb-20">
-          {/* 1. Upload Product Image */}
-          <section>
-            <div className="mb-6">
-              <h1 className="font-roboto font-semibold text-2xl text-white mb-2">Upload Jewellery</h1>
-              <p className="text-sm text-[#99A1AF]">Upload a clear photo of your piece.</p>
-            </div>
-            <UploadZone />
-          </section>
+        <section className="mt-8 mb-10">
+          <motion.h1 
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="font-roboto font-semibold text-3xl text-[#E2E2E8]"
+          >
+            Configure Editorial
+          </motion.h1>
+        </section>
 
-          {/* 2. Select Model */}
+        <div className="flex flex-col gap-12 mb-20">
+          {/* 1. Model Selection */}
           <section>
             <h2 className="font-roboto font-semibold text-xl text-white mb-6">Select Model</h2>
             <div className="-mx-5 px-5">
@@ -97,9 +91,9 @@ export default function JewelleryUnifiedSetupPage() {
             </div>
           </section>
 
-          {/* 3. Environment */}
+          {/* 2. Background Style */}
           <section>
-            <h2 className="font-roboto font-semibold text-xl text-white mb-6">Environment</h2>
+            <h2 className="font-roboto font-semibold text-xl text-white mb-6">Background Style</h2>
             <BackgroundGrid 
               selectedTitle={selectedBackground} 
               onSelect={handleBackgroundSelect}
@@ -107,25 +101,10 @@ export default function JewelleryUnifiedSetupPage() {
             />
           </section>
 
-          {/* 4. Output Style */}
+          {/* 3. Director Notes */}
           <section>
-            <h2 className="font-roboto font-semibold text-xl text-white mb-6">Output Style</h2>
-            <div className="flex flex-wrap gap-3">
-              {outputStyles.map((item) => (
-                <ProductTag 
-                  key={item}
-                  label={item}
-                  selected={selectedOutputStyle === item}
-                  onClick={() => setSelectedOutputStyle(item)}
-                />
-              ))}
-            </div>
-          </section>
-
-          {/* 5. AI Notes */}
-          <section>
-            <div className="flex items-center gap-2 mb-6">
-              <h2 className="font-roboto font-semibold text-xl text-white">Production Notes</h2>
+            <div className="flex items-center gap-2 mb-4">
+              <h2 className="font-roboto font-semibold text-xl text-white">AI Director Notes</h2>
               <span className="text-xs text-[#C5B6DE] uppercase tracking-wider">(Optional)</span>
             </div>
             <AIDirectorNotes />
@@ -135,11 +114,12 @@ export default function JewelleryUnifiedSetupPage() {
         <div className="mb-10 lg:mb-16">
           <div className="w-full max-w-[353px] mx-auto lg:max-w-[400px]">
             <LoadingActionButton
-              isLoading={isGenerating}
+              isLoading={isContinuing}
               onClick={handleGenerate}
-              className="w-full h-[61px] text-[18px]"
+              disabled={isContinuing}
+              className="w-full h-[61px]"
             >
-              Generate AI Asset
+              Generate Prime Image
             </LoadingActionButton>
           </div>
         </div>
