@@ -21,7 +21,7 @@ export default function ApparelPage() {
 
       <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
         {/* Progress Indication (Stepper) */}
-        <ProgressStepper />
+        <ProgressStepper currentStep={2} />
 
         {/* Heading Section */}
         <section className="mt-8 mb-10">

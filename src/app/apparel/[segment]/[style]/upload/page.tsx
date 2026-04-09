@@ -77,7 +77,7 @@ export default function UnifiedUploadSetupPage() {
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
         {/* Step Progression (Steps reduced to 6 since we merged 4 & 5) */}
-        <ProgressStepper currentStep={4} />
+        <ProgressStepper currentStep={5} />
 
         <div className="flex flex-col gap-12 mt-10 mb-20">
           {/* 1. Upload Product Image Section */}

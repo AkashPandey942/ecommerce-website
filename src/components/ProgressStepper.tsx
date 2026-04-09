@@ -8,14 +8,13 @@ interface ProgressStepperProps {
 }
 
 const ProgressStepper = ({ currentStep = 1, partialStep = false }: ProgressStepperProps) => {
-  const steps = [
-    { width: "50px", status: currentStep > 1 ? "full" : currentStep === 1 ? (partialStep ? "partial" : "full") : "empty" },
-    { width: "50px", status: currentStep > 2 ? "full" : currentStep === 2 ? (partialStep ? "partial" : "full") : "empty" },
-    { width: "50px", status: currentStep > 3 ? "full" : currentStep === 3 ? (partialStep ? "partial" : "full") : "empty" },
-    { width: "50px", status: currentStep > 4 ? "full" : currentStep === 4 ? (partialStep ? "partial" : "full") : "empty" },
-    { width: "50px", status: currentStep > 5 ? "full" : currentStep === 5 ? (partialStep ? "partial" : "full") : "empty" },
-    { width: "50px", status: currentStep > 6 ? "full" : currentStep === 6 ? (partialStep ? "partial" : "full") : "empty" },
-  ];
+  const steps = Array.from({ length: 11 }, (_, i) => {
+    const stepNum = i + 1;
+    return {
+      width: "30px", // Adjusted for 11 steps on mobile
+      status: currentStep > stepNum ? "full" : currentStep === stepNum ? (partialStep ? "partial" : "full") : "empty"
+    };
+  });
 
   return (
     <div className="w-full flex items-center justify-start md:justify-center gap-[10px] px-5 py-4 overflow-x-auto no-scrollbar">

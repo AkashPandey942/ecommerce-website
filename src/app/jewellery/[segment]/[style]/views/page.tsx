@@ -9,20 +9,25 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import LoadingActionButton from "@/components/LoadingActionButton";
+import { TAXONOMY } from "@/registry/taxonomy";
 
 export default function JewelleryOutputViewsPage() {
   const params = useParams();
   const router = useRouter();
   const segment = (params.segment as string) || "bridal";
-  const style = (params.style as string) || "sets-and-pieces";
+  const styleParam = (params.style as string) || "sets-and-pieces";
 
-  const views = [
-    { id: "front", title: "Frontal Shot", image: "/golden-jewlary.jpg" },
-    { id: "closeup", title: "Macro Detail", image: "/elegant-woman-showcasing-silver-necklace-with-vibrant-amethyst-aquamarine-stones-set-against-deep-background-dramatic-effect.jpg" },
-    { id: "model", title: "On Model", image: "/indian-bride-9-2025-12-2fd0a5885b204639c8156089c6d2ebad-16x9.avif" },
-    { id: "flat", title: "Flat Lay", image: "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg" },
-    { id: "creative", title: "Creative Hub", image: "/hero_image.png" },
-  ];
+  const getRecommendedViews = () => {
+    // Lookup in jewellery registry
+    const res = TAXONOMY.jewellery.recommendedViews || ["Front View", "Side View", "Detail shot"];
+    return res.map((title: string) => ({
+      id: title.toLowerCase().replace(/\s+/g, '-'),
+      title,
+      image: "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg" // Fallback high-fidelity asset
+    }));
+  };
+
+  const views = getRecommendedViews();
 
   const [selectedViews, setSelectedViews] = useState<string[]>([]);
   const [isCustomMode, setIsCustomMode] = useState(false);
@@ -33,8 +38,8 @@ export default function JewelleryOutputViewsPage() {
 
   const handleGenerate = async () => {
     setIsGenerating(true);
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Premium AI "working" delay
-    router.push(`/jewellery/${segment}/${style}/result`);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    router.push(`/jewellery/${segment}/${styleParam}/result`);
   };
 
   const toggleView = (id: string) => {
@@ -50,8 +55,7 @@ export default function JewelleryOutputViewsPage() {
       <FlowHeader title="Choose Views" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[105px] px-5">
-        {/* Step 4 - Finalizing output details */}
-        <ProgressStepper currentStep={6} />
+        <ProgressStepper currentStep={9} />
 
         {/* Heading Section */}
         <section className="mt-8 mb-10">
@@ -71,7 +75,7 @@ export default function JewelleryOutputViewsPage() {
 
         {/* Views Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {views.map((view, idx) => {
+          {views.map((view: any, idx: number) => {
             const isSelected = selectedViews.includes(view.id);
             return (
               <motion.div
@@ -176,3 +180,4 @@ export default function JewelleryOutputViewsPage() {
     </div>
   );
 }
+

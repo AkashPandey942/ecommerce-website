@@ -74,7 +74,7 @@ export default function JewelleryUnifiedSetupPage() {
       <FlowHeader title="Upload Product" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
-        <ProgressStepper currentStep={4} />
+        <ProgressStepper currentStep={5} />
 
         <div className="flex flex-col gap-12 mt-10 mb-20">
           {/* 1. Upload Product Image */}

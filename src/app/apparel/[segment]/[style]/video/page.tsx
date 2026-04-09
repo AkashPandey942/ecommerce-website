@@ -18,10 +18,41 @@ export default function VideoStylePage() {
   const [selectedVideoStyle, setSelectedVideoStyle] = useState<string>("Straight Walk");
 
   const videoStyles = [
-    { title: "Straight Walk", image: "/hero_image.png", desc: "Classic runway walk directly towards camera." },
-    { title: "Slow Turn", image: "/category_placeholder.png", desc: "360-degree rotation to show all garment angles." },
-    { title: "Elegant Reveal", image: "/hero_image.png", desc: "Soft pan up from feet to head with pose change." },
-    { title: "Fabric Flow", image: "/category_placeholder.png", desc: "Focus on cloth movement and physics." },
+    { 
+      title: "Straight Walk", 
+      image: "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg", 
+      desc: "Classic runway walk directly towards camera.",
+      storyboard: [
+        "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg",
+        "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg",
+        "/assets/ladies/ethnic-wear/ChatGPT Image Apr 1, 2026, 05_49_51 PM.png"
+      ]
+    },
+    { 
+      title: "Slow Turn", 
+      image: "/assets/ladies/ethnic-wear/ChatGPT Image Apr 1, 2026, 05_49_51 PM.png", 
+      desc: "360-degree rotation to show all garment angles.",
+      storyboard: [
+        "/assets/ladies/ethnic-wear/ChatGPT Image Apr 1, 2026, 05_49_51 PM.png",
+        "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg",
+        "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg"
+      ]
+    },
+    { 
+      title: "Elegant Reveal", 
+      image: "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg", 
+      desc: "Soft pan up from feet to head with pose change.",
+      storyboard: [
+        "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg",
+        "/assets/ladies/ethnic-wear/ChatGPT Image Apr 1, 2026, 06_05_22 PM.png",
+        "/assets/ladies/ethnic-wear/ChatGPT Image Apr 1, 2026, 06_21_52 PM.png"
+      ]
+    },
+    { 
+      title: "Fabric Flow", 
+      image: "/assets/ladies/ethnic-wear/ChatGPT Image Apr 1, 2026, 06_21_52 PM.png", 
+      desc: "Focus on cloth movement and physics." 
+    },
   ];
 
   return (
@@ -29,7 +60,7 @@ export default function VideoStylePage() {
       <FlowHeader title="Motion Treatment" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
-        <ProgressStepper currentStep={6} />
+        <ProgressStepper currentStep={10} />
 
         <div className="mt-8">
           <motion.h1
@@ -56,6 +87,7 @@ export default function VideoStylePage() {
               key={idx}
               title={vs.title}
               image={vs.image}
+              storyboard={vs.storyboard}
               selected={selectedVideoStyle === vs.title}
               onClick={() => setSelectedVideoStyle(vs.title)}
             />

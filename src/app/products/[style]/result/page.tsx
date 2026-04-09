@@ -2,7 +2,8 @@
 
 import FlowHeader from "@/components/FlowHeader";
 import Footer from "@/components/Footer";
-import { Download, Share2, CornerUpRight, LayoutTemplate } from "lucide-react";
+import ProgressStepper from "@/components/ProgressStepper";
+import { Download, Share2, CornerUpRight, LayoutTemplate, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
@@ -11,13 +12,13 @@ export default function ProductsResultPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const style = (params.style as string) || "home";
-  const product = searchParams.get("product") || "Vase";
+  const product = searchParams.get("product") || "Product";
 
   const results = [
-    { id: 1, type: "Prime shot", image: "/home_products.png" },
-    { id: 2, type: "Side Angle", image: "/home_products.png" },
-    { id: 3, type: "Top Down", image: "/home_products.png" },
-    { id: 4, type: "Contextual", image: "/home_products.png" },
+    { id: 1, type: "Prime shot", image: "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg" },
+    { id: 2, type: "Side Angle", image: "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg" },
+    { id: 3, type: "Top Down", image: "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg" },
+    { id: 4, type: "Contextual", image: "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg" },
   ];
 
   return (
@@ -25,19 +26,24 @@ export default function ProductsResultPage() {
       <FlowHeader title="Production Results" />
 
       <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
+        <ProgressStepper currentStep={11} />
+
         {/* Header Section */}
         <section className="mt-8 mb-12 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-            <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2">Assets Ready!</h1>
-            <p className="text-[#99A1AF]">Your professional {product} photoshoot is complete.</p>
+            <div className="flex items-center gap-2 mb-2">
+              <CheckCircle2 className="w-6 h-6 text-[#00E676]" />
+              <h1 className="text-3xl lg:text-4xl font-bold text-white">Photoshoot Complete!</h1>
+            </div>
+            <p className="text-[#99A1AF]">Your high-fidelity assets are ready for export.</p>
           </motion.div>
           
           <div className="flex gap-4">
-            <button className="flex-1 lg:flex-none h-12 px-6 rounded-full border border-white/10 bg-white/5 flex items-center justify-center gap-2 hover:bg-white/10 transition-all">
+            <button className="flex-1 lg:flex-none h-12 px-6 rounded-full border border-white/10 bg-white/5 flex items-center justify-center gap-2 hover:bg-white/10 transition-all font-medium">
               <Share2 className="w-4 h-4" />
               <span>Share Pack</span>
             </button>
-            <button className="flex-1 lg:flex-none h-12 px-6 rounded-full bg-figma-gradient flex items-center justify-center gap-2 hover:brightness-110 transition-all">
+            <button className="flex-1 lg:flex-none h-12 px-6 rounded-full bg-figma-gradient flex items-center justify-center gap-2 hover:shadow-[0_0_20px_rgba(124,77,255,0.4)] transition-all font-semibold">
               <Download className="w-4 h-4" />
               <span>Download Suite</span>
             </button>
@@ -56,17 +62,17 @@ export default function ProductsResultPage() {
             >
               <div className="relative aspect-square rounded-2xl overflow-hidden shadow-2xl border border-white/5 bg-[#1A1E29]">
                 <Image src={res.image} alt={res.type} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
-                <div className="absolute bottom-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full text-xs font-medium border border-white/10">
+                <div className="absolute bottom-4 left-4 px-3 py-1 bg-black/50 backdrop-blur-md rounded-full text-[10px] font-bold uppercase tracking-widest border border-white/10">
                   {res.type}
                 </div>
               </div>
               
               <div className="flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity px-1">
-                <button className="text-xs text-[#99A1AF] hover:text-white flex items-center gap-1">
+                <button className="text-[11px] text-[#99A1AF] hover:text-white flex items-center gap-1 font-medium">
                   <LayoutTemplate className="w-3 h-3" />
-                  Save as Template
+                  Save Template
                 </button>
-                <button className="text-xs text-[#7C4DFF] font-semibold flex items-center gap-1">
+                <button className="text-[11px] text-[#7C4DFF] font-bold flex items-center gap-1 hover:underline">
                   <CornerUpRight className="w-3 h-3" />
                   Direct Export
                 </button>
@@ -80,3 +86,4 @@ export default function ProductsResultPage() {
     </div>
   );
 }
+

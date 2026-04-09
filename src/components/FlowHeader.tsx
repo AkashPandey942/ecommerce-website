@@ -57,30 +57,32 @@ const FlowHeader = ({ title, showBack = true }: FlowHeaderProps) => {
             
             <div className="flex flex-col">
               {breadcrumbs && (
-                <span className="font-roboto text-[10px] uppercase tracking-widest text-[#7C4DFF] mb-1 font-bold">
+                <span className="hidden md:block font-roboto text-[10px] uppercase tracking-widest text-[#7C4DFF] mb-1 font-bold">
                   {breadcrumbs}
                 </span>
               )}
-              <h1 className="font-roboto font-semibold text-xl lg:text-2xl text-[#E2E2E8]">
+              <h1 className="font-roboto font-semibold text-lg md:text-xl lg:text-2xl text-[#E2E2E8]">
                 {title}
               </h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 lg:gap-6">
-            <div className="flex flex-col items-end">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1A1E29] border border-[#7C4DFF]/30 shadow-[0_0_15px_rgba(124,77,255,0.15)]">
-                <Wallet className="w-4 h-4 text-[#7C4DFF]" />
-                <span className="font-roboto font-bold text-sm text-white">
-                  {credits} <span className="text-[#C2C6D6]/60 font-normal ml-0.5">Credits</span>
-                </span>
-              </div>
+          <div className="flex items-center gap-2 md:gap-6">
+            <div className="flex items-center gap-2 px-2 md:px-3 py-1.5 rounded-full bg-[#1A1E29] border border-[#7C4DFF]/30 shadow-[0_0_15px_rgba(124,77,255,0.15)]">
+              <Wallet className="w-3.5 h-3.5 md:w-4 h-4 text-[#7C4DFF]" />
+              <span className="font-roboto font-bold text-xs md:text-sm text-white">
+                {credits} <span className="hidden sm:inline text-[#C2C6D6]/60 font-normal ml-0.5">Credits</span>
+              </span>
             </div>
 
-            <Link href="/">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#EC4899] flex items-center justify-center shadow-lg">
-                <span className="font-bold text-white">AG</span>
-              </div>
+            <Link href="/profile">
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#EC4899] flex items-center justify-center shadow-lg"
+              >
+                <span className="font-bold text-xs md:text-base text-white">AG</span>
+              </motion.div>
             </Link>
           </div>
         </div>

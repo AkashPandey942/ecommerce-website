@@ -19,10 +19,10 @@ const JewelleryOverlaySVG = dynamic(() => import("@/components/JewelleryOverlayS
 
 export default function Home() {
   const categories = [
-    { title: "Apparel", icon: Shirt, image: "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg" },
-    { title: "Jewellery", icon: Gem, image: "/home_jewellery.png" },
-    { title: "Accessories", icon: Watch, image: "/home_accessories.png" },
-    { title: "Products", icon: Package, image: "/home_products.png" },
+    { title: "Apparel", icon: Shirt, image: "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg", description: "High-fidelity model photos for Ethnic & Western wear." },
+    { title: "Jewellery", icon: Gem, image: "/home_jewellery.png", description: "Studio-grade refractive renders for luxury pieces." },
+    { title: "Accessories", icon: Watch, image: "/home_accessories.png", description: "Professional product shots for bags and footwear." },
+    { title: "Products", icon: Package, image: "/home_products.png", description: "Clean, catalog-safe images for home and beauty." },
   ];
 
   return (
@@ -57,6 +57,7 @@ export default function Home() {
                   title={cat.title} 
                   icon={cat.icon} 
                   image={cat.image} 
+                  description={cat.description}
                 />
               </Link>
             ))}
