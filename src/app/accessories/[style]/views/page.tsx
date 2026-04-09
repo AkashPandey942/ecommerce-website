@@ -9,21 +9,30 @@ import Image from "next/image";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import LoadingActionButton from "@/components/LoadingActionButton";
+import { TAXONOMY } from "@/registry/taxonomy";
 
 export default function AccessoriesOutputViewsPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const style = (params.style as string) || "bags";
+  const styleParam = (params.style as string) || "bags";
   const product = searchParams.get("product") || "Handbag";
 
-  const views = [
-    { id: "front", title: "Pure Frontal", image: "/assets/accessories/bags/tote_prime_example.jpg" },
-    { id: "side", title: "Profile view", image: "/assets/accessories/bags/tote_prime_example.jpg" },
-    { id: "top", title: "Top-down", image: "/assets/accessories/bags/tote_prime_example.jpg" },
-    { id: "detail", title: "Texture Zoom", image: "/assets/accessories/bags/tote_prime_example.jpg" },
-    { id: "lifestyle", title: "In-context", image: "/assets/accessories/bags/tote_prime_example.jpg" },
-  ];
+  const getRecommendedViews = () => {
+    // Find style in accessories (array format in taxonomy)
+    const matchedStyle = TAXONOMY.accessories.styles.find(
+      (s: any) => s.title.toLowerCase() === styleParam.toLowerCase() || s.leafNodes?.some((node: string) => node.toLowerCase() === product.toLowerCase())
+    );
+    
+    const viewTitles = matchedStyle?.recommendedViews || ["Front View", "Side View", "Detail shot"];
+    return viewTitles.map((title: string) => ({
+      id: title.toLowerCase().replace(/\s+/g, '-'),
+      title,
+      image: matchedStyle?.image || "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg"
+    }));
+  };
+
+  const views = getRecommendedViews();
 
   const [selectedViews, setSelectedViews] = useState<string[]>([]);
   const [isCustomMode, setIsCustomMode] = useState(false);
@@ -38,7 +47,7 @@ export default function AccessoriesOutputViewsPage() {
   const handleGenerate = async () => {
     setIsGenerating(true);
     await new Promise(resolve => setTimeout(resolve, 2000));
-    router.push(`/accessories/${style}/result?product=${product}`);
+    router.push(`/accessories/${styleParam}/result?product=${product}`);
   };
 
   return (
@@ -46,7 +55,7 @@ export default function AccessoriesOutputViewsPage() {
       <FlowHeader title="Output Pack" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
-        <ProgressStepper currentStep={6} />
+        <ProgressStepper currentStep={9} />
 
         <section className="mt-8 mb-10">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -60,7 +69,7 @@ export default function AccessoriesOutputViewsPage() {
         </section>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {views.map((view, idx) => {
+          {views.map((view: any, idx: number) => {
             const isSelected = selectedViews.includes(view.id);
             return (
               <motion.div

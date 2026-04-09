@@ -19,14 +19,19 @@ export default function JewelleryApprovePrimePage() {
 
   const [isGenerating, setIsGenerating] = useState(true);
   const [isApproving, setIsApproving] = useState(false);
-  const [selectedChips, setSelectedChips] = useState<string[]>([]);
+  const [feedback, setFeedback] = useState<string[]>([]);
   const [showTextBox, setShowTextBox] = useState(false);
 
   const { spendCredits } = useProject();
 
-  const feedbackChips = [
-    "More Brilliance", "True Gold Tone", "Better Skin Match", "Sharper Focus", "Less Shadow", "Antique Patina"
-  ];
+  const chipPrompts: Record<string, string> = {
+    "More Brilliance": "Calculating ray-tracing refractive indices for diamond facets...",
+    "True Gold Tone": "Calibrating 22k/18k color temperature for premium luster...",
+    "Better Skin Match": "Averaging sub-surface scattering for natural model integration...",
+    "Sharper Focus": "Adjusting depth-of-field focus stacking for microscopic detail...",
+    "Less Shadow": "Deploying virtual diffusion panels for soft-lit studio look...",
+    "Antique Patina": "Adding procedural oxidation and heritage finish layers..."
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -36,7 +41,7 @@ export default function JewelleryApprovePrimePage() {
   }, []);
 
   const toggleChip = (chip: string) => {
-    setSelectedChips(prev => prev.includes(chip) ? prev.filter(c => c !== chip) : [...prev, chip]);
+    setFeedback(prev => prev.includes(chip) ? prev.filter(c => c !== chip) : [...prev, chip]);
   };
 
   const handleApprove = async () => {
@@ -56,7 +61,7 @@ export default function JewelleryApprovePrimePage() {
       <FlowHeader title="Approve Base Asset" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
-        <ProgressStepper currentStep={5} />
+        <ProgressStepper currentStep={7} />
 
         <AnimatePresence mode="wait">
           {isGenerating ? (
@@ -99,9 +104,30 @@ export default function JewelleryApprovePrimePage() {
                   src="/golden-jewlary.jpg"
                   alt="Jewellery Prime Render"
                   fill
-                  className="object-cover"
+                  className="object-cover transition-transform group-hover:scale-105"
                   priority
                 />
+                
+                {/* AI Directive Engine Expansion */}
+                <AnimatePresence>
+                  {feedback.length > 0 && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-x-4 bottom-4 bg-[#7C4DFF]/90 backdrop-blur-md p-3 rounded-xl border border-white/20 z-10 shadow-2xl"
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <Check className="w-3 h-3 text-white" />
+                        <span className="text-[10px] font-bold uppercase text-white tracking-widest">AI Directive Engine</span>
+                      </div>
+                      <p className="text-[11px] text-white/90 leading-tight">
+                        {chipPrompts[feedback[feedback.length - 1]] || "Enhancing carat fidelity..."}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2">
                   <Sparkles className="w-3 h-3 text-[#FF00C7]" />
                   <span className="text-[10px] font-bold uppercase tracking-widest text-[#FF00C7]">Luxury Render v2.4</span>
@@ -122,13 +148,13 @@ export default function JewelleryApprovePrimePage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2 mb-6">
-                  {feedbackChips.map(chip => (
+                  {Object.keys(chipPrompts).map((chip: string) => (
                     <button
                       key={chip}
                       onClick={() => toggleChip(chip)}
                       className={`px-4 py-2 rounded-full border text-xs font-medium transition-all ${
-                        selectedChips.includes(chip)
-                        ? "bg-[#00C2FF] border-transparent text-black"
+                        feedback.includes(chip)
+                        ? "bg-[#7C4DFF] border-transparent text-white shadow-[0_0_15px_rgba(124,77,255,0.4)]"
                         : "bg-white/5 border-white/10 text-[#C2C6D6] hover:border-white/20"
                       }`}
                     >
@@ -169,6 +195,7 @@ export default function JewelleryApprovePrimePage() {
                     const success = spendCredits(1);
                     if (success) {
                       setIsGenerating(true);
+                      setFeedback([]);
                     } else {
                       alert("Insufficient credits. Please top up.");
                     }

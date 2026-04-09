@@ -37,24 +37,37 @@ const LoadingActionButton = ({
       type={type}
       disabled={disabled || isLoading}
       onClick={onClick}
-      whileHover={!disabled && !isLoading ? { scale: 1.02 } : {}}
+      whileHover={!disabled && !isLoading ? { 
+        scale: 1.02,
+        boxShadow: "0 0 40px rgba(124, 77, 255, 0.6)"
+      } : {}}
       whileTap={!disabled && !isLoading ? { scale: 0.98 } : {}}
       className={`${baseStyles} ${variants[variant]} ${className} ${disabled || isLoading ? "opacity-50 grayscale cursor-not-allowed" : ""}`}
     >
-      {isLoading ? (
-        <div className="flex items-center gap-3">
-          <Loader2 className="w-5 h-5 animate-spin text-white" />
-          <span className="opacity-80">Processing...</span>
-        </div>
-      ) : (
-        <div className="flex items-center justify-center gap-2">
-          {icon && <span className="flex-shrink-0">{icon}</span>}
-          {children}
-        </div>
-      )}
-      
-      {/* Shine effect on hover */}
-      <div className="absolute inset-0 bg-white/0 hover:bg-white/10 transition-colors pointer-events-none" />
+      <motion.div 
+        animate={isLoading ? { opacity: 0.8 } : { opacity: 1 }}
+        className="relative z-10 flex items-center justify-center gap-2"
+      >
+        {isLoading ? (
+          <div className="flex items-center gap-3">
+            <Loader2 className="w-5 h-5 animate-spin text-white" />
+            <span className="opacity-80">Processing...</span>
+          </div>
+        ) : (
+          <>
+            {icon && <span className="flex-shrink-0">{icon}</span>}
+            {children}
+          </>
+        )}
+      </motion.div>
+
+      {/* Shine effect animation */}
+      <motion.div 
+        initial={{ x: "-100%" }}
+        whileHover={{ x: "100%" }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+        className="absolute inset-0 z-20 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none"
+      />
     </motion.button>
   );
 };

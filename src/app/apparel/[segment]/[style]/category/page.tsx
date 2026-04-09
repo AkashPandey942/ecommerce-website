@@ -26,18 +26,23 @@ export default function CategorySelectionPage() {
   // SaaS Rule 6.1: Memory
   useRecentBranch(`${segment} ${styleParam}`, `/apparel/${segment}/${styleParam}/category`);
 
-  const getTaxonomyCategories = () => {
-    // Staff level improvement: Data-driven lookup
+  const getTaxonomyData = () => {
     const s = segment.charAt(0).toUpperCase() + segment.slice(1).toLowerCase();
     const styleKey = styleParam.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     
     const styles = TAXONOMY.apparel.styles[s] || [];
     const matchedStyle = styles.find((st: any) => st.title === styleKey);
     
-    return matchedStyle?.leafNodes || ["Saree", "Kurti", "Other"];
+    return {
+      categories: matchedStyle?.leafNodes || ["Saree", "Kurti", "Other"],
+      samples: matchedStyle?.samples || ["/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg"],
+      description: matchedStyle?.description || `High-fidelity ${styleKey} generation for marketplace-safe catalogs.`
+    };
   };
 
-  const categories = getTaxonomyCategories();
+  const [activeSample, setActiveSample] = useState(0);
+
+  const { categories, samples, description } = getTaxonomyData();
   const visibleCategories = showAll ? categories : categories.slice(0, 7);
   const hasMore = categories.length > 8;
 
@@ -45,6 +50,13 @@ export default function CategorySelectionPage() {
     setIsContinuing(true);
     await new Promise(resolve => setTimeout(resolve, 800));
     router.push(`/apparel/${segment}/${styleParam}/upload`);
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const scrollLeft = e.currentTarget.scrollLeft;
+    const width = e.currentTarget.offsetWidth;
+    const index = Math.round(scrollLeft / width);
+    setActiveSample(index);
   };
 
   return (
@@ -56,24 +68,56 @@ export default function CategorySelectionPage() {
           <ProgressStepper currentStep={3} />
         </div>
 
-        <div className="relative w-full aspect-[353/354] max-h-[400px] mb-8 group">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="relative w-full h-full rounded-[10px] overflow-hidden shadow-2xl"
+        {/* SaaS Step 3: Gallery Carousel */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h3 className="text-[10px] uppercase tracking-widest text-[#C5B6DE] font-bold">Sample Deliverables</h3>
+            <span className="text-[10px] text-white/40 italic">Swipe to explore</span>
+          </div>
+          
+          <div 
+            onScroll={handleScroll}
+            className="flex overflow-x-auto gap-4 no-scrollbar pb-2 snap-x snap-mandatory cursor-grab active:cursor-grabbing"
           >
-            <Image 
-              src="/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg"
-              alt="Category Preview"
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent" />
-          </motion.div>
-        </div>
+            {samples.map((img: string, idx: number) => (
+              <motion.div 
+                key={idx}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="relative flex-none w-[280px] md:w-[400px] aspect-[4/5] rounded-[10px] overflow-hidden shadow-2xl snap-center border border-white/5"
+              >
+                <Image 
+                  src={img}
+                  alt={`Sample ${idx + 1}`}
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
+              </motion.div>
+            ))}
+          </div>
 
-        <section className="mt-8 mb-10 flex-1">
+          {/* Pagination Dots */}
+          <div className="flex justify-center gap-1.5 mt-4">
+            {samples.map((_: any, idx: number) => (
+              <div 
+                key={idx}
+                className={`h-1 rounded-full transition-all duration-300 ${
+                  activeSample === idx ? "w-6 bg-[#7C4DFF]" : "w-1 bg-white/10"
+                }`}
+              />
+            ))}
+          </div>
+
+          <div className="mt-4 px-1">
+            <p className="font-roboto text-sm text-[#C2C6D6] italic opacity-80 leading-relaxed">
+              {description}
+            </p>
+          </div>
+        </section>
+
+        <section className="mt-4 mb-10 flex-1">
           <div className="flex justify-between items-center mb-6">
             <h2 className="font-roboto font-semibold text-xl leading-[23px] text-white">
               Choose Product Type

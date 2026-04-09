@@ -15,10 +15,10 @@ export default function FinalResultsPage() {
   const style = (params.style as string) || "Ethnic Wear";
 
   const results = [
-    { title: "Front View", image: "/hero_image.png", isVideo: false },
-    { title: "Left View", image: "/category_placeholder.png", isVideo: false },
-    { title: "Side View", image: "/hero_image.png", isVideo: false },
-    { title: "Straight Walk", image: "/category_placeholder.png", isVideo: true },
+    { title: "Prime Render", image: "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg", isVideo: false },
+    { title: "Side View", image: "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg", isVideo: false },
+    { title: "Drape Detail", image: "/assets/ladies/ethnic-wear/ChatGPT Image Apr 1, 2026, 06_21_52 PM.png", isVideo: false },
+    { title: "Slow Turn", image: "/assets/ladies/ethnic-wear/ChatGPT Image Apr 1, 2026, 05_49_51 PM.png", isVideo: true },
   ];
 
   return (
@@ -27,15 +27,15 @@ export default function FinalResultsPage() {
 
       <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
         {/* Step 6: Fully Completed */}
-        <ProgressStepper currentStep={6} />
+        <ProgressStepper currentStep={11} />
 
         {/* Header Message */}
         <div className="text-left w-full mt-8 mb-8">
           <h2 className="font-roboto font-semibold text-[32px] leading-[40px] text-white">
-            Project Summary
+            Photoshoot Complete!
           </h2>
           <p className="font-roboto text-[#99A1AF] text-sm mt-1">
-            All your high-fidelity generations for this project.
+            Your high-fidelity assets are ready for export.
           </p>
         </div>
 

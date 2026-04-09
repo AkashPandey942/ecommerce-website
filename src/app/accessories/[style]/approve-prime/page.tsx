@@ -52,6 +52,15 @@ export default function AccessoriesApprovePrimePage() {
     setFeedback(prev => prev.includes(chip) ? prev.filter(c => c !== chip) : [...prev, chip]);
   };
 
+  const chipPrompts: Record<string, string> = {
+    "Better Lighting": "Remapping photons for high-fidelity studio diffusion...",
+    "Clearer Texture": "Enhancing micro-textural resolution and grain fidelity...",
+    "Natural Shadow": "Recalculating contact shadows and ambient occlusion...",
+    "Correct Proportion": "Adjusting focal length and lens distortion for accuracy...",
+    "Premium Shine": "Adding cinematic specular highlights and high-end luster...",
+    "Minimalist Look": "Simplifying background noise and focusing on product core..."
+  };
+
   const handleApprove = async () => {
     const success = spendCredits(5);
     if (!success) {
@@ -69,7 +78,7 @@ export default function AccessoriesApprovePrimePage() {
       <FlowHeader title="Approve Asset" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
-        <ProgressStepper currentStep={5} />
+        <ProgressStepper currentStep={7} />
 
         <AnimatePresence mode="wait">
           {isGenerating ? (
@@ -96,8 +105,28 @@ export default function AccessoriesApprovePrimePage() {
               animate={{ opacity: 1, y: 0 }}
               className="w-full flex flex-col items-center py-10"
             >
-              <div className="relative w-full max-w-[353px] aspect-square rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(124,77,255,0.2)] border border-white/10 mb-10">
-                <Image src={primeImage} alt="Generated Prime" fill className="object-cover" priority />
+              <div className="relative w-full max-w-[353px] aspect-square rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(124,77,255,0.2)] border border-white/10 mb-10 group">
+                <Image src={primeImage} alt="Generated Prime" fill className="object-cover transition-transform group-hover:scale-105" priority />
+                
+                {/* AI Directive Engine Expansion */}
+                <AnimatePresence>
+                  {feedback.length > 0 && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-x-4 bottom-4 bg-[#7C4DFF]/90 backdrop-blur-md p-3 rounded-xl border border-white/20 z-10"
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <Check className="w-3 h-3 text-white" />
+                        <span className="text-[10px] font-bold uppercase text-white tracking-widest">AI Directive Engine</span>
+                      </div>
+                      <p className="text-[11px] text-white/90 leading-tight">
+                        {chipPrompts[feedback[feedback.length - 1]] || "Refining visual pipeline..."}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Section 6.7: Feedback / Refinement */}
@@ -119,7 +148,7 @@ export default function AccessoriesApprovePrimePage() {
                       onClick={() => toggleFeedback(chip)}
                       className={`px-4 py-2 rounded-full border text-sm transition-all ${
                         feedback.includes(chip) 
-                        ? "bg-figma-gradient border-transparent text-white" 
+                        ? "bg-figma-gradient border-transparent text-white shadow-[0_0_15px_rgba(124,77,255,0.4)]" 
                         : "bg-white/5 border-white/10 text-[#C2C6D6] hover:border-white/30"
                       }`}
                     >
@@ -145,10 +174,7 @@ export default function AccessoriesApprovePrimePage() {
                     onClick={handleApprove}
                     className="w-full h-[61px] rounded-xl text-lg font-bold"
                   >
-                    <div className="flex items-center gap-2">
-                      <Check className="w-5 h-5" />
-                      <span>Approve & Spend 5 Credits</span>
-                    </div>
+                    Approve & Save (5 Credits)
                   </LoadingActionButton>
 
                   <button 
@@ -156,11 +182,12 @@ export default function AccessoriesApprovePrimePage() {
                       const success = spendCredits(1);
                       if (success) {
                         setIsGenerating(true);
+                        setFeedback([]);
                       } else {
                         alert("Insufficient credits. Please top up.");
                       }
                     }} 
-                    className="w-full h-[54px] rounded-xl border border-white/10 bg-white/5 flex items-center justify-center gap-2 hover:bg-white/10 transition-all text-white/60"
+                    className="w-full h-[54px] rounded-xl border border-white/10 bg-white/5 flex items-center justify-center gap-2 hover:bg-white/10 transition-all text-white/40"
                   >
                     <RefreshCcw className="w-4 h-4" />
                     <span className="font-medium text-[14px]">Regenerate (1 Credit)</span>

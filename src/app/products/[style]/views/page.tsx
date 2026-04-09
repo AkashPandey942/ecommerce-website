@@ -9,21 +9,30 @@ import Image from "next/image";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import LoadingActionButton from "@/components/LoadingActionButton";
+import { TAXONOMY } from "@/registry/taxonomy";
 
 export default function ProductsOutputViewsPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const style = (params.style as string) || "home";
-  const product = searchParams.get("product") || "Vase";
+  const styleParam = (params.style as string) || "home";
+  const product = searchParams.get("product") || "Product";
 
-  const views = [
-    { id: "front", title: "Main Frontal", image: "/home_products.png" },
-    { id: "angle", title: "45 Degree", image: "/home_products.png" },
-    { id: "top", title: "Top Perspective", image: "/home_products.png" },
-    { id: "label", title: "Label Detail", image: "/home_products.png" },
-    { id: "living", title: "Living Room", image: "/home_products.png" },
-  ];
+  const getRecommendedViews = () => {
+    // Find style in products (family format in taxonomy)
+    const matchedFamily = TAXONOMY.products.families.find(
+      (f: any) => f.title.toLowerCase().replace(/\s+/g, '-') === styleParam.toLowerCase() || f.leafNodes?.some((node: string) => node.toLowerCase() === product.toLowerCase())
+    );
+    
+    const viewTitles = matchedFamily?.recommendedViews || ["Front View", "Staged Setting", "Texture Detail"];
+    return viewTitles.map((title: string) => ({
+      id: title.toLowerCase().replace(/\s+/g, '-'),
+      title,
+      image: matchedFamily?.image || "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg"
+    }));
+  };
+
+  const views = getRecommendedViews();
 
   const [selectedViews, setSelectedViews] = useState<string[]>([]);
   const [isCustomMode, setIsCustomMode] = useState(false);
@@ -31,14 +40,15 @@ export default function ProductsOutputViewsPage() {
 
   const toggleView = (id: string) => {
     setSelectedViews(prev => 
-      prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]
+      prev.includes(id) ? (prev as string[]).filter(v => v !== id) : [...prev, id]
     );
   };
+
 
   const handleGenerate = async () => {
     setIsGenerating(true);
     await new Promise(resolve => setTimeout(resolve, 2000));
-    router.push(`/products/${style}/result?product=${product}`);
+    router.push(`/products/${styleParam}/result?product=${product}`);
   };
 
   return (
@@ -46,7 +56,7 @@ export default function ProductsOutputViewsPage() {
       <FlowHeader title="Generation Pack" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
-        <ProgressStepper currentStep={6} />
+        <ProgressStepper currentStep={9} />
 
         <section className="mt-8 mb-10">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -60,7 +70,7 @@ export default function ProductsOutputViewsPage() {
         </section>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {views.map((view, idx) => {
+          {views.map((view: any, idx: number) => {
             const isSelected = selectedViews.includes(view.id);
             return (
               <motion.div
@@ -90,6 +100,7 @@ export default function ProductsOutputViewsPage() {
               </motion.div>
             );
           })}
+
 
           {!isCustomMode && (
             <motion.div

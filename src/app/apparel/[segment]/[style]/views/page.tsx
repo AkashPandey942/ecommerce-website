@@ -10,22 +10,32 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import LoadingActionButton from "@/components/LoadingActionButton";
 import FlowHeader from "@/components/FlowHeader";
+import { TAXONOMY } from "@/registry/taxonomy";
 
 export default function SelectOutputViewsPage() {
   const params = useParams();
   const router = useRouter();
-  const segment = (params.segment as string) || "Ladies";
-  const style = (params.style as string) || "Ethnic Wear";
+  const segment = (params.segment as string) || "ladies";
+  const styleParam = (params.style as string) || "ethnic-wear";
 
-  // Mock mapping for ethnic wear views based on Figma
-  const views = [
-    { id: "front", title: "Front View", image: "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg" },
-    { id: "left", title: "Left View", image: "/assets/ladies/ethnic-wear/ChatGPT%20Image%20Apr%201,%202026,%2005_49_51%20PM.png" },
-    { id: "right", title: "Right View", image: "/assets/ladies/ethnic-wear/ChatGPT%20Image%20Apr%201,%202026,%2005_51_40%20PM.png" },
-    { id: "closeup", title: "Close-up", image: "/assets/ladies/ethnic-wear/ChatGPT%20Image%20Apr%201,%202026,%2006_05_22%20PM.png" },
-    { id: "detail", title: "Detail Shot", image: "/assets/ladies/ethnic-wear/ChatGPT%20Image%20Apr%201,%202026,%2006_21_52%20PM.png" },
-  ];
+  const getRecommendedViews = () => {
+    const s = segment.charAt(0).toUpperCase() + segment.slice(1).toLowerCase();
+    const styleKey = styleParam.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    
+    const styles = TAXONOMY.apparel.styles[s] || [];
+    const matchedStyle = styles.find((st: any) => st.title === styleKey);
+    
+    const viewTitles = matchedStyle?.recommendedViews || ["Front View", "Side View", "Detail shot"];
+    return viewTitles.map((title: string) => ({
+      id: title.toLowerCase().replace(/\s+/g, '-'),
+      title,
+      image: matchedStyle?.samples?.[0] || "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg"
+    }));
+  };
 
+  const views = getRecommendedViews();
+
+  // Rule 6.8: Pre-select sensible bundle
   const [selectedViews, setSelectedViews] = useState<string[]>([]);
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +43,7 @@ export default function SelectOutputViewsPage() {
   const handleGenerate = async () => {
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 2000));
-    router.push(`/apparel/${segment}/${style}/result`);
+    router.push(`/apparel/${segment}/${styleParam}/final-results`);
   };
 
   const toggleView = (id: string) => {
@@ -48,7 +58,7 @@ export default function SelectOutputViewsPage() {
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
         {/* Step 7: Alternate Views selection */}
-        <ProgressStepper currentStep={6} />
+        <ProgressStepper currentStep={9} />
 
         {/* Heading Section */}
         <section className="mt-8 mb-10">
@@ -68,7 +78,7 @@ export default function SelectOutputViewsPage() {
 
         {/* Views Grid (2-column mobile, responsive desktop) */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {views.map((view, idx) => {
+          {views.map((view: any, idx: number) => {
             const isSelected = selectedViews.includes(view.id);
             return (
               <motion.div

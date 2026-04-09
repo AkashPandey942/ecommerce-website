@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Coins } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -45,15 +46,17 @@ const TopNav = () => {
           </div>
 
           {/* Profile Avatar (Ellipse 1) */}
-          <div className="w-[45px] h-[45px] rounded-full border border-[#2F2751] overflow-hidden">
-            <Image
-              src="/profile_avatar_placeholder.png"
-              alt="Profile"
-              width={45}
-              height={45}
-              className="object-cover"
-             loading="lazy" />
-          </div>
+          <Link href="/profile">
+            <div className="w-[45px] h-[45px] rounded-full border border-[#2F2751] overflow-hidden cursor-pointer hover:border-[#7C4DFF]/50 transition-all">
+              <Image
+                src="/profile_avatar_placeholder.png"
+                alt="Profile"
+                width={45}
+                height={45}
+                className="object-cover"
+                loading="lazy" />
+            </div>
+          </Link>
         </div>
       </div>
     </header>

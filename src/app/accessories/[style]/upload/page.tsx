@@ -54,14 +54,14 @@ export default function AccessoriesUnifiedSetupPage() {
       <FlowHeader title="AI Setup" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
-        <ProgressStepper currentStep={4} />
+        <ProgressStepper currentStep={5} />
 
         <div className="flex flex-col gap-12 mt-10 mb-20">
           {/* Section 6.5: Upload + Preset Selection */}
           <section>
             <div className="mb-6">
-              <h1 className="font-roboto font-semibold text-2xl text-white mb-2capitalize">{product} Setup</h1>
-              <p className="text-sm text-[#99A1AF]">Upload your raw product image for {style}</p>
+              <h1 className="font-roboto font-semibold text-2xl text-white mb-2 uppercase tracking-wide">{product} Setup</h1>
+              <p className="text-sm text-[#99A1AF]">Upload your raw product image for {style.charAt(0).toUpperCase() + style.slice(1)}</p>
             </div>
             <UploadZone />
           </section>
