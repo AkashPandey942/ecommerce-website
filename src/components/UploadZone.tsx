@@ -52,8 +52,8 @@ const UploadZone = () => {
         whileHover={!selectedImage ? { borderColor: "rgba(124,77,255,0.8)" } : {}}
         onClick={() => !selectedImage && fileInputRef.current?.click()}
         className={`relative w-full bg-[#2E1C4D] border ${
-          selectedImage ? "border-transparent p-0 overflow-hidden" : "border-dashed border-[#46277C] px-5 pt-7 pb-6"
-        } rounded-[14px] flex flex-col items-center justify-center cursor-pointer transition-colors gap-0 min-h-[260px]`}
+          selectedImage ? "border-transparent p-0 overflow-hidden h-[260px]" : "border-dashed border-[#46277C] px-5 pt-7 pb-6 min-h-[260px]"
+        } rounded-[14px] flex flex-col items-center justify-center cursor-pointer transition-colors gap-0`}
       >
         <AnimatePresence mode="wait">
           {selectedImage ? (
@@ -70,6 +70,7 @@ const UploadZone = () => {
                 fill 
                 className="object-cover" 
                 loading="lazy"
+                unoptimized
               />
               <button
                 onClick={clearImage}

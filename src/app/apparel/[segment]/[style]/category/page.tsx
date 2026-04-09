@@ -71,12 +71,14 @@ export default function CategorySelectionPage() {
         {/* SaaS Step 3: Gallery Carousel */}
         <section className="mb-8">
           <div className="flex items-center justify-between mb-3 px-1">
-            <h3 className="text-[10px] uppercase tracking-widest text-[#C5B6DE] font-bold">Sample Deliverables</h3>
-            <span className="text-[10px] text-white/40 italic">Swipe to explore</span>
+            <h3 className="text-[10px] uppercase tracking-widest text-[#AF8CFF] font-bold">Sample Deliverables</h3>
+            <span className="text-[10px] text-white/70 italic" aria-hidden="true">Swipe to explore</span>
           </div>
           
           <div 
             onScroll={handleScroll}
+            role="region"
+            aria-label="Sample image gallery"
             className="flex overflow-x-auto gap-4 no-scrollbar pb-2 snap-x snap-mandatory cursor-grab active:cursor-grabbing"
           >
             {samples.map((img: string, idx: number) => (
@@ -89,20 +91,23 @@ export default function CategorySelectionPage() {
               >
                 <Image 
                   src={img}
-                  alt={`Sample ${idx + 1}`}
+                  alt={`High-fidelity sample shoot ${idx + 1}`}
                   fill
                   className="object-cover"
                 />
-                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" aria-hidden="true" />
               </motion.div>
             ))}
           </div>
 
           {/* Pagination Dots */}
-          <div className="flex justify-center gap-1.5 mt-4">
+          <div className="flex justify-center gap-1.5 mt-4" role="tablist" aria-label="Gallery pagination">
             {samples.map((_: any, idx: number) => (
               <div 
                 key={idx}
+                role="tab"
+                aria-selected={activeSample === idx}
+                aria-label={`Go to sample ${idx + 1}`}
                 className={`h-1 rounded-full transition-all duration-300 ${
                   activeSample === idx ? "w-6 bg-[#7C4DFF]" : "w-1 bg-white/10"
                 }`}

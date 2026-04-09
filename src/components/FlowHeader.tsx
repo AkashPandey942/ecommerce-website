@@ -49,9 +49,10 @@ const FlowHeader = ({ title, showBack = true }: FlowHeaderProps) => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => router.back()}
+                aria-label="Go back to previous step"
                 className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all group"
               >
-                <ChevronLeft className="w-5 h-5 text-white group-hover:-translate-x-0.5 transition-transform" />
+                <ChevronLeft className="w-5 h-5 text-white group-hover:-translate-x-0.5 transition-transform" aria-hidden="true" />
               </motion.button>
             )}
             
@@ -68,20 +69,25 @@ const FlowHeader = ({ title, showBack = true }: FlowHeaderProps) => {
           </div>
 
           <div className="flex items-center gap-2 md:gap-6">
-            <div className="flex items-center gap-2 px-2 md:px-3 py-1.5 rounded-full bg-[#1A1E29] border border-[#7C4DFF]/30 shadow-[0_0_15px_rgba(124,77,255,0.15)]">
-              <Wallet className="w-3.5 h-3.5 md:w-4 h-4 text-[#7C4DFF]" />
-              <span className="font-roboto font-bold text-xs md:text-sm text-white">
+            <div
+              role="status"
+              aria-label={`${credits} credits remaining`}
+              className="flex items-center gap-2 px-2 md:px-3 py-1.5 rounded-full bg-[#1A1E29] border border-[#7C4DFF]/30 shadow-[0_0_15px_rgba(124,77,255,0.15)]"
+            >
+              <Wallet className="w-3.5 h-3.5 md:w-4 h-4 text-[#7C4DFF]" aria-hidden="true" />
+              <span className="font-roboto font-bold text-xs md:text-sm text-white" aria-hidden="true">
                 {credits} <span className="hidden sm:inline text-[#C2C6D6]/60 font-normal ml-0.5">Credits</span>
               </span>
             </div>
 
-            <Link href="/profile">
+            <Link href="/profile" aria-label="View your profile">
               <motion.div 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#EC4899] flex items-center justify-center shadow-lg"
+                aria-hidden="true"
               >
-                <span className="font-bold text-xs md:text-base text-white">AG</span>
+                <span className="font-bold text-xs md:text-base text-white" aria-hidden="true">AG</span>
               </motion.div>
             </Link>
           </div>

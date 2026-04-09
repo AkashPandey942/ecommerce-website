@@ -21,26 +21,35 @@ const BackgroundGrid = ({ selectedTitle, onSelect, onPreview }: BackgroundGridPr
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 pb-4">
+    <div
+      role="radiogroup"
+      aria-label="Select a background style"
+      className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 pb-4"
+    >
       {backgrounds.map((bg, idx) => {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const interaction = useInteraction({
-          onSingleClick: () => onSelect(bg),
-          onDoubleClick: () => onPreview?.(bg),
-          onLongPress: () => onPreview?.(bg),
-        });
-
+        const isSelected = selectedTitle === bg.title;
         return (
-          <motion.div
+          <motion.button
             key={idx}
-            {...interaction}
+            type="button"
+            role="radio"
+            aria-checked={isSelected}
+            aria-label={`${bg.title}${isSelected ? " (selected)" : ""}`}
+            onClick={() => onSelect(bg)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onSelect(bg);
+              }
+            }}
+            onDoubleClick={() => onPreview?.(bg)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="relative flex flex-col gap-2 group cursor-pointer"
+            className="relative flex flex-col gap-2 group cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7C4DFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-[6px]"
           >
-            {/* Image Container (Rectangle 45/etc) */}
+            {/* Image Container */}
             <div className={`relative w-full aspect-[111/99] rounded-[6px] overflow-hidden border transition-all ${
-              selectedTitle === bg.title ? "border-[#7C4DFF]" : "border-white/5 group-hover:border-[#7C4DFF]"
+              isSelected ? "border-[#7C4DFF]" : "border-white/5 group-hover:border-[#7C4DFF]"
             }`}>
               <Image
                 src={bg.image}
@@ -51,13 +60,13 @@ const BackgroundGrid = ({ selectedTitle, onSelect, onPreview }: BackgroundGridPr
               />
             </div>
             
-            {/* Label (Group 15/48/49/etc) */}
+            {/* Label */}
             <span className={`font-roboto font-medium text-[13px] leading-[15px] text-center transition-colors ${
-              selectedTitle === bg.title ? "text-[#7C4DFF]" : "text-white"
+              isSelected ? "text-[#7C4DFF]" : "text-white"
             }`}>
               {bg.title}
             </span>
-          </motion.div>
+          </motion.button>
         );
       })}
     </div>

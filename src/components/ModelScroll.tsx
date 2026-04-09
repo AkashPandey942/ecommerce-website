@@ -26,41 +26,52 @@ const ModelScroll = ({ selectedId, onSelect, onPreview }: ModelScrollProps) => {
   ];
 
   return (
-    <div className="w-full flex items-center justify-start gap-[10px] overflow-x-auto no-scrollbar scroll-smooth">
+    <div
+      role="radiogroup"
+      aria-label="Select a model"
+      className="w-full flex items-center justify-start gap-[10px] overflow-x-auto no-scrollbar scroll-smooth"
+    >
       {models.map((model) => {
-        // Use custom interaction hook for each model item
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const interaction = useInteraction({
-          onSingleClick: () => onSelect(model),
-          onDoubleClick: () => onPreview?.(model),
-          onLongPress: () => onPreview?.(model),
-        });
-
+        const isSelected = selectedId === model.id;
         return (
-          <motion.div
+          <motion.button
             key={model.id}
-            {...interaction}
+            type="button"
+            role="radio"
+            aria-checked={isSelected}
+            aria-label={`Model ${model.id}${isSelected ? " (selected)" : ""}`}
+            onClick={() => onSelect(model)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onSelect(model);
+              }
+            }}
+            onDoubleClick={() => onPreview?.(model)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className={`relative w-[131px] h-[169px] rounded-md overflow-hidden flex-none group cursor-pointer border transition-all ${
-              selectedId === model.id ? "border-[#7C4DFF]" : "border-white/5 shadow-inner"
+            className={`relative w-[131px] h-[169px] rounded-md overflow-hidden flex-none group cursor-pointer border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7C4DFF] focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
+              isSelected ? "border-[#7C4DFF]" : "border-white/5 shadow-inner"
             }`}
           >
             <Image
               src={model.image}
-              alt={`Model ${model.id}`}
+              alt={`Model option ${model.id}`}
               fill
               className="object-cover"
               loading="lazy"
             />
             
-            {/* Selection Indicator (Group 60/61 etc) - Only visible on selected/hover */}
-            <div className={`absolute top-1.5 right-1.5 w-[15px] h-[15px] rounded-sm bg-gradient-to-br from-[#00C2FF] via-[#7C4DFF] to-[#FF00C7] flex items-center justify-center transition-opacity ${
-              selectedId === model.id ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-            }`}>
+            {/* Selection Indicator */}
+            <div
+              aria-hidden="true"
+              className={`absolute top-1.5 right-1.5 w-[15px] h-[15px] rounded-sm bg-gradient-to-br from-[#00C2FF] via-[#7C4DFF] to-[#FF00C7] flex items-center justify-center transition-opacity ${
+                isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              }`}
+            >
               <Check className="w-[10px] h-[10px] text-white" />
             </div>
-          </motion.div>
+          </motion.button>
         );
       })}
     </div>

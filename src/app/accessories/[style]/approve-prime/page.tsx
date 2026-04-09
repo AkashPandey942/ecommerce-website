@@ -45,7 +45,7 @@ export default function AccessoriesApprovePrimePage() {
   }, []);
 
   const feedbackChips = [
-    "Better Lighting", "Clearer Texture", "Natural Shadow", "Correct Proportion", "Premium Shine", "Minimalist Look"
+    "Better Lighting", "Clearer Texture", "Natural Shadow", "Correct Proportion", "Premium Shine", "Studio Finish"
   ];
 
   const toggleFeedback = (chip: string) => {
@@ -58,7 +58,7 @@ export default function AccessoriesApprovePrimePage() {
     "Natural Shadow": "Recalculating contact shadows and ambient occlusion...",
     "Correct Proportion": "Adjusting focal length and lens distortion for accuracy...",
     "Premium Shine": "Adding cinematic specular highlights and high-end luster...",
-    "Minimalist Look": "Simplifying background noise and focusing on product core..."
+    "Studio Finish": "Optimizing background exposure for a clean marketplace look..."
   };
 
   const handleApprove = async () => {
@@ -187,9 +187,10 @@ export default function AccessoriesApprovePrimePage() {
                         alert("Insufficient credits. Please top up.");
                       }
                     }} 
-                    className="w-full h-[54px] rounded-xl border border-white/10 bg-white/5 flex items-center justify-center gap-2 hover:bg-white/10 transition-all text-white/40"
+                    aria-label="Regenerate this image for 1 credit"
+                    className="w-full h-[54px] rounded-xl border border-white/10 bg-white/5 flex items-center justify-center gap-2 hover:bg-white/10 transition-all text-white/65"
                   >
-                    <RefreshCcw className="w-4 h-4" />
+                    <RefreshCcw className="w-4 h-4" aria-hidden="true" />
                     <span className="font-medium text-[14px]">Regenerate (1 Credit)</span>
                   </button>
                 </div>

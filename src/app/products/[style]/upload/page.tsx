@@ -53,9 +53,9 @@ export default function ProductsUnifiedSetupPage() {
 
         <div className="flex flex-col gap-12 mt-10 mb-20">
           {/* Section 6.5: Upload + Preset Selection */}
-          <section>
+          <section aria-labelledby="upload-section-title">
             <div className="mb-6">
-              <h1 className="font-roboto font-semibold text-2xl text-white mb-2 capitalize">{product} Setup</h1>
+              <h1 id="upload-section-title" className="font-roboto font-semibold text-2xl text-white mb-2 capitalize">{product} Setup</h1>
               <p className="text-sm text-[#99A1AF]">Upload your product for {style} shoot</p>
             </div>
             <UploadZone />
@@ -64,8 +64,8 @@ export default function ProductsUnifiedSetupPage() {
           {/* Model is optional for Products, usually only for Lifestyle. For V1 we skip ModelScroll for Products unless it's a model-based scene. */}
           {/* We'll skip ModelScroll here to differentiate from Apparel/Jewellery and keep it "Compact" */}
 
-          <section>
-            <h2 className="font-roboto font-semibold text-xl text-white mb-6">Environment Style</h2>
+          <section aria-labelledby="env-section-title">
+            <h2 id="env-section-title" className="font-roboto font-semibold text-xl text-white mb-6">Environment Style</h2>
             <BackgroundGrid 
               selectedTitle={selectedBackground} 
               onSelect={(bg) => setSelectedBackground(bg.title)}
@@ -73,8 +73,8 @@ export default function ProductsUnifiedSetupPage() {
             />
           </section>
 
-          <section>
-            <h2 className="font-roboto font-semibold text-xl text-white mb-6">Output Aesthetic</h2>
+          <section aria-labelledby="output-section-title">
+            <h2 id="output-section-title" className="font-roboto font-semibold text-xl text-white mb-6">Output Aesthetic</h2>
             <div className="flex flex-wrap gap-3">
               {outputStyles.map((item) => (
                 <ProductTag 
