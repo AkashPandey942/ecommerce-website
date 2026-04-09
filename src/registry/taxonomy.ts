@@ -17,9 +17,9 @@ export const TAXONOMY: Record<string, any> = {
           image: "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg", 
           leafNodes: ["Saree", "Kurti", "Kurta Set", "Salwar Suit", "Lehenga", "Dupatta Set", "Blouse", "Other"],
           samples: [
-            "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg",
             "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg",
-            "/assets/ladies/ethnic-wear/ChatGPT Image Apr 1, 2026, 05_49_51 PM.png"
+            "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg",
+            "/hero_image.png"
           ],
           recommendedViews: ["Front View", "Left View", "Right View", "Back View", "Drape Detail", "Border Close-up"]
         },

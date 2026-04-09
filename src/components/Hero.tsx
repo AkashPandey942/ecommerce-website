@@ -58,7 +58,11 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative w-full max-w-[353px] lg:max-w-7xl h-[261px] lg:h-[450px] mx-auto mt-[119px] mb-8 group">
+    <section
+      aria-label="Featured showcase carousel"
+      aria-roledescription="carousel"
+      className="relative w-full max-w-[353px] lg:max-w-7xl h-[261px] lg:h-[450px] mx-auto mt-[119px] mb-8 group"
+    >
       {/* Hero Banner Container */}
       <div className="relative w-full h-[247px] lg:h-[420px] overflow-hidden rounded-[20px] glass shadow-2xl">
         <AnimatePresence initial={false} custom={direction}>
@@ -99,24 +103,29 @@ const Hero = () => {
         {/* Navigation Arrows (Hidden on mobile, visible on desktop hover) */}
         <button
           onClick={handlePrev}
+          aria-label="Previous slide"
           className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 border border-white/20 backdrop-blur-md hidden lg:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60 z-10"
         >
-          <ChevronLeft className="w-5 h-5 text-white" />
+          <ChevronLeft className="w-5 h-5 text-white" aria-hidden="true" />
         </button>
         <button
           onClick={handleNext}
+          aria-label="Next slide"
           className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 border border-white/20 backdrop-blur-md hidden lg:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60 z-10"
         >
-          <ChevronRight className="w-5 h-5 text-white" />
+          <ChevronRight className="w-5 h-5 text-white" aria-hidden="true" />
         </button>
       </div>
 
       {/* Pagination Indicators */}
-      <div className="absolute bottom-0 left-0 right-0 flex justify-center items-center gap-1.5 h-[14px]">
+      <div className="absolute bottom-0 left-0 right-0 flex justify-center items-center gap-1.5 h-[14px]" role="tablist" aria-label="Carousel slides">
         {carouselImages.map((_, idx) => (
           <button
             key={idx}
+            role="tab"
             onClick={() => setStep(idx)}
+            aria-label={`Go to slide ${idx + 1}`}
+            aria-selected={idx === currentIndex}
             className={`h-[7px] rounded-full transition-all duration-300 ${
               idx === currentIndex
                 ? "w-[24.5px] bg-figma-gradient"

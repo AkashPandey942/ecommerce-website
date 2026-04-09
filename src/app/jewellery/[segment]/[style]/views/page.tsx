@@ -29,7 +29,10 @@ export default function JewelleryOutputViewsPage() {
 
   const views = getRecommendedViews();
 
-  const [selectedViews, setSelectedViews] = useState<string[]>([]);
+  // Rule 6.8: Pre-select sensible bundle (First 3 recommended views)
+  const [selectedViews, setSelectedViews] = useState<string[]>(
+    views.slice(0, 3).map((v: any) => v.id)
+  );
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -39,7 +42,7 @@ export default function JewelleryOutputViewsPage() {
   const handleGenerate = async () => {
     setIsGenerating(true);
     await new Promise(resolve => setTimeout(resolve, 2000));
-    router.push(`/jewellery/${segment}/${styleParam}/result`);
+    router.push(`/jewellery/${segment}/${styleParam}/video-style`);
   };
 
   const toggleView = (id: string) => {

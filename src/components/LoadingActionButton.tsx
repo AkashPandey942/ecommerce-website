@@ -37,6 +37,8 @@ const LoadingActionButton = ({
       type={type}
       disabled={disabled || isLoading}
       onClick={onClick}
+      aria-busy={isLoading}
+      aria-disabled={disabled || isLoading}
       whileHover={!disabled && !isLoading ? { 
         scale: 1.02,
         boxShadow: "0 0 40px rgba(124, 77, 255, 0.6)"
@@ -49,13 +51,13 @@ const LoadingActionButton = ({
         className="relative z-10 flex items-center justify-center gap-2"
       >
         {isLoading ? (
-          <div className="flex items-center gap-3">
-            <Loader2 className="w-5 h-5 animate-spin text-white" />
+          <div className="flex items-center gap-3" role="status" aria-live="polite">
+            <Loader2 className="w-5 h-5 animate-spin text-white" aria-hidden="true" />
             <span className="opacity-80">Processing...</span>
           </div>
         ) : (
           <>
-            {icon && <span className="flex-shrink-0">{icon}</span>}
+            {icon && <span className="flex-shrink-0" aria-hidden="true">{icon}</span>}
             {children}
           </>
         )}
@@ -67,6 +69,7 @@ const LoadingActionButton = ({
         whileHover={{ x: "100%" }}
         transition={{ duration: 0.6, ease: "easeInOut" }}
         className="absolute inset-0 z-20 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none"
+        aria-hidden="true"
       />
     </motion.button>
   );

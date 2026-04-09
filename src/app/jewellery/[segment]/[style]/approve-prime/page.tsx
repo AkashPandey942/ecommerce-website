@@ -27,10 +27,10 @@ export default function JewelleryApprovePrimePage() {
   const chipPrompts: Record<string, string> = {
     "More Brilliance": "Calculating ray-tracing refractive indices for diamond facets...",
     "True Gold Tone": "Calibrating 22k/18k color temperature for premium luster...",
-    "Better Skin Match": "Averaging sub-surface scattering for natural model integration...",
+    "Jewelry Alignment": "Correcting piece positioning for anatomically precise model placement...",
     "Sharper Focus": "Adjusting depth-of-field focus stacking for microscopic detail...",
     "Less Shadow": "Deploying virtual diffusion panels for soft-lit studio look...",
-    "Antique Patina": "Adding procedural oxidation and heritage finish layers..."
+    "Natural Skin Tone": "Averaging sub-surface scattering for high-fidelity model integration..."
   };
 
   useEffect(() => {
@@ -200,9 +200,10 @@ export default function JewelleryApprovePrimePage() {
                       alert("Insufficient credits. Please top up.");
                     }
                   }}
-                  className="flex items-center justify-center gap-2 h-14 rounded-full border border-white/10 text-white/40 hover:text-white transition-all hover:bg-white/5 bg-white/[0.02]"
+                  aria-label="Regenerate this image for 1 credit"
+                  className="flex items-center justify-center gap-2 h-14 rounded-full border border-white/10 text-white/65 hover:text-white transition-all hover:bg-white/5 bg-white/[0.02]"
                 >
-                  <RefreshCcw className="w-4 h-4" />
+                  <RefreshCcw className="w-4 h-4" aria-hidden="true" />
                   <span className="font-medium text-[14px]">Regenerate (1 Credit)</span>
                 </button>
               </div>

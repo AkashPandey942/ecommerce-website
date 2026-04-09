@@ -21,6 +21,37 @@ export default function FinalResultsPage() {
     { title: "Slow Turn", image: "/assets/ladies/ethnic-wear/ChatGPT Image Apr 1, 2026, 05_49_51 PM.png", isVideo: true },
   ];
 
+  const ResultCard = ({ res, idx }: { res: typeof results[0], idx: number }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: idx * 0.1 }}
+      className="flex flex-col items-center gap-3 w-full"
+    >
+      <div className="relative w-full aspect-[166/207] bg-[#1A1E29] rounded-[10px] overflow-hidden border border-white/5 shadow-xl group cursor-pointer hover:border-[#7C4DFF]/30 transition-all">
+        <Image
+          src={res.image}
+          alt={res.title}
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          loading="lazy" 
+        />
+        
+        {res.isVideo && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+            <div className="w-[44px] h-[44px] rounded-full bg-figma-gradient flex items-center justify-center shadow-lg">
+              <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+            </div>
+          </div>
+        )}
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+      </div>
+      <span className="font-roboto font-medium text-[13px] leading-[15px] text-center text-[#E2E2E8]">
+        {res.title}
+      </span>
+    </motion.div>
+  );
+
   return (
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 pb-[100px] lg:pb-0">
       <FlowHeader title="Results" />
@@ -39,41 +70,33 @@ export default function FinalResultsPage() {
           </p>
         </div>
 
-        {/* 2-Column Grid of Results (Rectangle 27 Style) */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 w-full">
-          {results.map((res, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              className="flex flex-col items-center gap-3"
-            >
-              <div className="relative w-full aspect-[166/207] bg-[#1A1E29] rounded-[10px] overflow-hidden border border-white/5 shadow-xl group cursor-pointer hover:border-[#7C4DFF]/30 transition-all">
-                <Image
-                  src={res.image}
-                  alt={res.title}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                 loading="lazy" />
-                
-                {/* Video Play Overlay */}
-                {res.isVideo && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                    <div className="w-[44px] h-[44px] rounded-full bg-figma-gradient flex items-center justify-center shadow-lg">
-                      <Play className="w-5 h-5 text-white fill-white ml-0.5" />
-                    </div>
-                  </div>
-                )}
+        {/* Results Sections Grouped by Type (Rule 6.10) */}
+        <div className="w-full flex flex-col gap-12">
+          {/* Images Section */}
+          <section>
+            <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-2">
+              <h3 className="font-roboto font-semibold text-lg text-white">Image Assets</h3>
+              <span className="text-xs text-[#99A1AF] bg-white/5 py-1 px-2 rounded-md">{results.filter(r => !r.isVideo).length} Files</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 min-h-[220px]">
+              {results.filter(r => !r.isVideo).map((res, idx) => (
+                <ResultCard key={idx} res={res} idx={idx} />
+              ))}
+            </div>
+          </section>
 
-                {/* Subtle Gradient Backdrop for Title */}
-                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
-              </div>
-              <span className="font-roboto font-medium text-[13px] leading-[15px] text-center text-[#E2E2E8]">
-                {res.title}
-              </span>
-            </motion.div>
-          ))}
+          {/* Videos Section */}
+          <section>
+            <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-2">
+              <h3 className="font-roboto font-semibold text-lg text-white">Motion Synthesis (Step 10)</h3>
+              <span className="text-xs text-[#99A1AF] bg-white/5 py-1 px-2 rounded-md">{results.filter(r => r.isVideo).length} Files</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+              {results.filter(r => r.isVideo).map((res, idx) => (
+                <ResultCard key={idx} res={res} idx={idx} />
+              ))}
+            </div>
+          </section>
         </div>
 
         {/* Dashboard Actions */}

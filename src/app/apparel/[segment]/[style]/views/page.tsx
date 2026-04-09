@@ -35,15 +35,17 @@ export default function SelectOutputViewsPage() {
 
   const views = getRecommendedViews();
 
-  // Rule 6.8: Pre-select sensible bundle
-  const [selectedViews, setSelectedViews] = useState<string[]>([]);
+  // Rule 6.8: Pre-select sensible bundle (First 3 recommended views)
+  const [selectedViews, setSelectedViews] = useState<string[]>(
+    views.slice(0, 3).map((v: any) => v.id)
+  );
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGenerate = async () => {
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 2000));
-    router.push(`/apparel/${segment}/${styleParam}/final-results`);
+    router.push(`/apparel/${segment}/${styleParam}/video-style`);
   };
 
   const toggleView = (id: string) => {

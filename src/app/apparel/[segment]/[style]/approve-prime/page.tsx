@@ -25,7 +25,7 @@ export default function ApprovePrimeImagePage() {
   const { spendCredits } = useProject();
 
   const feedbackChips = [
-    "Better Drape", "Clearer Border", "Premium Glow", "Natural Face", "Better Lighting", "Sharper Detail"
+    "Better Drape", "Clearer Border", "Premium Studio Look", "Face More Natural", "Better Lighting", "More Catalog-Safe"
   ];
 
   useEffect(() => {
@@ -203,9 +203,10 @@ export default function ApprovePrimeImagePage() {
                       alert("Insufficient credits. Please top up.");
                     }
                   }}
-                  className="flex items-center justify-center gap-2 h-14 rounded-full border border-white/10 text-white/40 hover:text-white transition-all hover:bg-white/5 bg-white/[0.02]"
+                  aria-label="Regenerate this image for 1 credit"
+                  className="flex items-center justify-center gap-2 h-14 rounded-full border border-white/10 text-white/65 hover:text-white transition-all hover:bg-white/5 bg-white/[0.02]"
                 >
-                  <RefreshCcw className="w-4 h-4" />
+                  <RefreshCcw className="w-4 h-4" aria-hidden="true" />
                   <span className="font-medium text-[14px]">Regenerate (1 Credit)</span>
                 </button>
               </div>

@@ -78,17 +78,17 @@ export default function JewelleryUnifiedSetupPage() {
 
         <div className="flex flex-col gap-12 mt-10 mb-20">
           {/* 1. Upload Product Image */}
-          <section>
+          <section aria-labelledby="upload-section-title">
             <div className="mb-6">
-              <h1 className="font-roboto font-semibold text-2xl text-white mb-2">Upload Jewellery</h1>
+              <h1 id="upload-section-title" className="font-roboto font-semibold text-2xl text-white mb-2">Upload Jewellery</h1>
               <p className="text-sm text-[#99A1AF]">Upload a clear photo of your piece.</p>
             </div>
             <UploadZone />
           </section>
 
           {/* 2. Select Model */}
-          <section>
-            <h2 className="font-roboto font-semibold text-xl text-white mb-6">Select Model</h2>
+          <section aria-labelledby="model-section-title">
+            <h2 id="model-section-title" className="font-roboto font-semibold text-xl text-white mb-6">Select Model</h2>
             <div className="-mx-5 px-5">
               <ModelScroll 
                 selectedId={selectedModel} 
@@ -99,8 +99,8 @@ export default function JewelleryUnifiedSetupPage() {
           </section>
 
           {/* 3. Environment */}
-          <section>
-            <h2 className="font-roboto font-semibold text-xl text-white mb-6">Environment</h2>
+          <section aria-labelledby="env-section-title">
+            <h2 id="env-section-title" className="font-roboto font-semibold text-xl text-white mb-6">Environment</h2>
             <BackgroundGrid 
               selectedTitle={selectedBackground} 
               onSelect={handleBackgroundSelect}
@@ -109,8 +109,8 @@ export default function JewelleryUnifiedSetupPage() {
           </section>
 
           {/* 4. Output Style */}
-          <section>
-            <h2 className="font-roboto font-semibold text-xl text-white mb-6">Output Style</h2>
+          <section aria-labelledby="output-section-title">
+            <h2 id="output-section-title" className="font-roboto font-semibold text-xl text-white mb-6">Output Style</h2>
             <div className="flex flex-wrap gap-3">
               {outputStyles.map((item) => (
                 <ProductTag 

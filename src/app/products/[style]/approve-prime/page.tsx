@@ -44,8 +44,8 @@ export default function ProductsApprovePrimePage() {
     "Smarter Lighting": "Optimizing ray-casting for hard-surface material brilliance...",
     "Clearer Texture": "Uprezzing surface fidelity for tactile material realism...",
     "Natural Reflection": "Recalculating Fresnel effects and environmental mapping...",
-    "Bold Colors": "Calibrating gamut for true-to-life product pigment accuracy...",
-    "Minimalist Shadow": "Softening contact shadows for a high-end studio aesthetic...",
+    "Lighter Background": "Adjusting exposure for a clean studio aesthetic...",
+    "More Catalog-Safe": "Standardizing pose and lighting for marketplace compliance...",
     "Soft Contrast": "Balancing dynamic range for editorial-grade catalog finish..."
   };
 
@@ -176,9 +176,10 @@ export default function ProductsApprovePrimePage() {
                         alert("Insufficient credits. Please top up.");
                       }
                     }} 
-                    className="w-full h-[54px] rounded-xl border border-white/10 bg-white/5 flex items-center justify-center gap-2 hover:bg-white/10 transition-all text-white/40"
+                    aria-label="Regenerate this image for 1 credit"
+                    className="w-full h-[54px] rounded-xl border border-white/10 bg-white/5 flex items-center justify-center gap-2 hover:bg-white/10 transition-all text-white/65"
                   >
-                    <RefreshCcw className="w-4 h-4" />
+                    <RefreshCcw className="w-4 h-4" aria-hidden="true" />
                     <span className="font-medium text-[14px]">Regenerate (1 Credit)</span>
                   </button>
                 </div>
