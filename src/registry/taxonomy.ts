@@ -19,7 +19,8 @@ export const TAXONOMY: Record<string, any> = {
           samples: [
             "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg",
             "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg",
-            "/hero_image.png"
+            "/assets/ladies/ethnic-wear/elegant-purple-gold-banarasi-silk-sari-with-intricate-weaving.jpg",
+            "/assets/ladies/ethnic-wear/ethnic_wear_sample_4.png"
           ],
           recommendedViews: ["Front View", "Left View", "Right View", "Back View", "Drape Detail", "Border Close-up"]
         },

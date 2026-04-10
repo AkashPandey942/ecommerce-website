@@ -159,7 +159,7 @@ export default function JewelleryStyleSelectionPage() {
       <FlowHeader title="Select Style" />
 
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
-        <ProgressStepper currentStep={2} partialStep={true} />
+        <ProgressStepper currentStep={2} />
 
         {/* Heading */}
         <section className="mt-8 mb-10">

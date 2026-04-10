@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import StackedImagePreview from "@/components/StackedImagePreview";
 
 export default function FinalResultsPage() {
   const params = useParams();
@@ -68,6 +69,11 @@ export default function FinalResultsPage() {
           <p className="font-roboto text-[#99A1AF] text-sm mt-1">
             Your high-fidelity assets are ready for export.
           </p>
+        </div>
+
+        {/* Stacked Fan Preview (Rule 6.10 Style Enhancement) */}
+        <div className="w-full flex justify-center">
+           <StackedImagePreview images={results.map(r => r.image)} />
         </div>
 
         {/* Results Sections Grouped by Type (Rule 6.10) */}

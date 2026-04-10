@@ -4,11 +4,11 @@ import FlowHeader from "@/components/FlowHeader";
 import ProgressStepper from "@/components/ProgressStepper";
 import Footer from "@/components/Footer";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import LoadingActionButton from "@/components/LoadingActionButton";
-import { Check, RefreshCcw, MessageSquare } from "lucide-react";
+import { Check, RefreshCcw, MessageSquare, X, Wand2, Sparkles } from "lucide-react";
 import { useProject } from "@/context/ProjectContext";
 
 export default function ProductsApprovePrimePage() {
@@ -22,6 +22,11 @@ export default function ProductsApprovePrimePage() {
   const [showTextBox, setShowTextBox] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [feedback, setFeedback] = useState<string[]>([]);
+  const [showFullPreview, setShowFullPreview] = useState(false);
+  const [isRegenerateMode, setIsRegenerateMode] = useState(false);
+  
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+
 
   const { spendCredits } = useProject();
   
@@ -65,6 +70,18 @@ export default function ProductsApprovePrimePage() {
     router.push(`/products/${style}/views?product=${product}`);
   };
 
+  const handleTouchStart = () => {
+    longPressTimer.current = setTimeout(() => {
+      setShowFullPreview(true);
+    }, 500);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+  };
+
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="Approve Result" />
@@ -97,7 +114,12 @@ export default function ProductsApprovePrimePage() {
               animate={{ opacity: 1, y: 0 }}
               className="w-full flex flex-col items-center py-10"
             >
-              <div className="relative w-full max-w-[353px] aspect-square rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(124,77,255,0.2)] border border-white/10 mb-10 group">
+              <div 
+                onDoubleClick={() => setShowFullPreview(true)}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                className="relative w-full max-w-[353px] aspect-square rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(124,77,255,0.2)] border border-white/10 mb-10 group cursor-zoom-in active:scale-[0.98] transition-all"
+              >
                 <Image src={primeImage} alt="Generated Prime" fill className="object-cover transition-transform group-hover:scale-105" priority />
                 
                 {/* AI Directive Engine Expansion */}
@@ -121,73 +143,131 @@ export default function ProductsApprovePrimePage() {
                 </AnimatePresence>
               </div>
 
-              <section className="w-full max-w-[400px] mb-12">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-semibold text-xl">Refine Asset</h3>
-                  <button onClick={() => setShowTextBox(!showTextBox)} className="text-[#7C4DFF] text-sm flex items-center gap-1">
-                    <MessageSquare className="w-4 h-4" />
-                    {showTextBox ? "Hide Note" : "Add Note"}
-                  </button>
-                </div>
-                
-                <div className="flex flex-wrap gap-2 mb-8">
-                  {Object.keys(chipPrompts).map((chip: string) => (
-                    <button
-                      key={chip}
-                      onClick={() => toggleFeedback(chip)}
-                      className={`px-4 py-2 rounded-full border text-sm transition-all ${
-                        feedback.includes(chip) 
-                        ? "bg-figma-gradient border-transparent text-white shadow-[0_0_15px_rgba(124,77,255,0.4)]" 
-                        : "bg-white/5 border-white/10 text-[#C2C6D6] hover:border-white/30"
-                      }`}
-                    >
-                      {chip}
-                    </button>
-                  ))}
-                </div>
+              <div className="w-full max-w-[353px] flex flex-col gap-4 mb-10">
+                <LoadingActionButton
+                  isLoading={isApproving}
+                  onClick={handleApprove}
+                  className="w-full h-[61px] rounded-full text-[18px] font-bold"
+                  icon={<Check className="w-5 h-5" />}
+                >
+                  Approve and Continue
+                </LoadingActionButton>
 
-                <AnimatePresence>
-                  {showTextBox && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden mb-8">
-                      <textarea 
-                        className="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white focus:border-[#7C4DFF] outline-none"
-                        placeholder="E.g. Focus on the surface texture or material finish..."
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <div className="flex flex-col gap-4">
-                  <LoadingActionButton
-                    isLoading={isApproving}
-                    onClick={handleApprove}
-                    className="w-full h-[61px] rounded-xl text-lg font-bold"
-                  >
-                    Approve & Save (5 Credits)
-                  </LoadingActionButton>
-
+                {!isRegenerateMode && (
                   <button 
-                    onClick={() => {
-                      const success = spendCredits(1);
-                      if (success) {
-                        setIsGenerating(true);
-                        setFeedback([]);
-                      } else {
-                        alert("Insufficient credits. Please top up.");
-                      }
-                    }} 
-                    aria-label="Regenerate this image for 1 credit"
-                    className="w-full h-[54px] rounded-xl border border-white/10 bg-white/5 flex items-center justify-center gap-2 hover:bg-white/10 transition-all text-white/65"
+                    onClick={() => setIsRegenerateMode(true)}
+                    className="text-[#7C4DFF] text-sm font-medium hover:underline transition-all"
                   >
-                    <RefreshCcw className="w-4 h-4" aria-hidden="true" />
-                    <span className="font-medium text-[14px]">Regenerate (1 Credit)</span>
+                    Not happy with the result?
                   </button>
-                </div>
-              </section>
+                )}
+              </div>
+
+              <AnimatePresence>
+                {isRegenerateMode && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="w-full max-w-[353px] overflow-hidden"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-roboto font-semibold text-base text-white">Refine & Regenerate</h3>
+                      <button 
+                        onClick={() => setShowTextBox(!showTextBox)}
+                        className="flex items-center gap-1 text-[#7C4DFF] text-xs font-medium"
+                      >
+                        <MessageSquare className="w-3 h-3" />
+                        {showTextBox ? "Hide Note" : "Add Note"}
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {Object.keys(chipPrompts).map((chip: string) => (
+                        <button
+                          key={chip}
+                          onClick={() => toggleFeedback(chip)}
+                          className={`px-4 py-2 rounded-full border text-[11px] font-medium transition-all ${
+                            feedback.includes(chip)
+                            ? "bg-figma-gradient border-transparent text-white shadow-[0_0_15px_rgba(124,77,255,0.4)]"
+                            : "bg-white/5 border-white/10 text-[#C2C6D6] hover:border-white/20"
+                          }`}
+                        >
+                          {chip}
+                        </button>
+                      ))}
+                    </div>
+
+                    <AnimatePresence>
+                      {showTextBox && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="overflow-hidden mb-6"
+                        >
+                          <textarea 
+                            placeholder="E.g. Focus on the surface texture details..."
+                            className="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white focus:border-[#7C4DFF] outline-none transition-all placeholder:text-[#C2C6D6]/40 resize-none"
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    <button 
+                      onClick={() => {
+                        setIsGenerating(true);
+                        setIsRegenerateMode(false);
+                        setFeedback([]);
+                      }}
+                      className="w-full h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center gap-2 hover:bg-white/10 transition-all text-[#7C4DFF] font-bold text-sm mb-20"
+                    >
+                      <RefreshCcw className="w-4 h-4" />
+                      Regenerate
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>
       </main>
+
+      {/* Full Preview Modal */}
+      <AnimatePresence>
+        {showFullPreview && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowFullPreview(false)}
+            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-5 cursor-zoom-out"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-4xl aspect-square rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+            >
+              <Image 
+                src={primeImage}
+                alt="Full Preview"
+                fill
+                className="object-contain bg-black/50"
+              />
+              <div className="absolute top-6 right-6 p-4">
+                 <button className="bg-white/10 backdrop-blur-md p-3 rounded-full hover:bg-white/20 transition-all border border-white/10 group">
+                    <X className="w-6 h-6 text-white" />
+                 </button>
+              </div>
+              
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-fit px-6 py-2 bg-white/5 backdrop-blur-lg rounded-full border border-white/10 text-white/60 text-xs font-medium uppercase tracking-widest whitespace-nowrap">
+                Click anywhere to close
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Footer />
     </div>

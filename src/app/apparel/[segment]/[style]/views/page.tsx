@@ -2,8 +2,8 @@
 
 import ProgressStepper from "@/components/ProgressStepper";
 import Footer from "@/components/Footer";
-import { Check, Sparkles } from "lucide-react";
-import { motion } from "framer-motion";
+import { Check, Sparkles, Wand2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -41,6 +41,9 @@ export default function SelectOutputViewsPage() {
   );
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showMaxWarning, setShowMaxWarning] = useState(false);
+
+  const MAX_VIEWS = 4;
 
   const handleGenerate = async () => {
     setIsLoading(true);
@@ -49,9 +52,17 @@ export default function SelectOutputViewsPage() {
   };
 
   const toggleView = (id: string) => {
-    setSelectedViews(prev => 
-      prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]
-    );
+    setSelectedViews(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(v => v !== id);
+      }
+      if (prev.length >= MAX_VIEWS) {
+        setShowMaxWarning(true);
+        setTimeout(() => setShowMaxWarning(false), 2000);
+        return prev;
+      }
+      return [...prev, id];
+    });
   };
 
   return (
@@ -61,6 +72,25 @@ export default function SelectOutputViewsPage() {
       <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
         {/* Step 7: Alternate Views selection */}
         <ProgressStepper currentStep={9} />
+        
+        {/* Max Selection Toast */}
+        <AnimatePresence>
+          {showMaxWarning && (
+            <motion.div
+              initial={{ opacity: 0, y: 50, x: "-50%" }}
+              animate={{ opacity: 1, y: 0, x: "-50%" }}
+              exit={{ opacity: 0, y: 20, x: "-50%" }}
+              className="fixed bottom-24 left-1/2 z-[100] px-6 py-3 bg-[#E5484D] rounded-full shadow-2xl flex items-center gap-3 border border-white/20 backdrop-blur-md"
+            >
+              <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                <Sparkles className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-white font-medium text-sm">
+                Maximum 4 views can be selected
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Heading Section */}
         <section className="mt-8 mb-10">
@@ -69,12 +99,39 @@ export default function SelectOutputViewsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="font-roboto font-semibold text-3xl lg:text-[36px] leading-tight lg:leading-[45px] tracking-[-0.9px] text-[#E2E2E8] mb-4">
-              Select Output Views
-            </h1>
-            <p className="font-roboto font-normal text-base leading-[19px] text-[#C2C6D6]">
-              Choose the outputs you want to generate for your high-fashion catalog.
-            </p>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <h1 className="font-roboto font-semibold text-3xl lg:text-[36px] leading-tight lg:leading-[45px] tracking-[-0.9px] text-[#E2E2E8] mb-4">
+                  Select Output Views
+                </h1>
+                <p className="font-roboto font-normal text-base leading-[19px] text-[#C2C6D6]">
+                  Choose the outputs you want to generate for your high-fashion catalog.
+                </p>
+              </div>
+              
+              <div className="flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-full h-fit">
+                <div className="flex items-center gap-1.5">
+                  <span className={`text-[13px] font-bold ${selectedViews.length === MAX_VIEWS ? "text-figma-gradient bg-clip-text text-transparent" : "text-white"}`}>
+                    {selectedViews.length}
+                  </span>
+                  <span className="text-[13px] text-[#C2C6D6]">/</span>
+                  <span className="text-[13px] text-[#C2C6D6]">{MAX_VIEWS}</span>
+                </div>
+                <div className="w-[1px] h-3 bg-white/10" />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#99A1AF]">
+                  Premium Limit
+                </span>
+              </div>
+            </div>
+            
+            <div className="mt-6 p-4 bg-[#7C4DFF]/5 border border-[#7C4DFF]/20 rounded-xl flex items-center gap-3">
+               <div className="w-8 h-8 rounded-full bg-[#7C4DFF]/10 flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-[#7C4DFF]" />
+               </div>
+               <p className="text-sm text-[#C5B6DE]">
+                 <span className="font-bold text-white">Pro Tip:</span> Selecting up to 4 views ensures maximum consistency and rendering quality across your collection.
+               </p>
+            </div>
           </motion.div>
         </section>
 
@@ -123,26 +180,44 @@ export default function SelectOutputViewsPage() {
             );
           })}
 
-          {/* Custom Option Card (Hidden when custom mode active) */}
-          {!isCustomMode && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
-              onClick={() => setIsCustomMode(true)}
-              className="flex flex-col items-center gap-3 group cursor-pointer"
-            >
-              <div className="relative w-full aspect-[166/207] bg-[#1A1E29] rounded-[10px] overflow-hidden border border-white/5 flex flex-col items-center justify-center gap-4 group-hover:border-white/20 transition-all">
-                <div className="w-[45px] h-[45px] rounded-full bg-black/40 flex items-center justify-center shadow-[0_0_20px_rgba(35,161,255,0.3)]">
-                  <Sparkles className="w-5 h-5 text-[#00C2FF]" />
-                </div>
-                <span className="font-roboto font-medium text-[15px] text-white">Custom</span>
+          {/* Custom Option Card */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+            onClick={() => setIsCustomMode(!isCustomMode)}
+            className="flex flex-col items-center gap-3 group cursor-pointer"
+          >
+            <div className={`relative w-full aspect-[166/207] bg-[#1A1E29] rounded-[10px] overflow-hidden border-2 transition-all flex flex-col items-center justify-center gap-4 ${
+              isCustomMode ? "border-transparent" : "border-white/5 hover:border-white/20"
+            }`}>
+              <div className={`w-[45px] h-[45px] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(35,161,255,0.3)] transition-all ${
+                isCustomMode ? "bg-figma-gradient" : "bg-black/40"
+              }`}>
+                <Sparkles className={`w-5 h-5 transition-colors ${
+                  isCustomMode ? "text-white" : "text-[#00C2FF]"
+                }`} />
               </div>
-              <span className="font-roboto font-medium text-[13px] text-[#E2E2E8]">
-                Request Tool
-              </span>
-            </motion.div>
-          )}
+              <span className="font-roboto font-medium text-[15px] text-white">Custom</span>
+              
+              {/* Selection Indicator Overlay */}
+              {isCustomMode && (
+                <div className="absolute inset-0 border-[3px] border-figma-gradient rounded-[8px]" />
+              )}
+              
+              {/* Checkmark Badge */}
+              {isCustomMode && (
+                <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-figma-gradient flex items-center justify-center shadow-lg">
+                  <Check className="w-3.5 h-3.5 text-white" />
+                </div>
+              )}
+            </div>
+            <span className={`font-roboto font-medium text-[13px] transition-colors ${
+              isCustomMode ? "text-white" : "text-[#E2E2E8]"
+            }`}>
+              Request Tool
+            </span>
+          </motion.div>
         </div>
 
         {/* AI Custom Angle Prompt (Appears when Custom is clicked) */}
@@ -152,20 +227,29 @@ export default function SelectOutputViewsPage() {
             animate={{ opacity: 1, y: 0 }}
             className="mt-12"
           >
-            <div className="flex items-center gap-2 mb-4">
-              <h2 className="font-roboto font-semibold text-xl leading-[23px] text-white">
-                AI Custom Angle
-              </h2>
-              <span className="font-roboto font-semibold text-xs leading-[14px] text-[#C5B6DE]">
-                (Optional)
-              </span>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <h2 className="font-roboto font-semibold text-xl leading-[23px] text-white">
+                  AI Custom Angle
+                </h2>
+                <span className="font-roboto font-semibold text-xs leading-[14px] text-[#C5B6DE]">
+                  (Expert Mode)
+                </span>
+              </div>
             </div>
 
-            <div className="relative group">
+            <div className="relative group mb-4">
               <textarea
-                className="w-full h-[95px] bg-black/30 border border-white/20 rounded-[10px] p-4 font-roboto text-sm focus:border-[#7C4DFF] focus:ring-1 focus:ring-[#7C4DFF] outline-none transition-all placeholder:text-[#C2C6D6]/40 resize-none"
+                className="w-full h-[120px] bg-black/30 border border-white/20 rounded-[10px] p-4 font-roboto text-sm focus:border-[#7C4DFF] focus:ring-1 focus:ring-[#7C4DFF] outline-none transition-all placeholder:text-[#C2C6D6]/40 resize-none shadow-inner"
                 placeholder="E.g. Focus on the golden pallu details, add warm sunlight flare from left..."
               />
+            </div>
+
+            <div className="flex items-center gap-2 text-[#99A1AF] bg-white/5 border border-white/5 p-3 rounded-lg">
+              <Wand2 className="w-4 h-4 text-[#7C4DFF]" />
+              <p className="text-[12px] font-medium italic">
+                Professional output depends on the precision of your prompt. Be descriptive for cinematic results.
+              </p>
             </div>
           </motion.section>
         )}
