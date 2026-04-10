@@ -84,16 +84,39 @@ export default function StackedImagePreview({ images }: StackedImagePreviewProps
         </motion.div>
       ))}
       
-      {/* Swipe Legend */}
-      <div className="absolute -bottom-14 left-0 right-0 flex flex-col items-center gap-2 opacity-50">
+      {/* Swipe Legend + Page Counter */}
+      <div className="absolute -bottom-14 left-0 right-0 flex flex-col items-center gap-2">
         <div className="flex items-center gap-10">
-          <motion.div animate={{ x: [-3, 3] }} transition={{ repeat: Infinity, duration: 1.5, repeatType: "reverse" }}>
+          <motion.div
+            animate={{ x: [-3, 3] }}
+            transition={{ repeat: Infinity, duration: 1.5, repeatType: "reverse" }}
+            className="opacity-50"
+          >
             <ChevronLeft className="w-4 h-4 text-[#7C4DFF]" />
           </motion.div>
-          <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#C2C6D6]">
-            Interactive Stack
-          </span>
-          <motion.div animate={{ x: [3, -3] }} transition={{ repeat: Infinity, duration: 1.5, repeatType: "reverse" }}>
+
+          {/* Live page counter */}
+          <div className="flex items-baseline gap-[2px] min-w-[48px] justify-center">
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={order[2]}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.2 }}
+                className="text-[16px] font-bold text-white tabular-nums"
+              >
+                {order[2] + 1}
+              </motion.span>
+            </AnimatePresence>
+            <span className="text-[13px] font-medium text-white/40">/{displayImages.length}</span>
+          </div>
+
+          <motion.div
+            animate={{ x: [3, -3] }}
+            transition={{ repeat: Infinity, duration: 1.5, repeatType: "reverse" }}
+            className="opacity-50"
+          >
             <ChevronRight className="w-4 h-4 text-[#7C4DFF]" />
           </motion.div>
         </div>
