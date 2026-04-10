@@ -12,7 +12,7 @@ export default function ProfilePage() {
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
       <FlowHeader title="Profile" />
 
-      <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
         {/* User Info Section (John Doe) */}
         <motion.div
            initial={{ opacity: 0, scale: 0.9 }}
@@ -40,7 +40,7 @@ export default function ProfilePage() {
         </motion.div>
 
         {/* Credits Dashboard (Available Credits: 120) */}
-        <section className="w-full max-w-[393px] mb-8">
+        <section className="w-full max-w-full sm:max-w-[393px] mb-8">
            <motion.div
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
@@ -73,7 +73,7 @@ export default function ProfilePage() {
         </section>
 
         {/* Stats Grid (Projects & Images) */}
-        <section className="w-full max-w-[393px] grid grid-cols-2 gap-4 mb-8">
+        <section className="w-full max-w-full sm:max-w-[393px] grid grid-cols-2 gap-4 mb-8">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -102,7 +102,7 @@ export default function ProfilePage() {
         </section>
 
         {/* Options List (Settings, Logout) */}
-        <section className="w-full max-w-[393px] flex flex-col gap-4">
+        <section className="w-full max-w-full sm:max-w-[393px] flex flex-col gap-4">
           {[
             { label: "Settings", icon: Settings },
             { label: "Logout", icon: LogOut, danger: true },

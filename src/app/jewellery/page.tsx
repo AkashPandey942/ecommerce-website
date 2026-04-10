@@ -25,7 +25,7 @@ export default function JewelleryPage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="Select Genre" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[105px] px-5">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[105px] px-5">
         <div className="mb-2">
           <ProgressStepper />
         </div>

@@ -68,7 +68,7 @@ export default function JewelleryOutputViewsPage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30 font-roboto">
       <FlowHeader title="Choose Views" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[105px] px-5">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[105px] px-5">
         <ProgressStepper currentStep={9} />
 
         {/* Max Selection Toast */}
@@ -249,7 +249,7 @@ export default function JewelleryOutputViewsPage() {
           <LoadingActionButton
             isLoading={isGenerating}
             onClick={handleGenerate}
-            className="w-full max-w-[353px] h-[61px]"
+            className="w-full max-w-full sm:max-w-[353px] h-[61px]"
             icon={<Wand2 className="w-5 h-5" />}
             disabled={selectedViews.length === 0}
           >

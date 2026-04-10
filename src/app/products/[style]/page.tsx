@@ -51,7 +51,7 @@ export default function ProductsLeafPage() {
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
       <FlowHeader title="Choose Product" />
 
-      <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
+      <main className="w-full max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5">
         <ProgressStepper currentStep={3} />
 
         <section className="mt-8 mb-10">
@@ -96,7 +96,7 @@ export default function ProductsLeafPage() {
         </section>
 
         <div className="mt-auto mb-10 lg:mb-16">
-          <div className="w-full max-w-[353px] mx-auto lg:max-w-[400px]">
+          <div className="w-full max-w-full sm:max-w-[353px] mx-auto lg:max-w-[400px]">
             <LoadingActionButton
               isLoading={isContinuing}
               onClick={handleContinue}

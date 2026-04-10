@@ -61,7 +61,7 @@ const Hero = () => {
     <section
       aria-label="Featured showcase carousel"
       aria-roledescription="carousel"
-      className="relative w-full max-w-[353px] lg:max-w-7xl h-[261px] lg:h-[450px] mx-auto mt-[119px] mb-8 group"
+      className="relative w-full max-w-full lg:max-w-7xl h-[261px] lg:h-[450px] mx-auto mt-[119px] mb-8 group"
     >
       {/* Hero Banner Container */}
       <div className="relative w-full h-[247px] lg:h-[420px] overflow-hidden rounded-[20px] glass shadow-2xl">
@@ -76,7 +76,7 @@ const Hero = () => {
             className="absolute inset-0 w-full h-full"
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={1}
+            dragElastic={0.1}
             onDragEnd={(e, { offset, velocity }) => {
               const swipe = swipePower(offset.x, velocity.x);
               if (swipe < -swipeConfidenceThreshold) {

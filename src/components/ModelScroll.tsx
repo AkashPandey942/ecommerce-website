@@ -29,7 +29,7 @@ const ModelScroll = ({ selectedId, onSelect, onPreview }: ModelScrollProps) => {
     <div
       role="radiogroup"
       aria-label="Select a model"
-      className="w-full flex items-center justify-start gap-[10px] overflow-x-auto no-scrollbar scroll-smooth"
+      className="w-full flex items-center justify-start gap-[10px] h-scroll no-scrollbar scroll-smooth"
     >
       {models.map((model) => {
         const isSelected = selectedId === model.id;

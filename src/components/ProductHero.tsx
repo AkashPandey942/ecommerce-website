@@ -61,9 +61,9 @@ const ProductHero = ({ image, images = [] }: ProductHeroProps) => {
   };
 
   return (
-    <div className="relative w-full max-w-lg lg:max-w-7xl mx-auto h-[354px] group flex flex-col items-center">
+    <div className="relative w-full lg:max-w-7xl mx-auto h-[354px] group flex flex-col items-center">
       {/* Featured Image Container */}
-      <div className="relative w-full max-w-[393px] h-[340px] rounded-[24px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 mb-4 bg-zinc-900/50 backdrop-blur-sm">
+      <div className="relative w-full max-w-full h-[340px] rounded-[24px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 mb-4 bg-zinc-900/50 backdrop-blur-sm">
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
             key={page}

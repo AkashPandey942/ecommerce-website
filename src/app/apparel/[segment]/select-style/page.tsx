@@ -121,7 +121,7 @@ export default function StyleSelectionPage() {
     return (
       <div className="relative flex flex-col min-h-screen bg-black text-white">
         <FlowHeader title="Select Wear Type" />
-        <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5" />
+        <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5" />
       </div>
     );
   }
@@ -130,7 +130,7 @@ export default function StyleSelectionPage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
       <FlowHeader title="Select Wear Type" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5">
         <ProgressStepper currentStep={2} />
 
         {/* Heading */}
@@ -189,7 +189,7 @@ export default function StyleSelectionPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="w-full max-w-[353px] mx-auto"
+                className="w-full max-w-full sm:max-w-[353px] mx-auto"
               >
                 <div className="relative p-6 bg-[#1A1E29] border border-white/10 rounded-[20px] shadow-2xl">
                   {/* Close */}

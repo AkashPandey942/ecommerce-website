@@ -48,7 +48,7 @@ export default function ProductsUnifiedSetupPage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="Production Setup" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
         <ProgressStepper currentStep={5} />
 
         <div className="flex flex-col gap-12 mt-10 mb-20">
@@ -97,7 +97,7 @@ export default function ProductsUnifiedSetupPage() {
         </div>
 
         <div className="mb-10 lg:mb-16">
-          <div className="w-full max-w-[353px] mx-auto lg:max-w-[400px]">
+          <div className="w-full max-w-full sm:max-w-[353px] mx-auto lg:max-w-[400px]">
             <LoadingActionButton
               isLoading={isGenerating}
               onClick={handleGenerate}

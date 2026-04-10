@@ -57,7 +57,7 @@ export default function VideoStyleSelectionPage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="Video Treatment" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5">
         <ProgressStepper currentStep={10} />
 
         <section className="mt-8 mb-10">

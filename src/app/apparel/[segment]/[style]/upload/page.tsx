@@ -75,7 +75,7 @@ export default function UnifiedUploadSetupPage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="Upload Product" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
         {/* Step Progression (Steps reduced to 6 since we merged 4 & 5) */}
         <ProgressStepper currentStep={5} />
 
@@ -138,7 +138,7 @@ export default function UnifiedUploadSetupPage() {
 
         {/* Generate Button Area */}
         <div className="mb-10 lg:mb-16">
-          <div className="w-full max-w-[353px] mx-auto lg:max-w-[400px]">
+          <div className="w-full max-w-full sm:max-w-[353px] mx-auto lg:max-w-[400px]">
             <LoadingActionButton
               isLoading={isGenerating}
               onClick={handleGenerate}

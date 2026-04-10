@@ -76,7 +76,7 @@ export default function JewelleryApprovePrimePage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="Approve Base Asset" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
         <ProgressStepper currentStep={7} />
 
         <AnimatePresence mode="wait">
@@ -119,7 +119,7 @@ export default function JewelleryApprovePrimePage() {
                 onDoubleClick={() => setShowFullPreview(true)}
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
-                className="relative w-full aspect-square max-w-[353px] rounded-2xl overflow-hidden shadow-[0_0_80px_rgba(0,194,255,0.15)] mb-10 border border-white/10 group cursor-zoom-in active:scale-[0.98] transition-all"
+                className="relative w-full aspect-square max-w-full sm:max-w-[353px] rounded-2xl overflow-hidden shadow-[0_0_80px_rgba(0,194,255,0.15)] mb-10 border border-white/10 group cursor-zoom-in active:scale-[0.98] transition-all"
               >
                 <Image 
                   src="/golden-jewlary.jpg"
@@ -155,7 +155,7 @@ export default function JewelleryApprovePrimePage() {
                 </div>
               </div>
 
-              <div className="w-full max-w-[353px] flex flex-col gap-4 mb-10">
+              <div className="w-full max-w-full sm:max-w-[353px] flex flex-col gap-4 mb-10">
                 <LoadingActionButton
                   isLoading={isApproving}
                   onClick={handleApprove}
@@ -181,7 +181,7 @@ export default function JewelleryApprovePrimePage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="w-full max-w-[353px] overflow-hidden"
+                    className="w-full max-w-full sm:max-w-[353px] overflow-hidden"
                   >
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="font-roboto font-semibold text-base text-white">Refine & Regenerate</h3>

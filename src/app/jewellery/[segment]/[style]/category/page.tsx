@@ -58,7 +58,7 @@ export default function JewelleryCategoryPage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="Select Product" />
 
-      <main className="w-full flex-1 max-w-[393px] md:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
+      <main className="w-full flex-1 max-w-full md:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
         <div className="mt-4 mb-2">
           <ProgressStepper currentStep={3} />
         </div>

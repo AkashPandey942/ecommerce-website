@@ -73,7 +73,7 @@ export default function JewelleryResultPage() {
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 font-roboto lg:pb-0">
       <FlowHeader title="Production Results" />
 
-      <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
+      <main className="w-full max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
         <ProgressStepper currentStep={11} />
 
         <motion.div 

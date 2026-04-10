@@ -54,7 +54,7 @@ export default function AccessoriesLeafPage() {
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
       <FlowHeader title="Choose Product" />
 
-      <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
+      <main className="w-full max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5">
         <ProgressStepper currentStep={3} />
 
         {/* Level 4 Leaf Node: Gallery Carousel Section (Section 6.4) */}
@@ -105,7 +105,7 @@ export default function AccessoriesLeafPage() {
 
         {/* Action Button */}
         <div className="mt-auto mb-10 lg:mb-16">
-          <div className="w-full max-w-[353px] mx-auto lg:max-w-[400px]">
+          <div className="w-full max-w-full sm:max-w-[353px] mx-auto lg:max-w-[400px]">
             <LoadingActionButton
               isLoading={isContinuing}
               onClick={handleContinue}

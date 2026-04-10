@@ -65,7 +65,7 @@ export default function JewelleryAISetupPage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="AI Setup" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5">
         <ProgressStepper currentStep={5} />
 
         <section className="mt-8 mb-10">
@@ -109,7 +109,7 @@ export default function JewelleryAISetupPage() {
         </div>
 
         <div className="mb-10 lg:mb-16">
-          <div className="w-full max-w-[353px] mx-auto lg:max-w-[400px]">
+          <div className="w-full max-w-full sm:max-w-[353px] mx-auto lg:max-w-[400px]">
             <LoadingActionButton
               isLoading={isContinuing}
               onClick={handleGenerate}
