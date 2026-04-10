@@ -15,7 +15,7 @@ export default function AccessoriesPage() {
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
       <FlowHeader title="Accessories" />
 
-      <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
+      <main className="w-full max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5">
         <ProgressStepper currentStep={2} />
 
         <section className="mt-8 mb-10">

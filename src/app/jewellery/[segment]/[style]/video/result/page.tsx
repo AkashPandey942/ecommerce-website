@@ -16,7 +16,7 @@ export default function JewelleryVideoResultPage() {
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 font-roboto">
       <FlowHeader title="Cinematic Result" />
 
-      <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
+      <main className="w-full max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
         {/* Success Header */}
         <motion.div
            initial={{ opacity: 0, y: -20 }}
@@ -36,7 +36,7 @@ export default function JewelleryVideoResultPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="relative w-full max-w-[353px] aspect-[9/16] rounded-[24px] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(124,77,255,0.2)] bg-[#1A1E29]"
+          className="relative w-full max-w-full sm:max-w-[353px] aspect-[9/16] rounded-[24px] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(124,77,255,0.2)] bg-[#1A1E29]"
         >
           {/* Using the bridal image as the video thumbnail */}
           <div className="absolute inset-0 grayscale-[0.2]">
@@ -63,7 +63,7 @@ export default function JewelleryVideoResultPage() {
         </motion.div>
 
         {/* Action Buttons (aligned with main Results page) */}
-        <div className="w-full max-w-[353px] flex flex-col gap-4 mt-10 mb-20">
+        <div className="w-full max-w-full sm:max-w-[353px] flex flex-col gap-4 mt-10 mb-20">
            <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}

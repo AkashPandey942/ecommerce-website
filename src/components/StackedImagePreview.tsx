@@ -38,7 +38,7 @@ export default function StackedImagePreview({ images }: StackedImagePreviewProps
   ];
 
   return (
-    <div className="relative w-[340px] h-[350px] mx-auto mt-4 mb-16 scale-90 sm:scale-100 touch-none select-none">
+    <div className="relative w-full max-w-[340px] h-[350px] mx-auto mt-4 mb-16 touch-none select-none">
       {/* Fixed Rotation Stack - Orientation remains fixed, images cycle */}
       {order.map((imgIndex, slotIdx) => (
         <motion.div
@@ -62,6 +62,7 @@ export default function StackedImagePreview({ images }: StackedImagePreviewProps
           }}
           drag={slotIdx === 2 ? "x" : false} // Only the front-most card can be swiped
           dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.1}
           onDragEnd={(e, info) => {
             if (info.offset.x > 80) handleSwipe("right");
             else if (info.offset.x < -80) handleSwipe("left");

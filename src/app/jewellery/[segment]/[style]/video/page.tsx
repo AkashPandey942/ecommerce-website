@@ -28,7 +28,7 @@ export default function JewelleryVideoStylePage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30 font-roboto">
       <FlowHeader title="Video Storyboard" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5">
         <ProgressStepper currentStep={7} />
 
         <div className="mt-8">
@@ -99,7 +99,7 @@ export default function JewelleryVideoStylePage() {
 
         {/* Generate Button */}
         <div className="w-full mt-10 mb-10 lg:mb-16">
-          <div className="w-full max-w-[353px] mx-auto lg:max-w-[400px]">
+          <div className="w-full max-w-full sm:max-w-[353px] mx-auto lg:max-w-[400px]">
             <Link href={`/jewellery/${segment}/${style}/video/result`}>
               <button className="w-full h-[61px] bg-figma-gradient rounded-full shadow-[0_10px_30px_rgba(124,77,255,0.4)] hover:brightness-110 transition-all flex items-center justify-center">
                 <span className="font-bold text-lg text-white">

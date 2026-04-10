@@ -93,7 +93,7 @@ export default function AccessoriesApprovePrimePage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="Approve Asset" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
         <ProgressStepper currentStep={7} />
 
         <AnimatePresence mode="wait">
@@ -125,7 +125,7 @@ export default function AccessoriesApprovePrimePage() {
                 onDoubleClick={() => setShowFullPreview(true)}
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
-                className="relative w-full max-w-[353px] aspect-square rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(124,77,255,0.2)] border border-white/10 mb-10 group cursor-zoom-in active:scale-[0.98] transition-all"
+                className="relative w-full max-w-full sm:max-w-[353px] aspect-square rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(124,77,255,0.2)] border border-white/10 mb-10 group cursor-zoom-in active:scale-[0.98] transition-all"
               >
                 <Image src={primeImage} alt="Generated Prime" fill className="object-cover transition-transform group-hover:scale-105" priority />
                 
@@ -150,7 +150,7 @@ export default function AccessoriesApprovePrimePage() {
                 </AnimatePresence>
               </div>
 
-              <div className="w-full max-w-[353px] flex flex-col gap-4 mb-10">
+              <div className="w-full max-w-full sm:max-w-md flex flex-col gap-4 mb-10">
                 <LoadingActionButton
                   isLoading={isApproving}
                   onClick={handleApprove}
@@ -176,7 +176,7 @@ export default function AccessoriesApprovePrimePage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="w-full max-w-[353px] overflow-hidden"
+                    className="w-full max-w-full sm:max-w-[353px] overflow-hidden"
                   >
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="font-roboto font-semibold text-base text-white">Refine & Regenerate</h3>

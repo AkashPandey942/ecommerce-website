@@ -37,7 +37,7 @@ export default function GalleryPage() {
 
       {/* Sub-header Tab Toggle (Rectangle 39 / Group 56) */}
       <div className="fixed top-[99px] left-0 right-0 z-40 bg-[#0C101C] px-5 pt-[7px] pb-[7px]">
-        <div className="max-w-lg lg:max-w-7xl mx-auto">
+        <div className="max-w-full lg:max-w-7xl mx-auto">
           <div className="w-full h-[57px] bg-[#181D29] rounded-[10px] flex p-[5px] gap-[5px]">
             <button
               onClick={() => setActiveTab("images")}
@@ -64,7 +64,7 @@ export default function GalleryPage() {
       </div>
 
       {/* Main Gallery Grid */}
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[180px] px-5">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[180px] px-5">
 
         {/* 2-column mobile grid, 4-column desktop with proper gaps */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">

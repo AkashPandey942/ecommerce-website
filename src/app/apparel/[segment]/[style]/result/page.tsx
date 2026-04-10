@@ -31,7 +31,7 @@ export default function ResultPage() {
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
       <FlowHeader title="Results" />
 
-      <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
+      <main className="w-full max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
         {/* Step Indicator (Section 5.0) */}
         <div className="w-full mb-8">
           <ProgressStepper currentStep={6} />
@@ -41,7 +41,7 @@ export default function ResultPage() {
         <ResultCarousel images={resultImages} />
 
         {/* Action Buttons Hierarchy (Figma iPhone 16 - 9) */}
-        <div className="w-full max-w-[353px] flex flex-col gap-4 mt-10 mb-10">
+        <div className="w-full max-w-full sm:max-w-[353px] flex flex-col gap-4 mt-10 mb-10">
           
           {/* Row 1: More Angles & Create Video (Side-by-side) */}
           <div className="grid grid-cols-2 gap-4">

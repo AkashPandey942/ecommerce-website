@@ -68,7 +68,7 @@ export default function AccessoriesOutputViewsPage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="Output Pack" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5">
         <ProgressStepper currentStep={9} />
         
         {/* Max Selection Toast */}
@@ -222,7 +222,7 @@ export default function AccessoriesOutputViewsPage() {
           <LoadingActionButton
             isLoading={isGenerating}
             onClick={handleGenerate}
-            className="w-full max-w-[353px] h-[61px]"
+            className="w-full max-w-full sm:max-w-[353px] h-[61px]"
             disabled={selectedViews.length === 0}
           >
             <div className="flex items-center gap-2">

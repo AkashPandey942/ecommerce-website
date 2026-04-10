@@ -143,7 +143,7 @@ export default function JewelleryStyleSelectionPage() {
     return (
       <div className="relative flex flex-col min-h-screen bg-black text-white">
         <FlowHeader title="Select Style" />
-        <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5" />
+        <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5" />
       </div>
     );
   }
@@ -158,7 +158,7 @@ export default function JewelleryStyleSelectionPage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="Select Style" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5">
         <ProgressStepper currentStep={2} />
 
         {/* Heading */}
@@ -188,7 +188,7 @@ export default function JewelleryStyleSelectionPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="flex flex-col gap-4 max-w-[353px] mx-auto"
+                className="flex flex-col gap-4 w-full max-w-full sm:max-w-[353px] mx-auto"
               >
                 {styles.map((style, idx) => (
                   <motion.div
@@ -217,7 +217,7 @@ export default function JewelleryStyleSelectionPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="w-full max-w-[353px] mx-auto"
+                className="w-full max-w-full sm:max-w-[353px] mx-auto"
               >
                 <div className="relative p-6 bg-[#1A1E29] border border-white/10 rounded-[20px] shadow-2xl">
                   {/* Close (only if there are other options to go back to) */}

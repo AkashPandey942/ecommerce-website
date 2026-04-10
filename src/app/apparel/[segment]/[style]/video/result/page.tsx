@@ -18,7 +18,7 @@ export default function VideoResultPage() {
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="Video Result" />
 
-      <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
+      <main className="w-full max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
         {/* Step 6: Fully Completed */}
         <ProgressStepper currentStep={6} />
 
@@ -44,7 +44,7 @@ export default function VideoResultPage() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
-          className="relative w-full max-w-[353px] aspect-[353/558] bg-[#1A1E29] rounded-[10px] overflow-hidden border border-[#2E1C4D] shadow-[0_0_50px_rgba(124,77,255,0.2)] group cursor-pointer"
+          className="relative w-full max-w-full sm:max-w-[353px] aspect-[353/558] bg-[#1A1E29] rounded-[10px] overflow-hidden border border-[#2E1C4D] shadow-[0_0_50px_rgba(124,77,255,0.2)] group cursor-pointer"
         >
           {/* Mock Video Frame */}
           <Image
@@ -81,7 +81,7 @@ export default function VideoResultPage() {
         </motion.div>
 
         {/* Final Actions */}
-        <div className="w-full max-w-[353px] flex flex-col gap-4 mt-10 mb-10">
+        <div className="w-full max-w-full sm:max-w-[353px] flex flex-col gap-4 mt-10 mb-10">
           <Link href={`/apparel/${segment}/${style}/final-results`} className="w-full">
             <motion.button
               whileHover={{ scale: 1.02 }}

@@ -57,7 +57,7 @@ export default function FinalResultsPage() {
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 pb-[100px] lg:pb-0">
       <FlowHeader title="Results" />
 
-      <main className="w-full max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
+      <main className="w-full max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
         {/* Step 6: Fully Completed */}
         <ProgressStepper currentStep={11} />
 
@@ -106,7 +106,7 @@ export default function FinalResultsPage() {
         </div>
 
         {/* Dashboard Actions */}
-        <div className="w-full max-w-[393px] flex flex-col gap-4 mt-12 md:mt-20">
+        <div className="w-full max-w-full sm:max-w-[393px] flex flex-col gap-4 mt-12 md:mt-20">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}

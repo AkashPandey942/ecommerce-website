@@ -64,7 +64,7 @@ export default function ProductsVideoStyleSelectionPage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="Video Treatment" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5">
         <ProgressStepper currentStep={10} />
 
         <section className="mt-8 mb-10 text-center">
@@ -108,7 +108,7 @@ export default function ProductsVideoStyleSelectionPage() {
         </div>
 
         <div className="w-full mt-auto mb-10 flex flex-col items-center gap-4">
-          <div className="w-full max-w-[353px]">
+          <div className="w-full max-w-full sm:max-w-[353px]">
             <LoadingActionButton
               isLoading={isLoading}
               onClick={handleGenerate}

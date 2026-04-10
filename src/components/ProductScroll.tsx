@@ -58,7 +58,7 @@ const ProductScroll = () => {
 
       {/* Responsive Projects Area (Frame 2 logic) */}
       {/* Mobile: Horizontal Scroll | Desktop: Grid */}
-      <div className="flex lg:grid lg:grid-cols-4 xl:grid-cols-6 items-center gap-[15px] overflow-x-auto recent-scroll pb-4">
+      <div className="flex lg:grid lg:grid-cols-4 xl:grid-cols-6 items-center gap-[15px] h-scroll recent-scroll pb-4">
         {products.map((product, idx) => (
           <ProductCard key={idx} title={product.title} image={product.image} />
         ))}

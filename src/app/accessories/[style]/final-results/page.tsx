@@ -67,7 +67,7 @@ export default function AccessoriesResultPage() {
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0 font-roboto">
       <FlowHeader title="Generation Results" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
         <ProgressStepper currentStep={11} />
 
         {/* Header Section */}

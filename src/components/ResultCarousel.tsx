@@ -37,7 +37,7 @@ const ResultCarousel = ({ images }: ResultCarouselProps) => {
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={1}
+            dragElastic={0.1}
             onDragEnd={(e, { offset, velocity }) => {
               const swipe = swipePower(offset.x, velocity.x);
               if (swipe < -swipeConfidenceThreshold) {

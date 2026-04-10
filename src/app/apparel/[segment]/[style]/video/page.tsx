@@ -59,7 +59,7 @@ export default function VideoStylePage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="Motion Treatment" />
 
-      <main className="w-full flex-1 max-w-lg lg:max-w-7xl mx-auto pt-[120px] px-5">
+      <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5">
         <ProgressStepper currentStep={10} />
 
         <div className="mt-8">
@@ -131,7 +131,7 @@ export default function VideoStylePage() {
 
         {/* Inline Generate Button */}
         <div className="w-full mt-10 mb-10 lg:mb-16">
-          <div className="w-full max-w-[353px] mx-auto lg:max-w-[400px]">
+          <div className="w-full max-w-full sm:max-w-[353px] mx-auto lg:max-w-[400px]">
             <Link href={`/apparel/${segment}/${style}/video/result`}>
               <button className="w-full h-[61px] bg-figma-gradient rounded-full shadow-[0_0_30px_rgba(124,77,255,0.4)] hover:brightness-110 transition-all flex items-center justify-center">
                 <span className="font-roboto font-semibold text-lg leading-[21px] text-white text-center">

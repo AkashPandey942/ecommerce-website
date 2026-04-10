@@ -45,9 +45,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fontInter.variable} ${fontRoboto.variable} ${fontManrope.variable} h-full antialiased`}
+      className={`${fontInter.variable} ${fontRoboto.variable} ${fontManrope.variable} h-full antialiased overflow-x-hidden`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col overflow-x-hidden">
         <ProjectProvider>
           {children}
         </ProjectProvider>
