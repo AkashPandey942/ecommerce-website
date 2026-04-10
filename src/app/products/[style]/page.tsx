@@ -33,6 +33,12 @@ export default function ProductsLeafPage() {
   };
 
   const products = getProductTypes(style);
+  const visibleProducts = showAll 
+    ? products 
+    : [
+        ...products.filter((p: string) => p !== "Other").slice(0, 7),
+        ...(products.includes("Other") ? ["Other"] : [])
+      ];
 
   const handleContinue = async () => {
     if (!selectedProduct) return;
@@ -77,7 +83,7 @@ export default function ProductsLeafPage() {
           </div>
           <div className="flex flex-wrap gap-3">
             <AnimatePresence>
-              {(showAll ? products : products.slice(0, 7)).map((prod) => (
+              {(showAll ? products : visibleProducts).map((prod) => (
                 <ProductTag 
                   key={prod} 
                   label={prod} 
@@ -85,9 +91,6 @@ export default function ProductsLeafPage() {
                   onClick={() => setSelectedProduct(prev => prev === prod ? null : prod)} 
                 />
               ))}
-              {!showAll && products.includes("Other") && !products.slice(0, 7).includes("Other") && (
-                <ProductTag label="Other" selected={selectedProduct === "Other"} onClick={() => setSelectedProduct(prev => prev === "Other" ? null : "Other")} />
-              )}
             </AnimatePresence>
           </div>
         </section>

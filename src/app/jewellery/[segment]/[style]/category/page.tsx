@@ -34,7 +34,12 @@ export default function JewelleryCategoryPage() {
   };
 
   const productTypes = getTaxonomyTypes();
-  const visibleTypes = showAll ? productTypes : productTypes.slice(0, 7);
+  const visibleTypes = showAll 
+    ? productTypes 
+    : [
+        ...productTypes.filter((t: string) => t !== "Other").slice(0, 7),
+        ...(productTypes.includes("Other") ? ["Other"] : [])
+      ];
   const hasMore = productTypes.length > 8;
 
   const CAROUSEL_IMAGES = [

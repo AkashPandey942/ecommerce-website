@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface ProductHeroProps {
@@ -12,78 +12,119 @@ interface ProductHeroProps {
 
 const ProductHero = ({ image, images = [] }: ProductHeroProps) => {
   const displayImages = images.length > 0 ? images : (image ? [image] : ["/hero_image.png"]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [[page, direction], setPage] = useState([0, 0]);
 
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % displayImages.length);
+  const currentIndex = Math.abs(page % displayImages.length);
+
+  const paginate = (newDirection: number) => {
+    setPage([page + newDirection, newDirection]);
   };
 
-  const handlePrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + displayImages.length) % displayImages.length);
+  useEffect(() => {
+    if (displayImages.length <= 1) return;
+    
+    const timer = setInterval(() => {
+      setPage(prev => [prev[0] + 1, 1]);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [displayImages.length]);
+
+  const variants: Variants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 100 : -100,
+      opacity: 0,
+      scale: 0.95
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+      scale: 1,
+      transition: {
+        x: { type: "spring", stiffness: 300, damping: 30 },
+        opacity: { duration: 0.4 },
+        scale: { duration: 0.4 }
+      }
+    },
+    exit: (direction: number) => ({
+      zIndex: 0,
+      x: direction < 0 ? 100 : -100,
+      opacity: 0,
+      scale: 0.95,
+      transition: {
+        x: { type: "spring", stiffness: 300, damping: 30 },
+        opacity: { duration: 0.4 },
+        scale: { duration: 0.4 }
+      }
+    })
   };
 
   return (
-    <div className="relative w-full max-w-[353px] h-[354px] mx-auto group flex flex-col items-center">
-      {/* Featured Image (Rectangle 13) */}
-      <div className="relative w-full h-[340px] rounded-[10px] overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.25)] border border-white/5 mb-2">
-        <AnimatePresence mode="wait">
+    <div className="relative w-full max-w-lg lg:max-w-7xl mx-auto h-[354px] group flex flex-col items-center">
+      {/* Featured Image Container */}
+      <div className="relative w-full max-w-[393px] h-[340px] rounded-[24px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 mb-4 bg-zinc-900/50 backdrop-blur-sm">
+        <AnimatePresence initial={false} custom={direction}>
           <motion.div
-            key={currentIndex}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="absolute inset-0"
+            key={page}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            className="absolute inset-0 w-full h-full"
           >
             <Image
               src={displayImages[currentIndex]}
               alt={`Featured Product ${currentIndex + 1}`}
               fill
               className="object-cover"
-              loading="lazy"
+              priority
             />
+            {/* Glossy Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
           </motion.div>
         </AnimatePresence>
         
         {displayImages.length > 1 && (
-          <>
-            <button 
-              onClick={handlePrev}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 p-2 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-between px-4 z-20">
+            <motion.button 
+              whileHover={{ scale: 1.1, backgroundColor: "rgba(0,0,0,0.7)" }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => paginate(-1)}
+              className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-auto border border-white/10"
             >
-              <ChevronLeft size={20} />
-            </button>
-            <button 
-              onClick={handleNext}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 p-2 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              <ChevronLeft size={24} />
+            </motion.button>
+            <motion.button 
+              whileHover={{ scale: 1.1, backgroundColor: "rgba(0,0,0,0.7)" }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => paginate(1)}
+              className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-auto border border-white/10"
             >
-              <ChevronRight size={20} />
-            </button>
-          </>
+              <ChevronRight size={24} />
+            </motion.button>
+          </div>
         )}
       </div>
 
-      {/* Pagination Indicators (Group 36) */}
-      <div className="w-full flex justify-center items-center gap-2 h-[6px]">
-        {displayImages.length > 1 ? (
-          displayImages.map((_, index) => (
-            <div
-              key={index}
-              onClick={() => setCurrentIndex(index)}
-              className={`cursor-pointer transition-all duration-300 rounded-full ${
-                currentIndex === index 
-                  ? "w-[24px] h-[6px] bg-figma-gradient shadow-[0_0_8px_rgba(124,77,255,0.6)]" 
-                  : "w-[6px] h-[6px] bg-[#D9D9D9] hover:bg-white/80"
-              }`}
-            />
-          ))
-        ) : (
-          <>
-            <div className="w-[24px] h-[6px] bg-figma-gradient rounded-full" />
-            <div className="w-[6px] h-[6px] bg-[#D9D9D9] rounded-full" />
-            <div className="w-[6px] h-[6px] bg-[#D9D9D9] rounded-full" />
-          </>
-        )}
+      {/* Pagination Indicators */}
+      <div className="flex justify-center items-center gap-2.5">
+        {displayImages.map((_, index) => (
+          <motion.div
+            key={index}
+            onClick={() => setPage([index, index > currentIndex ? 1 : -1])}
+            animate={{
+              width: currentIndex === index ? 32 : 8,
+              backgroundColor: currentIndex === index ? "rgba(255,255,255,1)" : "rgba(255,255,255,0.3)"
+            }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className={`h-2 rounded-full cursor-pointer hover:bg-white/50 transition-colors`}
+            style={{
+              background: currentIndex === index ? 'linear-gradient(90deg, #7C4DFF 0%, #FF00C7 100%)' : undefined
+            }}
+          />
+        ))}
       </div>
     </div>
   );

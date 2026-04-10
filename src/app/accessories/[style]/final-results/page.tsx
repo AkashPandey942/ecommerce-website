@@ -7,6 +7,7 @@ import { Download, Share2, CornerUpRight, Image as ImageIcon, CheckCircle2 } fro
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
+import StackedImagePreview from "@/components/StackedImagePreview";
 
 export default function AccessoriesResultPage() {
   const params = useParams();
@@ -90,6 +91,11 @@ export default function AccessoriesResultPage() {
             </button>
           </div>
         </section>
+
+        {/* Stacked Fan Preview (Rule 6.10 Style Enhancement) */}
+        <div className="w-full flex justify-center mb-12">
+           <StackedImagePreview images={results.map(r => r.image)} />
+        </div>
 
         {/* Results Sections Grouped by Type (Rule 6.10) */}
         <div className="w-full flex flex-col gap-12 mb-20">

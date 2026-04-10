@@ -89,7 +89,7 @@ export default function VideoResultPage() {
               className="w-full h-[61px] bg-figma-gradient rounded-full shadow-[0_0_30px_rgba(124,77,255,0.4)] flex items-center justify-center"
             >
               <span className="font-roboto font-semibold text-lg text-white">
-                Approve & Continue
+                Approve and Continue
               </span>
             </motion.button>
           </Link>

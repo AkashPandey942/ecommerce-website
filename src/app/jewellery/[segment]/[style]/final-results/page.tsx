@@ -9,6 +9,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import StackedImagePreview from "@/components/StackedImagePreview";
 
 export default function JewelleryResultPage() {
   const params = useParams();
@@ -86,6 +87,11 @@ export default function JewelleryResultPage() {
           </div>
           <p className="text-[#99A1AF] text-sm lg:text-base">High-fidelity jewelry assets ready for marketplace export.</p>
         </motion.div>
+
+        {/* Stacked Fan Preview (Rule 6.10 Style Enhancement) */}
+        <div className="w-full flex justify-center">
+           <StackedImagePreview images={results.map(r => r.image)} />
+        </div>
 
         {/* Results Sections Grouped by Type (Rule 6.10) */}
         <div className="w-full flex flex-col gap-12 mb-20">

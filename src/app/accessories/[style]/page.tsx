@@ -35,7 +35,12 @@ export default function AccessoriesLeafPage() {
   };
 
   const products = getProductTypes(style);
-  const visibleProducts = showAll ? products : products.slice(0, 7);
+  const visibleProducts = showAll 
+    ? products 
+    : [
+        ...products.filter((p: string) => p !== "Other").slice(0, 7),
+        ...(products.includes("Other") ? ["Other"] : [])
+      ];
   const hasMore = products.length > 8;
 
   const handleContinue = async () => {
@@ -94,9 +99,6 @@ export default function AccessoriesLeafPage() {
                   onClick={() => setSelectedProduct(prev => prev === prod ? null : prod)} 
                 />
               ))}
-              {!showAll && products.includes("Other") && !visibleProducts.includes("Other") && (
-                <ProductTag label="Other" selected={selectedProduct === "Other"} onClick={() => setSelectedProduct(prev => prev === "Other" ? null : "Other")} />
-              )}
             </AnimatePresence>
           </div>
         </section>

@@ -6,9 +6,9 @@ import Footer from "@/components/Footer";
 import LoadingActionButton from "@/components/LoadingActionButton";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
-import { Check, RefreshCcw, Sparkles, Gem, MessageSquare } from "lucide-react";
+import { Check, RefreshCcw, Sparkles, Gem, MessageSquare, X } from "lucide-react";
 import { useProject } from "@/context/ProjectContext";
 
 export default function JewelleryApprovePrimePage() {
@@ -21,6 +21,10 @@ export default function JewelleryApprovePrimePage() {
   const [isApproving, setIsApproving] = useState(false);
   const [feedback, setFeedback] = useState<string[]>([]);
   const [showTextBox, setShowTextBox] = useState(false);
+  const [showFullPreview, setShowFullPreview] = useState(false);
+  const [isRegenerateMode, setIsRegenerateMode] = useState(false);
+  
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
   const { spendCredits } = useProject();
 
@@ -54,6 +58,18 @@ export default function JewelleryApprovePrimePage() {
     setIsApproving(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
     router.push(`/jewellery/${segment}/${style}/views`);
+  };
+
+  const handleTouchStart = () => {
+    longPressTimer.current = setTimeout(() => {
+      setShowFullPreview(true);
+    }, 500);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
   };
 
   return (
@@ -99,7 +115,12 @@ export default function JewelleryApprovePrimePage() {
                 </p>
               </section>
 
-              <div className="relative w-full aspect-square max-w-[353px] rounded-2xl overflow-hidden shadow-[0_0_80px_rgba(0,194,255,0.15)] mb-10 border border-white/10 group">
+              <div 
+                onDoubleClick={() => setShowFullPreview(true)}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                className="relative w-full aspect-square max-w-[353px] rounded-2xl overflow-hidden shadow-[0_0_80px_rgba(0,194,255,0.15)] mb-10 border border-white/10 group cursor-zoom-in active:scale-[0.98] transition-all"
+              >
                 <Image 
                   src="/golden-jewlary.jpg"
                   alt="Jewellery Prime Render"
@@ -134,83 +155,131 @@ export default function JewelleryApprovePrimePage() {
                 </div>
               </div>
 
-              {/* SaaS Rule 6.7: Feedback UI */}
-              <div className="w-full max-w-[353px] mb-12">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-roboto font-semibold text-base text-white">Improve this result</h3>
-                  <button 
-                    onClick={() => setShowTextBox(!showTextBox)}
-                    className="flex items-center gap-1 text-[#00C2FF] text-sm font-medium"
-                  >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    {showTextBox ? "Hide Note" : "Add Note"}
-                  </button>
-                </div>
-
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {Object.keys(chipPrompts).map((chip: string) => (
-                    <button
-                      key={chip}
-                      onClick={() => toggleChip(chip)}
-                      className={`px-4 py-2 rounded-full border text-xs font-medium transition-all ${
-                        feedback.includes(chip)
-                        ? "bg-[#7C4DFF] border-transparent text-white shadow-[0_0_15px_rgba(124,77,255,0.4)]"
-                        : "bg-white/5 border-white/10 text-[#C2C6D6] hover:border-white/20"
-                      }`}
-                    >
-                      {chip}
-                    </button>
-                  ))}
-                </div>
-
-                <AnimatePresence>
-                  {showTextBox && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <textarea 
-                        placeholder="E.g. Make the stones reflect more blue light..."
-                        className="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white focus:border-[#00C2FF] outline-none transition-all placeholder:text-[#C2C6D6]/40 resize-none"
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="w-full max-w-[353px] flex flex-col gap-4 mb-20">
+              <div className="w-full max-w-[353px] flex flex-col gap-4 mb-10">
                 <LoadingActionButton
                   isLoading={isApproving}
                   onClick={handleApprove}
                   className="w-full h-[61px] text-[18px]"
                   icon={<Check className="w-5 h-5" />}
                 >
-                  Approve & Spend 5 Credits
+                  Approve and Continue
                 </LoadingActionButton>
 
-                <button 
-                  onClick={() => {
-                    const success = spendCredits(1);
-                    if (success) {
-                      setIsGenerating(true);
-                      setFeedback([]);
-                    } else {
-                      alert("Insufficient credits. Please top up.");
-                    }
-                  }}
-                  aria-label="Regenerate this image for 1 credit"
-                  className="flex items-center justify-center gap-2 h-14 rounded-full border border-white/10 text-white/65 hover:text-white transition-all hover:bg-white/5 bg-white/[0.02]"
-                >
-                  <RefreshCcw className="w-4 h-4" aria-hidden="true" />
-                  <span className="font-medium text-[14px]">Regenerate (1 Credit)</span>
-                </button>
+                {!isRegenerateMode && (
+                  <button 
+                    onClick={() => setIsRegenerateMode(true)}
+                    className="text-[#00C2FF] text-sm font-medium hover:underline transition-all"
+                  >
+                    Not happy with the result?
+                  </button>
+                )}
               </div>
+
+              <AnimatePresence>
+                {isRegenerateMode && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="w-full max-w-[353px] overflow-hidden"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-roboto font-semibold text-base text-white">Refine & Regenerate</h3>
+                      <button 
+                        onClick={() => setShowTextBox(!showTextBox)}
+                        className="flex items-center gap-1 text-[#00C2FF] text-xs font-medium"
+                      >
+                        <MessageSquare className="w-3 h-3" />
+                        {showTextBox ? "Hide Note" : "Add Note"}
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {Object.keys(chipPrompts).map((chip: string) => (
+                        <button
+                          key={chip}
+                          onClick={() => toggleChip(chip)}
+                          className={`px-4 py-2 rounded-full border text-[11px] font-medium transition-all ${
+                            feedback.includes(chip)
+                            ? "bg-[#7C4DFF] border-transparent text-white shadow-[0_0_15px_rgba(124,77,255,0.4)]"
+                            : "bg-white/5 border-white/10 text-[#C2C6D6] hover:border-white/20"
+                          }`}
+                        >
+                          {chip}
+                        </button>
+                      ))}
+                    </div>
+
+                    <AnimatePresence>
+                      {showTextBox && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="overflow-hidden mb-6"
+                        >
+                          <textarea 
+                            placeholder="E.g. Make the stones reflect more blue light..."
+                            className="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-4 text-sm text-white focus:border-[#00C2FF] outline-none transition-all placeholder:text-[#C2C6D6]/40 resize-none"
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    <button 
+                      onClick={() => {
+                        setIsGenerating(true);
+                        setIsRegenerateMode(false);
+                        setFeedback([]);
+                      }}
+                      className="w-full h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center gap-2 hover:bg-white/10 transition-all text-[#00C2FF] font-bold text-sm mb-20"
+                    >
+                      <RefreshCcw className="w-4 h-4" />
+                      Regenerate
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>
       </main>
+
+      {/* Full Preview Modal */}
+      <AnimatePresence>
+        {showFullPreview && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowFullPreview(false)}
+            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-5 cursor-zoom-out"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-4xl aspect-square rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+            >
+              <Image 
+                src="/golden-jewlary.jpg"
+                alt="Full Preview"
+                fill
+                className="object-contain bg-black/50"
+              />
+              <div className="absolute top-6 right-6 p-4">
+                 <button className="bg-white/10 backdrop-blur-md p-3 rounded-full hover:bg-white/20 transition-all border border-white/10 group">
+                    <X className="w-6 h-6 text-white" />
+                 </button>
+              </div>
+              
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-fit px-6 py-2 bg-white/5 backdrop-blur-lg rounded-full border border-white/10 text-white/60 text-xs font-medium uppercase tracking-widest whitespace-nowrap">
+                Click anywhere to close
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Footer />
     </div>

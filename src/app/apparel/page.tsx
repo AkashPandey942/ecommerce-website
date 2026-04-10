@@ -49,7 +49,7 @@ export default function ApparelPage() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <Link href={`/apparel/${segment.title.toLowerCase()}/style`}>
+                <Link href={`/apparel/${segment.title.toLowerCase()}/select-style`}>
                   <SegmentCard 
                     title={segment.title} 
                     image={segment.image} 
