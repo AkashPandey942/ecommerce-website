@@ -118,7 +118,7 @@ const SignupPage = () => {
       </div>
 
       {/* Hero Section */}
-      <div className="relative z-10 max-w-6xl mx-auto pt-32 md:pt-40 lg:pt-48 px-6 text-center mb-12">
+      <div className="relative z-10 max-w-6xl mx-auto pt-44 md:pt-52 lg:pt-60 px-6 text-center mb-12">
         <motion.h1 className="text-4xl md:text-5xl lg:text-6xl font-manrope font-extrabold text-white mb-4 tracking-tight">
           {currentStep === 2 ? (
             paymentStatus === 'failed' ? <span className="text-[#CF4141]">Payment Failed!</span> : <span className="text-[#98BD42]">Payment Successful!</span>

@@ -42,7 +42,10 @@ const FlowHeader = ({ title, showBack = true }: FlowHeaderProps) => {
   const breadcrumbs = getBreadcrumbs();
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-[100px] bg-black/80 backdrop-blur-lg border-b border-white/5 z-50 px-5">
+    <header 
+      className="fixed top-0 left-0 right-0 h-[100px] border-b border-white/10 z-[100] px-5 shadow-[0_10px_40px_rgba(0,0,0,0.8)]"
+      style={{ backgroundColor: '#0A0A0B' }}
+    >
       <div className="max-w-7xl mx-auto h-full flex flex-col justify-center">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
