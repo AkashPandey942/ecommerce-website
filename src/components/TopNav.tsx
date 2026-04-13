@@ -27,14 +27,7 @@ const TopNav = () => {
           </h1>
         </div>
 
-        {/* Desktop Links (Hidden on Mobile) */}
-        <div className="hidden lg:flex items-center gap-10">
-          {["Studio", "Gallery", "AI Lab"].map((item) => (
-            <button key={item} className={`font-inter font-medium text-sm hover:text-white transition-colors ${item === "Studio" ? "text-figma-gradient" : "text-[#9CA3AF]"}`}>
-              {item}
-            </button>
-          ))}
-        </div>
+        {/* Desktop Links removed to avoid redundancy with BottomNav */}
 
         <div className="flex items-center gap-2">
           {/* Credits Badge (Group 2) */}

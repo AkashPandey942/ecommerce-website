@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Roboto, Manrope } from "next/font/google";
 import { ProjectProvider } from "@/context/ProjectContext";
+import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 
 const fontInter = Inter({
@@ -47,10 +48,12 @@ export default function RootLayout({
       lang="en"
       className={`${fontInter.variable} ${fontRoboto.variable} ${fontManrope.variable} h-full antialiased overflow-x-hidden`}
     >
-      <body className="min-h-full flex flex-col overflow-x-hidden">
-        <ProjectProvider>
-          {children}
-        </ProjectProvider>
+      <body className="min-h-full flex flex-col overflow-x-hidden" suppressHydrationWarning>
+        <AuthProvider>
+          <ProjectProvider>
+            {children}
+          </ProjectProvider>
+        </AuthProvider>
       </body>
     </html>
   );

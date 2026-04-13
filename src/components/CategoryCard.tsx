@@ -31,14 +31,14 @@ const CategoryCard = ({ title, icon: Icon, image, description }: CategoryCardPro
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/90 focus:from-black/10 transition-colors" aria-hidden="true" />
       
       {/* Content (Auto Layout) */}
-      <div className="absolute inset-x-4 inset-y-0 flex flex-col items-center justify-center gap-[7.06px] text-center">
+      <div className="absolute inset-0 flex flex-col items-center justify-center py-[40.595px] gap-[7.06px] text-center">
         {/* Glow Icon — decorative */}
         <div className="glow-pink" aria-hidden="true">
-          <Icon className="w-[32px] h-[32px] text-white" />
+          <Icon className="w-[28px] h-[28.97px] text-white" />
         </div>
         
         {/* Label */}
-        <span className="font-roboto font-semibold text-lg leading-tight text-white uppercase tracking-wider">
+        <span className="font-roboto font-semibold text-[16px] leading-[19px] text-white uppercase tracking-wider">
           {title}
         </span>
 

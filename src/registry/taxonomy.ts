@@ -26,10 +26,10 @@ export const TAXONOMY: Record<string, any> = {
         },
         { 
           title: "Western Wear", 
-          image: "/assets/ladies/western-wear/elegant-woman-wearing-modern-western-wear.jpg", 
+          image: "/assets/ladies/western-wear/photo-beautiful-female-model.jpg", 
           leafNodes: ["Dress", "Top", "Shirt", "Blouse", "Skirt", "Co-ord Set", "Gown / Partywear", "Other"],
           samples: [
-            "/assets/ladies/western-wear/elegant-woman-wearing-modern-western-wear.jpg",
+            "/assets/ladies/western-wear/photo-beautiful-female-model.jpg",
             "/hero_image.png"
           ],
           recommendedViews: ["Front View", "Side View", "Back View", "Walking Pose", "Texture Detail"]
@@ -39,11 +39,11 @@ export const TAXONOMY: Record<string, any> = {
       Gents: [
         { 
           title: "Ethnic Wear", 
-          image: "/assets/men/ethnic-wear/men-ethnic-wear-portrait.jpg", 
+          image: "/assets/men/ethnic-wear/elegant-indian-man-culture-character.jpg", 
           leafNodes: ["Kurta", "Sherwani", "Nehru Jacket", "Ethnic Set", "Other"],
           recommendedViews: ["Front View", "Side View", "Fabric Detail", "Collar Detail"]
         },
-        { title: "Western Wear", image: "/assets/men/western-wear/men-formal-wear-portrait.jpg", leafNodes: ["Shirt", "T-shirt", "Blazer", "Jacket", "Trousers", "Casual Set", "Other"] },
+        { title: "Western Wear", image: "/assets/men/western-wear/men-fashion-editorial-outdoors.jpg", leafNodes: ["Shirt", "T-shirt", "Blazer", "Jacket", "Trousers", "Casual Set", "Other"] },
         { title: "Custom", image: "/hero_image.png", fullWidth: true, leafNodes: ["Custom Design", "Other"] }
       ],
       Kids: [
