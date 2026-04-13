@@ -38,6 +38,7 @@ const Footer = () => {
               <ul className="flex flex-col gap-2 font-inter text-sm text-[#D1D5DB]">
                 <li><Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
                 <li><Link href="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link></li>
+                <li><Link href="/refund-policy" className="hover:text-white transition-colors">Refund Policy</Link></li>
               </ul>
             </div>
           </div>

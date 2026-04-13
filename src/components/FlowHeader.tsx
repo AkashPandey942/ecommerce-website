@@ -5,6 +5,7 @@ import { ChevronLeft, Wallet } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useProject } from "@/context/ProjectContext";
+import { useAuth } from "@/context/AuthContext";
 
 interface FlowHeaderProps {
   title: string;
@@ -16,6 +17,7 @@ const FlowHeader = ({ title, showBack = true }: FlowHeaderProps) => {
   const pathname = usePathname();
   const params = useParams();
   const { credits } = useProject();
+  const { isAuthenticated } = useAuth();
 
   const getBreadcrumbs = () => {
     const parts = pathname.split('/').filter(Boolean);
@@ -68,28 +70,79 @@ const FlowHeader = ({ title, showBack = true }: FlowHeaderProps) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-6">
-            <div
-              role="status"
-              aria-label={`${credits} credits remaining`}
-              className="flex items-center gap-2 px-2 md:px-3 py-1.5 rounded-full bg-[#1A1E29] border border-[#7C4DFF]/30 shadow-[0_0_15px_rgba(124,77,255,0.15)]"
-            >
-              <Wallet className="w-3.5 h-3.5 md:w-4 h-4 text-[#7C4DFF]" aria-hidden="true" />
-              <span className="font-roboto font-bold text-xs md:text-sm text-white" aria-hidden="true">
-                {credits} <span className="hidden sm:inline text-[#C2C6D6]/60 font-normal ml-0.5">Credits</span>
-              </span>
-            </div>
+          <nav className="hidden lg:flex items-center gap-8 ml-10">
+            {[
+              { label: "Studio", href: "/" },
+              { label: "Gallery", href: "/gallery" },
+              { label: "AI Lab", href: "/ai-lab" },
+              { label: "Profile", href: "/profile" },
+            ].map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={`font-inter font-medium text-sm transition-all relative py-2 ${
+                    isActive 
+                      ? "text-white" 
+                      : "text-[#9CA3AF] hover:text-white"
+                  }`}
+                >
+                  {item.label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-[#7C4DFF] to-[#EC4899] rounded-full"
+                    />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
 
-            <Link href="/profile" aria-label="View your profile">
-              <motion.div 
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#EC4899] flex items-center justify-center shadow-lg"
-                aria-hidden="true"
-              >
-                <span className="font-bold text-xs md:text-base text-white" aria-hidden="true">AG</span>
-              </motion.div>
-            </Link>
+          <div className="flex items-center gap-3 md:gap-6">
+            {isAuthenticated ? (
+              <>
+                <div
+                  role="status"
+                  aria-label={`${credits} credits remaining`}
+                  className="flex items-center gap-2 px-2 md:px-3 py-1.5 rounded-full bg-[#1A1E29] border border-[#7C4DFF]/30 shadow-[0_0_15px_rgba(124,77,255,0.15)]"
+                >
+                  <Wallet className="w-3.5 h-3.5 md:w-4 h-4 text-[#7C4DFF]" aria-hidden="true" />
+                  <span className="font-roboto font-bold text-xs md:text-sm text-white" aria-hidden="true">
+                    {credits} <span className="hidden sm:inline text-[#C2C6D6]/60 font-normal ml-0.5">Credits</span>
+                  </span>
+                </div>
+
+                <Link href="/profile" aria-label="View your profile">
+                  <motion.div 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#EC4899] flex items-center justify-center shadow-lg"
+                    aria-hidden="true"
+                  >
+                    <span className="font-bold text-xs md:text-base text-white" aria-hidden="true">AG</span>
+                  </motion.div>
+                </Link>
+              </>
+            ) : (
+              <div className="flex items-center gap-2 md:gap-4">
+                <Link href="/login">
+                  <button className="text-[#9CA3AF] hover:text-white transition-colors text-xs md:text-sm font-medium px-2 py-1 cursor-pointer">
+                    Sign In
+                  </button>
+                </Link>
+                <Link href="/signup">
+                  <motion.button
+                    whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(124,77,255,0.5)" }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gradient-to-r from-[#7C4DFF] to-[#EC4899] text-white px-4 md:px-6 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-bold shadow-[0_0_20px_rgba(124,77,255,0.3)] transition-all whitespace-nowrap cursor-pointer"
+                  >
+                    Register
+                  </motion.button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

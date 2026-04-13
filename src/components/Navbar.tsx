@@ -26,9 +26,23 @@ const Navbar = () => {
         ))}
       </div>
       
-      <button className="px-5 py-2 text-sm font-semibold text-white bg-primary rounded-full hover:bg-primary/90 transition-all shadow-[0_0_20px_var(--color-primary-glow)]">
-        Get Started
-      </button>
+      <div className="flex items-center gap-4">
+        <Link 
+          href="/login" 
+          className="hidden sm:block text-sm font-medium text-[#99A1AF] hover:text-white transition-colors"
+        >
+          Login
+        </Link>
+        <Link href="/register">
+          <motion.button 
+            whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(124, 77, 255, 0.4)" }}
+            whileTap={{ scale: 0.95 }}
+            className="px-6 py-2.5 text-sm font-bold text-white bg-figma-gradient rounded-full transition-all"
+          >
+            Get Started
+          </motion.button>
+        </Link>
+      </div>
     </motion.nav>
   );
 };
