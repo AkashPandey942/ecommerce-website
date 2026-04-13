@@ -25,11 +25,22 @@ export default function SelectOutputViewsPage() {
     const styles = TAXONOMY.apparel.styles[s] || [];
     const matchedStyle = styles.find((st: any) => st.title === styleKey);
     
-    const viewTitles = matchedStyle?.recommendedViews || ["Front View", "Side View", "Detail shot"];
+    const viewTitles = matchedStyle?.recommendedViews || ["Front View", "Left View", "Right View", "Back View", "Drape Detail", "Border Close-up"];
+    
+    // SaaS Rule: Map specific titles to their provided assets
+    const viewAssets: Record<string, string> = {
+      "Front View": "/assets/front_view.jpg",
+      "Left View": "/assets/left_view.png",
+      "Right View": "/assets/right_view.png",
+      "Back View": "/assets/back_view.png",
+      "Drape Detail": "/assets/detail_shot.png",
+      "Border Close-up": "/assets/border_closeup.png"
+    };
+
     return viewTitles.map((title: string) => ({
       id: title.toLowerCase().replace(/\s+/g, '-'),
       title,
-      image: matchedStyle?.samples?.[0] || "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg"
+      image: viewAssets[title] || matchedStyle?.samples?.[0] || "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg"
     }));
   };
 
@@ -56,7 +67,8 @@ export default function SelectOutputViewsPage() {
       if (prev.includes(id)) {
         return prev.filter(v => v !== id);
       }
-      if (prev.length >= MAX_VIEWS) {
+      const totalSelected = prev.length + (isCustomMode ? 1 : 0);
+      if (totalSelected >= MAX_VIEWS) {
         setShowMaxWarning(true);
         setTimeout(() => setShowMaxWarning(false), 2000);
         return prev;
@@ -64,6 +76,19 @@ export default function SelectOutputViewsPage() {
       return [...prev, id];
     });
   };
+
+  const toggleCustom = () => {
+    if (!isCustomMode) {
+      if (selectedViews.length >= MAX_VIEWS) {
+        setShowMaxWarning(true);
+        setTimeout(() => setShowMaxWarning(false), 2000);
+        return;
+      }
+    }
+    setIsCustomMode(!isCustomMode);
+  };
+
+  const totalSelectedCount = selectedViews.length + (isCustomMode ? 1 : 0);
 
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
@@ -111,8 +136,8 @@ export default function SelectOutputViewsPage() {
               
               <div className="flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-full h-fit">
                 <div className="flex items-center gap-1.5">
-                  <span className={`text-[13px] font-bold ${selectedViews.length === MAX_VIEWS ? "text-figma-gradient bg-clip-text text-transparent" : "text-white"}`}>
-                    {selectedViews.length}
+                  <span className={`text-[13px] font-bold ${totalSelectedCount === MAX_VIEWS ? "text-figma-gradient bg-clip-text text-transparent" : "text-white"}`}>
+                    {totalSelectedCount}
                   </span>
                   <span className="text-[13px] text-[#C2C6D6]">/</span>
                   <span className="text-[13px] text-[#C2C6D6]">{MAX_VIEWS}</span>
@@ -185,7 +210,7 @@ export default function SelectOutputViewsPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
-            onClick={() => setIsCustomMode(!isCustomMode)}
+            onClick={toggleCustom}
             className="flex flex-col items-center gap-3 group cursor-pointer"
           >
             <div className={`relative w-full aspect-[166/207] bg-[#1A1E29] rounded-[10px] overflow-hidden border-2 transition-all flex flex-col items-center justify-center gap-4 ${
@@ -261,7 +286,7 @@ export default function SelectOutputViewsPage() {
               isLoading={isLoading}
               onClick={handleGenerate}
               className="w-full h-[61px]"
-              disabled={selectedViews.length === 0}
+              disabled={totalSelectedCount === 0}
             >
               Generate Outputs
             </LoadingActionButton>

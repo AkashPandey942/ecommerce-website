@@ -89,7 +89,7 @@ const InfiniteCarousel = ({ items, autoPlayInterval = 4000 }: InfiniteCarouselPr
       : currentIndex - 1;
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full max-w-full md:max-w-[480px] md:mx-auto">
       <div className="relative w-full overflow-hidden rounded-[20px] shadow-2xl border border-white/10 group">
         <div
           onTransitionEnd={handleTransitionEnd}
