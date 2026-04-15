@@ -6,11 +6,11 @@ import { z } from "zod";
  */
 const envSchema = z.object({
   // Database
-  MONGODB_URI: z.string().url("MONGODB_URI must be a valid connection string"),
+  MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
 
   // AI Services
   GEMINI_API_KEY: z.string().min(1, "GEMINI_API_KEY is required"),
-  FAL_KEY: z.string().min(1, "FAL_KEY is required"),
+  FAL_KEY: z.string().optional(),
   RUNCOMFY_API_KEY: z.string().optional(),
   RUNCOMFY_DEPLOYMENT_ID: z.string().optional(),
 

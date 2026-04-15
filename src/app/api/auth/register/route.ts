@@ -60,6 +60,10 @@ export async function POST(request: Request) {
 
   } catch (error: any) {
     console.error("❌ [API/Register] Error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ 
+      error: "Internal Server Error", 
+      message: error.message,
+      stack: error.stack 
+    }, { status: 500 });
   }
 }

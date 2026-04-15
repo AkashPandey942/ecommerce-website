@@ -11,6 +11,8 @@
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.1",
     "@fal-ai/client": "^1.9.5",
+    "@fal-ai/server-proxy": "^1.2.1",
+    "@google/genai": "^1.50.1",
     "@google/generative-ai": "^0.24.1",
     "bcryptjs": "^3.0.3",
     "formik": "^2.4.9",
