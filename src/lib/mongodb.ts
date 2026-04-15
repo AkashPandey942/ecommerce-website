@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { env } from "@/config/env";
 
 /**
  * Global is used here to maintain a cached connection across hot reloads
@@ -12,12 +13,6 @@ if (!cached) {
 }
 
 async function dbConnect() {
-  // Guard is inside the function so Next.js can safely evaluate this
-  // module at build time even when MONGODB_URI is not in the environment.
-  if (!process.env.MONGODB_URI) {
-    throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
-  }
-
   if (cached.conn) {
     return cached.conn;
   }
@@ -27,8 +22,9 @@ async function dbConnect() {
       bufferCommands: false,
     };
 
+    // The URI is already validated in env.ts
     cached.promise = mongoose
-      .connect(process.env.MONGODB_URI, opts)
+      .connect(env.MONGODB_URI, opts)
       .then((mongoose) => {
         console.log("✅ [MongoDB] Connected to database.");
         return mongoose;

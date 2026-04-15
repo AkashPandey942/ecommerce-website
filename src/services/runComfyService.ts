@@ -1,7 +1,5 @@
 // src/services/runComfyService.ts
-
-const RUNCOMFY_API_KEY = process.env.RUNCOMFY_API_KEY || "";
-const DEPLOYMENT_ID = process.env.RUNCOMFY_DEPLOYMENT_ID || "PLACEHOLDER_ID";
+import { env } from "@/config/env";
 
 // Node IDs from ComfyUI Workflow (Customize based on your workflow_api.json)
 const NODES = {
@@ -17,16 +15,11 @@ export const runComfyService = {
     garmentImageUrl: string;
     modelImageUrl: string;
   }) {
-    if (!RUNCOMFY_API_KEY) {
-      console.warn("⚠️ [runComfyService] Missing RUNCOMFY_API_KEY.");
-      return null;
-    }
-
     try {
-      const response = await fetch(`https://runcomfy.com/api/prod/v1/deployments/${DEPLOYMENT_ID}/inference`, {
+      const response = await fetch(`https://runcomfy.com/api/prod/v1/deployments/${env.RUNCOMFY_DEPLOYMENT_ID}/inference`, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${RUNCOMFY_API_KEY}`,
+          "Authorization": `Bearer ${env.RUNCOMFY_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -58,7 +51,7 @@ export const runComfyService = {
       const response = await fetch(`https://runcomfy.com/api/prod/v1/requests/${requestId}`, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${RUNCOMFY_API_KEY}`,
+          "Authorization": `Bearer ${env.RUNCOMFY_API_KEY}`,
         },
       });
 
