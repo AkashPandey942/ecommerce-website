@@ -18,16 +18,21 @@ export const generationService = {
   }) {
     await dbConnect();
     
-    // 1. Deduct Credits (Secured on Backend)
+    // Deduct Credits (Secured on Backend)
+    // Disabled for development to allow unlimited testing
+    /*
     const cost = data.creditsCost || 10;
     const user = await User.findById(userId);
-    
-    if (!user || user.credits < cost) {
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if (user.credits < cost) {
       throw new Error("Insufficient credits");
     }
-
     user.credits -= cost;
     await user.save();
+    */
+    console.log(`🛠️ [dev] Skipping credit check for user ${userId}`);
 
     // 2. Create Job
     const job = await Generation.create({
