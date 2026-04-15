@@ -3,8 +3,11 @@
 import React, { useState, useRef } from "react";
 import FlowHeader from "@/components/FlowHeader";
 import BottomNav from "@/components/BottomNav";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import {
   User,
   Mail,
@@ -29,9 +32,13 @@ import {
   ArrowUp
 } from "lucide-react";
 
-export default function ProfilePage() {
+function ProfilePageContent() {
+  const router = useRouter();
+  const { user, userProfile, logout, updateProfile } = useAuth();
   const [activeTab, setActiveTab] = useState<'profile' | 'wallet'>('profile');
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [isBuyCreditsOpen, setIsBuyCreditsOpen] = useState(false);
   const [selectedPackIndex, setSelectedPackIndex] = useState(0);
@@ -55,27 +62,82 @@ export default function ProfilePage() {
   const selectedPack = creditPacks[selectedPackIndex];
   const finalPrice = selectedPack.price - discountAmount;
 
-  const [avatar, setAvatar] = useState("/profile_avatar_placeholder.png");
+  // null means no custom image — show initials instead
+  const [avatar, setAvatar] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setAvatar(URL.createObjectURL(file));
-      // In production, upload this file to the backend API here.
     }
   };
 
-  // Mock User Data
+  const handleRemoveAvatar = () => {
+    setAvatar(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  // Real user data — fetched from MongoDB profile via AuthContext
   const userData = {
-    firstName: "Jane",
-    lastName: "Doe",
-    email: "jane.doe@example.com",
-    phone: "9876543210",
-    workingStatus: "Employee",
-    companyName: "Digital Atelier",
-    state: "Maharashtra",
-    city: "Mumbai",
+    firstName: userProfile?.firstName || "",
+    lastName: userProfile?.lastName || "",
+    email: userProfile?.email || user?.email || "",
+    phone: userProfile?.phoneNumber || "",
+    workingStatus: userProfile?.workStatus || "",
+    companyName: userProfile?.organizationName || "",
+    state: userProfile?.state || "",
+    city: userProfile?.city || "",
+  };
+
+  // Editable form state — synced from userData whenever userProfile loads
+  const [editData, setEditData] = React.useState(userData);
+  
+  // Derive initials from first + last name (from current form state)
+  const initials = [
+    (editData.firstName?.[0] ?? "").toUpperCase(),
+    (editData.lastName?.[0] ?? "").toUpperCase(),
+  ]
+    .filter(Boolean)
+    .join("") || "?";
+
+  React.useEffect(() => {
+    setEditData({
+      firstName: userProfile?.firstName || "",
+      lastName: userProfile?.lastName || "",
+      email: userProfile?.email || user?.email || "",
+      phone: userProfile?.phoneNumber || "",
+      workingStatus: userProfile?.workStatus || "",
+      companyName: userProfile?.organizationName || "",
+      state: userProfile?.state || "",
+      city: userProfile?.city || "",
+    });
+  }, [userProfile, user]);
+
+  const handleSave = async () => {
+    setSaveError(null);
+    setIsSaving(true);
+    const result = await updateProfile({
+      firstName: editData.firstName,
+      lastName: editData.lastName,
+      email: editData.email,
+      phoneNumber: editData.phone,
+      workStatus: editData.workingStatus,
+      organizationName: editData.companyName,
+      state: editData.state,
+      city: editData.city,
+    });
+    setIsSaving(false);
+    if (result.success) {
+      setIsEditing(false);
+    } else {
+      setSaveError(result.error ?? "Failed to save. Try again.");
+    }
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
   };
 
   return (
@@ -166,7 +228,7 @@ export default function ProfilePage() {
 
         {/* Logout */}
         <div className="mt-auto">
-           <div className="h-[48px] w-full bg-[#CF4141]/20 border border-[#CF4141]/30 text-[#CF4141] hover:bg-[#CF4141]/30 rounded-[14px] flex items-center px-5 gap-3 cursor-pointer transition-all active:scale-[0.98]">
+           <div onClick={handleLogout} className="h-[48px] w-full bg-[#CF4141]/20 border border-[#CF4141]/30 text-[#CF4141] hover:bg-[#CF4141]/30 rounded-[14px] flex items-center px-5 gap-3 cursor-pointer transition-all active:scale-[0.98]">
             <LogOut className="w-5 h-5" />
             <span className="font-semibold">Logout</span>
           </div>
@@ -191,11 +253,11 @@ export default function ProfilePage() {
             <div className="flex items-center gap-3">
               <AnimatePresence>
                 {isEditing && (
-                  <motion.button 
+                  <motion.button
                     initial={{ opacity: 0, scale: 0.9, x: 10 }}
                     animate={{ opacity: 1, scale: 1, x: 0 }}
                     exit={{ opacity: 0, scale: 0.9, x: 10 }}
-                    onClick={() => setIsEditing(false)}
+                    onClick={() => { setIsEditing(false); setEditData({ firstName: userProfile?.firstName || "", lastName: userProfile?.lastName || "", email: userProfile?.email || user?.email || "", phone: userProfile?.phoneNumber || "", workingStatus: userProfile?.workStatus || "", companyName: userProfile?.organizationName || "", state: userProfile?.state || "", city: userProfile?.city || "" }); }}
                     className="flex items-center gap-2 px-6 py-2.5 rounded-full border bg-white/5 border-white/20 text-white hover:bg-[#CF4141]/20 hover:border-[#CF4141]/50 hover:text-[#CF4141] transition-all cursor-pointer"
                   >
                     <X className="w-4 h-4" />
@@ -203,16 +265,22 @@ export default function ProfilePage() {
                   </motion.button>
                 )}
               </AnimatePresence>
-              <button 
-                onClick={() => setIsEditing(!isEditing)}
+              <button
+                onClick={isEditing ? handleSave : () => setIsEditing(true)}
+                disabled={isSaving}
                 className={`flex items-center gap-2 px-6 py-2.5 rounded-full border transition-all cursor-pointer ${
-                  isEditing 
-                    ? 'bg-[#34A853]/20 border-[#34A853]/50 text-[#34A853] hover:bg-[#34A853]/30' 
+                  isEditing
+                    ? 'bg-[#34A853]/20 border-[#34A853]/50 text-[#34A853] hover:bg-[#34A853]/30'
                     : 'bg-white/5 border-white/20 text-white hover:bg-white/10'
-                }`}
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {isEditing ? <Check className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
-                <span className="font-semibold text-sm">{isEditing ? "Save" : "Edit"}</span>
+                {isSaving ? (
+                  <><div className="w-4 h-4 border-2 border-[#34A853] border-t-transparent rounded-full animate-spin" /> Saving...</>
+                ) : isEditing ? (
+                  <><Check className="w-4 h-4" /><span className="font-semibold text-sm">Save</span></>
+                ) : (
+                  <><Edit2 className="w-4 h-4" /><span className="font-semibold text-sm">Edit</span></>
+                )}
               </button>
             </div>
           </motion.div>
@@ -227,37 +295,62 @@ export default function ProfilePage() {
               className="flex justify-center lg:justify-start lg:w-[250px] shrink-0"
             >
               <div className="relative w-[180px] h-[180px] lg:w-[220px] lg:h-[220px] rounded-full border-4 border-[#CB87FF]/50 p-1.5 shadow-[0_0_30px_rgba(203,135,255,0.2)]">
-                <div className="w-full h-full rounded-full relative overflow-hidden bg-[#1A1A1A]">
-                  <Image
-                    src={avatar}
-                    alt="User Avatar"
-                    fill
-                    className="object-cover"
-                  />
+
+                {/* Avatar: custom image OR initials */}
+                <div className="w-full h-full rounded-full relative overflow-hidden bg-gradient-to-br from-[#7C4DFF] to-[#A52FFF] flex items-center justify-center">
+                  {avatar ? (
+                    <Image src={avatar} alt="User Avatar" fill className="object-cover" />
+                  ) : (
+                    <span className="text-white font-ubuntu font-bold text-5xl select-none">{initials}</span>
+                  )}
                 </div>
-                {/* Simulated Edit Button on Avatar */}
-                 <div 
-                   onClick={() => fileInputRef.current?.click()}
-                   className="absolute bottom-2 right-2 w-10 h-10 bg-[#A52FFF] rounded-full border-4 border-[#0A0A0B] flex items-center justify-center cursor-pointer hover:scale-110 transition-transform"
-                 >
-                    <Edit2 className="w-4 h-4 text-white" />
-                 </div>
-                 {/* Hidden File Input */}
-                 <input 
-                   type="file" 
-                   accept="image/*" 
-                   ref={fileInputRef} 
-                   onChange={handleAvatarChange} 
-                   className="hidden" 
-                 />
+
+                {/* Upload / Remove — only visible when editing */}
+                {isEditing && (
+                  <>
+                    {/* Camera button to upload */}
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute bottom-2 right-2 w-10 h-10 bg-[#A52FFF] rounded-full border-4 border-[#0A0A0B] flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-lg"
+                      title="Upload photo"
+                    >
+                      <Edit2 className="w-4 h-4 text-white" />
+                    </div>
+                    {/* Remove button — only show if custom image is set */}
+                    {avatar && (
+                      <div
+                        onClick={handleRemoveAvatar}
+                        className="absolute top-2 right-2 w-8 h-8 bg-[#CF4141] rounded-full border-4 border-[#0A0A0B] flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-lg"
+                        title="Remove photo"
+                      >
+                        <X className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Hidden file input */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                />
               </div>
             </motion.div>
 
             {/* Information Cards Column */}
             <div className="flex-1 flex flex-col gap-6">
               
+              {saveError && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm font-medium">
+                  {saveError}
+                </div>
+              )}
+
               {/* Personal Information */}
-              <motion.section 
+              <motion.section
                 initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
                 className="bg-[#121212]/80 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-xl hover:border-white/20 transition-colors"
               >
@@ -266,15 +359,15 @@ export default function ProfilePage() {
                   <h3 className="text-[#A52FFF] font-bold text-[13px] tracking-wider uppercase">Personal Information</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <InputField label="First Name" icon={User} value={userData.firstName} isEditing={isEditing} />
-                  <InputField label="Last Name" icon={User} value={userData.lastName} isEditing={isEditing} />
-                  <InputField label="Email Address" icon={Mail} value={userData.email} isEditing={isEditing} type="email" />
-                  <InputField label="Phone Number" icon={Phone} value={userData.phone} isEditing={isEditing} type="tel" />
+                  <InputField label="First Name" icon={User} value={editData.firstName} isEditing={isEditing} onChange={(v: string) => setEditData(p => ({...p, firstName: v}))} />
+                  <InputField label="Last Name" icon={User} value={editData.lastName} isEditing={isEditing} onChange={(v: string) => setEditData(p => ({...p, lastName: v}))} />
+                  <InputField label="Email Address" icon={Mail} value={editData.email} isEditing={isEditing} type="email" onChange={(v: string) => setEditData(p => ({...p, email: v}))} />
+                  <InputField label="Phone Number" icon={Phone} value={editData.phone} isEditing={isEditing} type="tel" onChange={(v: string) => setEditData(p => ({...p, phone: v}))} />
                 </div>
               </motion.section>
 
               {/* Career & Status */}
-              <motion.section 
+              <motion.section
                 initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
                 className="bg-[#121212]/80 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-xl hover:border-white/20 transition-colors"
               >
@@ -283,13 +376,13 @@ export default function ProfilePage() {
                   <h3 className="text-[#23A1FF] font-bold text-[13px] tracking-wider uppercase">Career & Status</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <InputField label="Working Status" icon={Briefcase} value={userData.workingStatus} isEditing={isEditing} />
-                  <InputField label="Company Name" icon={Building2} value={userData.companyName} isEditing={isEditing} />
+                  <InputField label="Working Status" icon={Briefcase} value={editData.workingStatus} isEditing={isEditing} onChange={(v: string) => setEditData(p => ({...p, workingStatus: v}))} />
+                  <InputField label="Company Name" icon={Building2} value={editData.companyName} isEditing={isEditing} onChange={(v: string) => setEditData(p => ({...p, companyName: v}))} />
                 </div>
               </motion.section>
 
               {/* Location Details */}
-              <motion.section 
+              <motion.section
                 initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}
                 className="bg-[#121212]/80 border border-white/10 rounded-2xl p-6 backdrop-blur-xl shadow-xl hover:border-white/20 transition-colors"
               >
@@ -298,8 +391,8 @@ export default function ProfilePage() {
                   <h3 className="text-[#34A853] font-bold text-[13px] tracking-wider uppercase">Location Details</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <InputField label="State / Region" icon={Map} value={userData.state} isEditing={isEditing} />
-                  <InputField label="City" icon={MapPin} value={userData.city} isEditing={isEditing} />
+                  <InputField label="State / Region" icon={Map} value={editData.state} isEditing={isEditing} onChange={(v: string) => setEditData(p => ({...p, state: v}))} />
+                  <InputField label="City" icon={MapPin} value={editData.city} isEditing={isEditing} onChange={(v: string) => setEditData(p => ({...p, city: v}))} />
                 </div>
               </motion.section>
 
@@ -564,6 +657,14 @@ export default function ProfilePage() {
   );
 }
 
+export default function ProfilePage() {
+  return (
+    <ProtectedRoute>
+      <ProfilePageContent />
+    </ProtectedRoute>
+  );
+}
+
 // Helper Component for Receipt Rows
 const ReceiptRow = ({ label, value, bold = false }: { label: string, value: string, bold?: boolean }) => (
   <div className="flex justify-between items-center py-[7px]">
@@ -572,21 +673,23 @@ const ReceiptRow = ({ label, value, bold = false }: { label: string, value: stri
   </div>
 );
 
-// Reusable Input Display Component
-const InputField = ({ label, icon: Icon, value, isEditing, type = "text" }: any) => {
+// Reusable Controlled Input Component
+const InputField = ({ label, icon: Icon, value, isEditing, type = "text", onChange }: any) => {
   return (
     <div className="flex flex-col gap-2">
       <label className="text-[11px] font-extrabold text-white/50 uppercase tracking-[0.08em] pl-1">{label}</label>
       <div className={`flex items-center gap-3 bg-white/[0.05] border rounded-[5px] p-[12px_14px] transition-all duration-300 ${
-        isEditing 
-          ? 'border-[#A52FFF] shadow-[0_0_15px_rgba(165,47,255,0.25)]' 
+        isEditing
+          ? 'border-[#A52FFF] shadow-[0_0_15px_rgba(165,47,255,0.25)]'
           : 'border-white/10'
       }`}>
         <Icon className={`w-4 h-4 ${isEditing ? 'text-[#A52FFF]' : 'text-white/30'}`} />
-        <input 
+        <input
           type={type}
-          defaultValue={value}
+          value={value}
           readOnly={!isEditing}
+          onChange={(e) => onChange?.(e.target.value)}
+          placeholder={isEditing ? `Enter ${label}` : ""}
           className={`w-full bg-transparent border-none outline-none text-[15px] font-ubuntu ${
             isEditing ? 'text-white' : 'text-white/80'
           }`}

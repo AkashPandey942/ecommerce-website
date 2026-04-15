@@ -18,11 +18,14 @@ interface ModelScrollProps {
 
 const ModelScroll = ({ selectedId, onSelect, onPreview }: ModelScrollProps) => {
   const models = [
-    { id: "1", image: "/hero_image.png" }, // photorealistic-hyper-realistic
-    { id: "2", image: "/category_placeholder.png" }, // woman-white-sweater
-    { id: "3", image: "/hero_image.png" }, // emerald-green-satin
-    { id: "4", image: "/category_placeholder.png" }, // woman-with-long-brown
-    { id: "5", image: "/hero_image.png" }, // woman-wearing-yellow
+    { id: "1", image: "/Model_1.jpg" },
+    { id: "2", image: "/Model_2.jpg" },
+    { id: "3", image: "/Model_3.jpg" },
+    { id: "4", image: "/Model_4.jpg" },
+    { id: "5", image: "/Model_5.jpg" },
+    { id: "6", image: "/Model_6.jpg" },
+    { id: "7", image: "/Model_7.jpg" },
+    { id: "8", image: "/Model_8.jpg" },
   ];
 
   return (

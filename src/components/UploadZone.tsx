@@ -5,7 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef } from "react";
 import Image from "next/image";
 
-const UploadZone = () => {
+interface UploadZoneProps {
+  onFileSelect?: (file: File | null) => void;
+}
+
+const UploadZone = ({ onFileSelect }: UploadZoneProps) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -19,12 +23,14 @@ const UploadZone = () => {
       }
       const imageUrl = URL.createObjectURL(file);
       setSelectedImage(imageUrl);
+      onFileSelect?.(file);
     }
   };
 
   const clearImage = (e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedImage(null);
+    onFileSelect?.(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   };

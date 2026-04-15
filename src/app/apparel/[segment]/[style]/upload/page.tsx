@@ -1,3 +1,4 @@
+// src/app/apparel/[segment]/[style]/upload/page.tsx
 "use client";
 
 import FlowHeader from "@/components/FlowHeader";
@@ -11,7 +12,12 @@ import LoadingActionButton from "@/components/LoadingActionButton";
 import { Skeleton } from "@/components/ui/Skeleton";
 import ProductTag from "@/components/ProductTag";
 
-// Dynamic components for performance
+// Services & Context
+import { useAuth } from "@/context/AuthContext";
+import { useGeneration } from "@/context/GenerationContext";
+import { storageService } from "@/services/storageService";
+
+// Dynamic components
 const UploadZone = dynamic(() => import("@/components/UploadZone"), { 
   ssr: false, 
   loading: () => <Skeleton className="w-full h-[240px] rounded-2xl" /> 
@@ -30,15 +36,23 @@ const SelectionPreviewModal = dynamic(() => import("@/components/SelectionPrevie
 export default function UnifiedUploadSetupPage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
+  const { 
+    selectionState, 
+    updateSelection, 
+    rawFile, 
+    setRawFile, 
+    setUploadedImageUrl 
+  } = useGeneration();
+
   const segment = (params.segment as string) || "Ladies";
   const style = (params.style as string) || "ethnic-wear";
 
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  // Selection States
-  const [selectedModel, setSelectedModel] = useState<string | null>(null);
-  const [selectedBackground, setSelectedBackground] = useState<string | null>(null);
-  const [selectedOutputStyle, setSelectedOutputStyle] = useState<string | null>(null);
+  // Selection states (for shorthand/readability)
+  const { modelId, backgroundId, styleId, prompt } = selectionState;
   
   // Preview States
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -47,7 +61,7 @@ export default function UnifiedUploadSetupPage() {
   const outputStyles = ["Catalog", "Premium", "Social Media", "Lifestyle"];
 
   const handleModelSelect = (model: { id: string; image: string }) => {
-    setSelectedModel(prev => prev === model.id ? null : model.id);
+    updateSelection({ modelId: modelId === model.id ? null : model.id });
   };
 
   const handleModelPreview = (model: { id: string; image: string }) => {
@@ -56,7 +70,7 @@ export default function UnifiedUploadSetupPage() {
   };
 
   const handleBackgroundSelect = (bg: { title: string; image: string }) => {
-    setSelectedBackground(prev => prev === bg.title ? null : bg.title);
+    updateSelection({ backgroundId: backgroundId === bg.title ? null : bg.title });
   };
 
   const handleBackgroundPreview = (bg: { title: string; image: string }) => {
@@ -65,10 +79,52 @@ export default function UnifiedUploadSetupPage() {
   };
 
   const handleGenerate = async () => {
-    if (!selectedModel || !selectedBackground || !selectedOutputStyle) return;
+    if (!user) {
+      setError("Please sign in to generate images.");
+      return;
+    }
+    if (!rawFile || !modelId || !backgroundId || !styleId) {
+      setError("Please complete all selections including an image.");
+      return;
+    }
+
     setIsGenerating(true);
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    router.push(`/apparel/${segment}/${style}/approve-prime`);
+    setError(null);
+
+    try {
+      // 1. Upload Image to Storage
+      const imageUrl = await storageService.uploadGarment(user.uid, rawFile);
+      setUploadedImageUrl(imageUrl);
+
+      // 2. Call the server-side API to create the job + trigger RunComfy
+      //    (generationService runs only on the server via this route)
+      const apiResponse = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          garmentImageUrl: imageUrl,
+          modelId,
+          background: backgroundId,
+          style: styleId,
+          prompt,
+        }),
+      });
+
+      if (!apiResponse.ok) {
+        const errData = await apiResponse.json();
+        throw new Error(errData.error || "API call failed");
+      }
+
+      const { jobId } = await apiResponse.json();
+
+      // 3. Redirect to Result Page
+      router.push(`/result/${jobId}`);
+
+    } catch (err: any) {
+      console.error("❌ [Generate Flow] Error:", err);
+      setError(err.message || "Failed to start generation. Try again.");
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -76,17 +132,22 @@ export default function UnifiedUploadSetupPage() {
       <FlowHeader title="Upload Product" />
 
       <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
-        {/* Step Progression (Steps reduced to 6 since we merged 4 & 5) */}
         <ProgressStepper currentStep={5} />
+
+        {error && (
+          <div className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+            {error}
+          </div>
+        )}
 
         <div className="flex flex-col gap-12 mt-10 mb-20">
           {/* 1. Upload Product Image Section */}
           <section aria-labelledby="upload-section-title">
             <div className="mb-6">
               <h1 id="upload-section-title" className="font-roboto font-semibold text-2xl text-white mb-2">Upload Product</h1>
-              <p className="text-sm text-[#99A1AF]">Upload a clear photo of your product.</p>
+              <p className="text-sm text-[#99A1AF]">Upload a clear photo of your product (Must be {style}).</p>
             </div>
-            <UploadZone />
+            <UploadZone onFileSelect={(file) => setRawFile(file)} />
           </section>
 
           {/* 2. Select Model Section */}
@@ -94,7 +155,7 @@ export default function UnifiedUploadSetupPage() {
             <h2 id="model-section-title" className="font-roboto font-semibold text-xl text-white mb-6">Select Model</h2>
             <div className="-mx-5 px-5">
               <ModelScroll 
-                selectedId={selectedModel} 
+                selectedId={modelId} 
                 onSelect={handleModelSelect} 
                 onPreview={handleModelPreview}
               />
@@ -105,13 +166,13 @@ export default function UnifiedUploadSetupPage() {
           <section aria-labelledby="bg-section-title">
             <h2 id="bg-section-title" className="font-roboto font-semibold text-xl text-white mb-6">Background Style</h2>
             <BackgroundGrid 
-              selectedTitle={selectedBackground} 
+              selectedTitle={backgroundId} 
               onSelect={handleBackgroundSelect}
               onPreview={handleBackgroundPreview}
             />
           </section>
 
-          {/* 4. Output Style Section (New as per screenshot) */}
+          {/* 4. Output Style Section */}
           <section aria-labelledby="output-section-title">
             <h2 id="output-section-title" className="font-roboto font-semibold text-xl text-white mb-6">Output Style</h2>
             <div className="flex flex-wrap gap-3">
@@ -119,8 +180,8 @@ export default function UnifiedUploadSetupPage() {
                 <ProductTag 
                   key={item}
                   label={item}
-                  selected={selectedOutputStyle === item}
-                  onClick={() => setSelectedOutputStyle(prev => prev === item ? null : item)}
+                  selected={styleId === item}
+                  onClick={() => updateSelection({ styleId: styleId === item ? null : item })}
                 />
               ))}
             </div>
@@ -132,7 +193,10 @@ export default function UnifiedUploadSetupPage() {
               <h2 className="font-roboto font-semibold text-xl text-white">AI Director Notes</h2>
               <span className="text-xs text-[#C5B6DE] uppercase tracking-wider">(Optional)</span>
             </div>
-            <AIDirectorNotes />
+            <AIDirectorNotes 
+              value={prompt} 
+              onChange={(val) => updateSelection({ prompt: val })} 
+            />
           </section>
         </div>
 
@@ -142,10 +206,10 @@ export default function UnifiedUploadSetupPage() {
             <LoadingActionButton
               isLoading={isGenerating}
               onClick={handleGenerate}
-              disabled={isGenerating || !selectedModel || !selectedBackground || !selectedOutputStyle}
+              disabled={isGenerating || !rawFile || !modelId || !backgroundId || !styleId}
               className="w-full h-[61px] text-[18px]"
             >
-              Generate Prime Image
+              {isGenerating ? "Generation Started..." : "Generate Prime Image"}
             </LoadingActionButton>
           </div>
         </div>

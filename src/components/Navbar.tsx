@@ -8,7 +8,7 @@ const Navbar = () => {
     <motion.nav 
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-8 bg-[#0A0A0B] border-b border-white/10 h-16 shadow-lg"
+      className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-8 bg-black border-b border-white/10 h-16 shadow-lg"
     >
       <Link href="/" className="text-xl font-bold tracking-tighter text-white">
         FIGMA<span className="text-primary">UI</span>

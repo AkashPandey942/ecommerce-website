@@ -13,11 +13,11 @@ interface BackgroundGridProps {
 
 const BackgroundGrid = ({ selectedTitle, onSelect, onPreview }: BackgroundGridProps) => {
   const backgrounds = [
-    { title: "White Studio", image: "/category_placeholder.png" }, // rectangle 45
-    { title: "Premium Studio", image: "/hero_image.png" }, // rectangle 46
-    { title: "Saree Festival", image: "/category_placeholder.png" }, // rectangle 47
-    { title: "Outdoor", image: "/hero_image.png" }, // rectangle 48
-    { title: "Modern Office", image: "/category_placeholder.png" }, // rectangle 49
+    { title: "White Studio", image: "/bg_white_studio.png" },
+    { title: "Premium Studio", image: "/bg_premium_studio.png" },
+    { title: "Saree Festival", image: "/bg_saree_festival.png" },
+    { title: "Outdoor", image: "/bg_outdoor.png" },
+    { title: "Modern Office", image: "/bg_modern_office.png" },
   ];
 
   return (
