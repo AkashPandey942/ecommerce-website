@@ -15,6 +15,11 @@ export const runComfyService = {
     garmentImageUrl: string;
     modelImageUrl: string;
   }) {
+    if (!env.RUNCOMFY_API_KEY || !env.RUNCOMFY_DEPLOYMENT_ID) {
+      console.warn("⚠️ [runComfyService] Missing RunComfy credentials. Skipping workflow.");
+      return null;
+    }
+
     try {
       const response = await fetch(`https://runcomfy.com/api/prod/v1/deployments/${env.RUNCOMFY_DEPLOYMENT_ID}/inference`, {
         method: "POST",
@@ -47,6 +52,10 @@ export const runComfyService = {
    * Phase 2: Check the status of a request.
    */
   async checkStatus(requestId: string) {
+    if (!env.RUNCOMFY_API_KEY) {
+      return { status: "failed", error: "Missing RunComfy API Key" };
+    }
+
     try {
       const response = await fetch(`https://runcomfy.com/api/prod/v1/requests/${requestId}`, {
         method: "GET",
