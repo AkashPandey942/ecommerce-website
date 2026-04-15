@@ -43,8 +43,7 @@ const FlowHeader = ({ title, showBack = true }: FlowHeaderProps) => {
 
   return (
     <header 
-      className="fixed top-0 left-0 right-0 h-[100px] border-b border-white/10 z-[100] px-5 shadow-[0_10px_40px_rgba(0,0,0,0.8)]"
-      style={{ backgroundColor: '#0A0A0B' }}
+      className="fixed top-0 left-0 right-0 h-[100px] border-b border-white/10 z-[100] px-5 shadow-[0_10px_40px_rgba(0,0,0,0.8)] bg-black"
     >
       <div className="max-w-7xl mx-auto h-full flex flex-col justify-center">
         <div className="flex items-center justify-between">
@@ -55,7 +54,7 @@ const FlowHeader = ({ title, showBack = true }: FlowHeaderProps) => {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => router.back()}
                 aria-label="Go back to previous step"
-                className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all group"
+                className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all group cursor-pointer"
               >
                 <ChevronLeft className="w-5 h-5 text-white group-hover:-translate-x-0.5 transition-transform" aria-hidden="true" />
               </motion.button>

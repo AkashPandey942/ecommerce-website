@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Roboto, Manrope } from "next/font/google";
-import { ProjectProvider } from "@/context/ProjectContext";
-import { AuthProvider } from "@/context/AuthContext";
+import { Providers } from "@/components/Providers";
 import "./globals.css";
 
 const fontInter = Inter({
@@ -21,21 +20,10 @@ const fontManrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Figma UI | Premium Design System",
-  description: "A high-fidelity project embodying modern, premium design aesthetics with Next.js and Tailwind CSS.",
-  keywords: ["Figma", "UI", "Design System", "Next.js", "Tailwind CSS", "Glassmorphism"],
-  authors: [{ name: "Design Team" }],
-  openGraph: {
-    title: "Figma UI | Premium Design System",
-    description: "Stunning web application with glassmorphic UI and smooth animations.",
-    type: "website",
-    siteName: "Figma UI",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Figma UI | Premium Design System",
-    description: "Stunning web application with glassmorphic UI and smooth animations.",
-  },
+  title: "Digital Atelier | AI Fashion Studio",
+  description: "Advanced AI-powered ethnic wear product generation for modern brands.",
+  keywords: ["AI Fashion", "SaaS", "Ethnic Wear", "Next.js", "MongoDB", "NextAuth"],
+  authors: [{ name: "Digital Atelier" }],
 };
 
 export default function RootLayout({
@@ -49,11 +37,9 @@ export default function RootLayout({
       className={`${fontInter.variable} ${fontRoboto.variable} ${fontManrope.variable} h-full antialiased overflow-x-hidden`}
     >
       <body className="min-h-full flex flex-col overflow-x-hidden" suppressHydrationWarning>
-        <AuthProvider>
-          <ProjectProvider>
-            {children}
-          </ProjectProvider>
-        </AuthProvider>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

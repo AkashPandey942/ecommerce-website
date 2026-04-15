@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 
 const TopNav = () => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-[99px] rounded-b-[30px] bg-gradient-to-b from-black to-[#18142E] flex flex-col justify-between pt-[10px] pb-[14px]">
+    <header className="fixed top-0 left-0 right-0 z-50 h-[99px] rounded-b-[30px] bg-black flex flex-col justify-between pt-[10px] pb-[14px]">
       {/* iOS Status Bar Mockup (Frame 1) */}
       <div className="flex justify-between items-center px-5 h-[10px]">
         <div className="w-[34px] h-[10px] bg-white rounded-sm" />
