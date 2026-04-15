@@ -1,26 +1,33 @@
-import { fal } from "@fal-ai/client";
-
 /**
  * src/services/storageService.ts
- * Rewritten to use fal.ai storage via server proxy.
+ * Rewritten to use internal API / Cloudinary instead of Firebase.
  */
 export const storageService = {
   /**
-    * Uploads an image to fal.ai CDN via server proxy.
-    * This handles storage without needing Firebase or a manual API route.
-    */
+   * Uploads an image to our internal upload API.
+   * This handles storage without needing Firebase.
+   */
   async uploadGarment(userId: string, file: File): Promise<string> {
     try {
-      // If you haven't set up the FAL_KEY, we fall back to a local URL for testing
-      // This ensures "no error comes up" as requested.
-      const url = await fal.storage.upload(file);
-      console.log("✅ [storageService] Upload successful:", url);
-      return url; 
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("userId", userId);
+
+      // We will create this API route next if you want to use Cloudinary or S3
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const data = await response.json();
+      return data.url; // The permanent URL for the input image
     } catch (error) {
-      console.warn("⚠️ [storageService] Upload to fal.ai failed, falling back to local URL:", error);
-      // Fallback: This will only work locally and won't be accessible by external AI workers,
-      // but it prevents the UI from crashing/erroring.
-      return URL.createObjectURL(file);
+      console.error("❌ [storageService] uploadGarment Error:", error);
+      throw new Error("Failed to upload image. Please setup a storage provider (like Cloudinary).");
     }
   }
 };

@@ -1,5 +1,4 @@
 // src/services/falService.ts
-import { env } from "@/config/env";
 
 /**
  * Service to handle GPU inference calls via fal.ai.
@@ -16,11 +15,17 @@ export const falService = {
   }) {
     const { garmentImageUrl, modelImageUrl, prompt } = params;
 
+    const FAL_KEY = process.env.FAL_KEY || "";
+    if (!FAL_KEY) {
+      console.warn("⚠️ [falService] Missing FAL_KEY. Generation will not trigger.");
+      return null;
+    }
+
     try {
       const response = await fetch("https://fal.run/fal-ai/fashn/tryon/v1.5", {
         method: "POST",
         headers: {
-          "Authorization": `Key ${env.FAL_KEY}`,
+          "Authorization": `Key ${FAL_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({

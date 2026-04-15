@@ -16,12 +16,8 @@ const FlowHeader = ({ title, showBack = true }: FlowHeaderProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const params = useParams();
-  const { isAuthenticated, userProfile } = useAuth();
   const { credits } = useProject();
-
-  const initials = userProfile 
-    ? [(userProfile.firstName?.[0] || ""), (userProfile.lastName?.[0] || "")].filter(Boolean).join("").toUpperCase()
-    : "AG";
+  const { isAuthenticated } = useAuth();
 
   const getBreadcrumbs = () => {
     const parts = pathname.split('/').filter(Boolean);
@@ -127,7 +123,7 @@ const FlowHeader = ({ title, showBack = true }: FlowHeaderProps) => {
                     className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#EC4899] flex items-center justify-center shadow-lg"
                     aria-hidden="true"
                   >
-                    <span className="font-bold text-xs md:text-base text-white" aria-hidden="true">{initials}</span>
+                    <span className="font-bold text-xs md:text-base text-white" aria-hidden="true">AG</span>
                   </motion.div>
                 </Link>
               </>
