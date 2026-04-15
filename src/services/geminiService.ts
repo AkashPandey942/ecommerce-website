@@ -1,8 +1,8 @@
 // src/services/geminiService.ts
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { env } from "@/config/env";
 
-const API_KEY = process.env.GEMINI_API_KEY || "";
-const genAI = new GoogleGenerativeAI(API_KEY);
+const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
 interface RefinementInput {
   segment: string;
@@ -20,11 +20,6 @@ export const geminiService = {
    * Transforms structured selections into a high-fidelity photographic prompt.
    */
   async refinePrompt(input: RefinementInput): Promise<string> {
-    if (!API_KEY) {
-      console.warn("⚠️ [geminiService] Missing GEMINI_API_KEY. Using basic prompt.");
-      return `${input.segment} ${input.style} on a ${input.model} model, ${input.background} background. ${input.directorNotes || ""}`;
-    }
-
     try {
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
