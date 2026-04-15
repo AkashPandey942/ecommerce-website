@@ -21,7 +21,8 @@ export const runComfyService = {
     }
 
     try {
-      const response = await fetch(`https://runcomfy.com/api/prod/v1/deployments/${env.RUNCOMFY_DEPLOYMENT_ID}/inference`, {
+      const baseUrl = env.RUNCOMFY_API_URL || "https://runcomfy.com/api/prod/v1";
+      const response = await fetch(`${baseUrl}/deployments/${env.RUNCOMFY_DEPLOYMENT_ID}/inference`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${env.RUNCOMFY_API_KEY}`,
@@ -57,7 +58,8 @@ export const runComfyService = {
     }
 
     try {
-      const response = await fetch(`https://runcomfy.com/api/prod/v1/requests/${requestId}`, {
+      const baseUrl = env.RUNCOMFY_API_URL || "https://runcomfy.com/api/prod/v1";
+      const response = await fetch(`${baseUrl}/requests/${requestId}`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${env.RUNCOMFY_API_KEY}`,

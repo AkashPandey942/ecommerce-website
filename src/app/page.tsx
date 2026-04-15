@@ -6,7 +6,8 @@ import Hero from "@/components/Hero";
 import CategoryCard from "@/components/CategoryCard";
 import RecentlyVisited from "@/components/RecentlyVisited";
 import Link from "next/link";
-import { Shirt, Gem, Watch, Package } from "lucide-react";
+import { Shirt, Gem, Watch, Package, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { CardSkeleton } from "@/components/ui/Skeleton";
@@ -32,6 +33,32 @@ export default function Home() {
       <main className="w-full max-w-none mx-auto">
         {/* Hero Section */}
         <Hero />
+
+        <section className="px-5 mb-10 w-full max-w-7xl mx-auto">
+          <Link href="/virtual-try-on" className="w-full">
+            <motion.div 
+              whileHover={{ scale: 1.01, backgroundColor: "rgba(255, 255, 255, 0.08)" }}
+              whileTap={{ scale: 0.99 }}
+              className="bg-gradient-to-r from-[#7C4DFF]/10 to-[#EC4899]/10 border border-[#7C4DFF]/20 rounded-[20px] p-5 flex items-center justify-between group transition-all cursor-pointer shadow-[0_0_20px_rgba(124,77,255,0.1)]"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#7C4DFF] to-[#EC4899] flex items-center justify-center shadow-lg">
+                  <Shirt className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-roboto font-semibold text-white text-base">Virtual Try-On</h3>
+                  <p className="font-roboto font-normal text-[#99A1AF] text-sm truncate max-w-[200px] sm:max-w-none">
+                    Experience clothes virtually with our AI-powered fitting room
+                  </p>
+                </div>
+              </div>
+              
+              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-gradient-to-r group-hover:from-[#7C4DFF] group-hover:to-[#EC4899] transition-all group-hover:shadow-[0_0_15px_rgba(124,77,255,0.4)]">
+                <ArrowRight className="w-5 h-5 text-white" />
+              </div>
+            </motion.div>
+          </Link>
+        </section>
 
         {/* SaaS Rule 6.1: Recent branch shortcut */}
         <RecentlyVisited />

@@ -7,9 +7,10 @@ import Image from "next/image";
 
 interface UploadZoneProps {
   onFileSelect?: (file: File | null) => void;
+  hideText?: boolean;
 }
 
-const UploadZone = ({ onFileSelect }: UploadZoneProps) => {
+const UploadZone = ({ onFileSelect, hideText = false }: UploadZoneProps) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
