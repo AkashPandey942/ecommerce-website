@@ -11,8 +11,8 @@ const envSchema = z.object({
   // AI Services
   GEMINI_API_KEY: z.string().min(1, "GEMINI_API_KEY is required"),
   FAL_KEY: z.string().min(1, "FAL_KEY is required"),
-  RUNCOMFY_API_KEY: z.string().min(1, "RUNCOMFY_API_KEY is required"),
-  RUNCOMFY_DEPLOYMENT_ID: z.string().min(1, "RUNCOMFY_DEPLOYMENT_ID is required"),
+  RUNCOMFY_API_KEY: z.string().optional(),
+  RUNCOMFY_DEPLOYMENT_ID: z.string().optional(),
 
   // Authentication
   NEXTAUTH_SECRET: z.string().min(1, "NEXTAUTH_SECRET is required"),
