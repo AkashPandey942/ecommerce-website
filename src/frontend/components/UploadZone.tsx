@@ -10,13 +10,17 @@ interface UploadZoneProps {
   hideText?: boolean;
   allowPointSelection?: boolean;
   onPointSelect?: (point: { x: number; y: number } | null) => void;
+  title?: string;
+  subTitle?: string;
 }
 
 const UploadZone = ({ 
   onFileSelect, 
   hideText = false, 
   allowPointSelection = false, 
-  onPointSelect 
+  onPointSelect,
+  title,
+  subTitle
 }: UploadZoneProps) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [markerPoint, setMarkerPoint] = useState<{ x: number; y: number } | null>(null);
@@ -81,11 +85,11 @@ const UploadZone = ({
       />
 
       <motion.div
-        whileHover={!selectedImage ? { borderColor: "rgba(124,77,255,0.8)" } : {}}
+        whileHover={!selectedImage ? { borderColor: "rgba(124,77,255,0.5)", backgroundColor: "rgba(46,28,77,0.4)" } : {}}
         onClick={() => !selectedImage && fileInputRef.current?.click()}
-        className={`relative w-full bg-[#2E1C4D] border ${
-          selectedImage ? "border-transparent p-0 overflow-hidden h-[260px]" : "border-dashed border-[#46277C] px-5 pt-7 pb-6 min-h-[260px]"
-        } rounded-[14px] flex flex-col items-center justify-center cursor-pointer transition-colors gap-0`}
+        className={`relative w-full bg-[#1A1D2B]/40 backdrop-blur-xl border ${
+          selectedImage ? "border-transparent p-0 overflow-hidden h-[260px]" : "border-dashed border-white/10 px-5 pt-7 pb-6 min-h-[260px]"
+        } rounded-[20px] flex flex-col items-center justify-center cursor-pointer transition-all duration-300 gap-0 group shadow-lg`}
       >
         <AnimatePresence mode="wait">
           {selectedImage ? (
@@ -130,13 +134,13 @@ const UploadZone = ({
               <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3 px-4 z-10 w-full pointer-events-auto">
                 <button 
                   onClick={(e) => { e.stopPropagation(); cameraInputRef.current?.click(); }}
-                  className="flex-1 max-w-[140px] h-[36px] flex items-center justify-center gap-2 bg-black/50 backdrop-blur-md border border-white/20 hover:border-figma-gradient rounded-[10px] hover:bg-black/70 transition-all font-roboto text-[12px] text-white"
+                  className="flex-1 max-w-[140px] h-[36px] flex items-center justify-center gap-2 bg-black/50 backdrop-blur-md border border-white/20 hover:border-figma-gradient rounded-[10px] hover:bg-black/70 transition-all font-roboto text-[12px] text-white cursor-pointer"
                 >
                   <Camera size={14} /> Retake
                 </button>
                 <button 
                   onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                  className="flex-1 max-w-[140px] h-[36px] flex items-center justify-center gap-2 bg-black/50 backdrop-blur-md border border-white/20 hover:border-figma-gradient rounded-[10px] hover:bg-black/70 transition-all font-roboto text-[12px] text-white"
+                  className="flex-1 max-w-[140px] h-[36px] flex items-center justify-center gap-2 bg-black/50 backdrop-blur-md border border-white/20 hover:border-figma-gradient rounded-[10px] hover:bg-black/70 transition-all font-roboto text-[12px] text-white cursor-pointer"
                 >
                   <Upload size={14} /> Re-upload
                 </button>
@@ -150,29 +154,59 @@ const UploadZone = ({
               exit={{ opacity: 0 }}
               className="flex flex-col items-center w-full"
             >
-              {/* Upload Icon — gradient circle */}
-              <div className="w-[54px] h-[54px] bg-gradient-to-br from-[#7C3AED] to-[#EC4899] rounded-full flex items-center justify-center shadow-[0_0_21px_rgba(236,72,153,0.35)] mb-4">
-                <Upload className="w-[22px] h-[22px] text-white" strokeWidth={2.2} />
-              </div>
+              {/* Upload Icon — gradient circle with motion */}
+              <motion.div 
+                animate={{ 
+                  scale: [1, 1.05, 1],
+                  boxShadow: [
+                    "0 0 21px rgba(236,72,153,0.35)",
+                    "0 0 35px rgba(236,72,153,0.6)",
+                    "0 0 21px rgba(236,72,153,0.35)"
+                  ]
+                }}
+                transition={{ 
+                  duration: 2, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+                className="w-[54px] h-[54px] bg-gradient-to-br from-[#7C3AED] to-[#EC4899] rounded-full flex items-center justify-center mb-4 cursor-pointer"
+              >
+                <motion.div
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ 
+                    duration: 1.5, 
+                    repeat: Infinity, 
+                    ease: "easeInOut" 
+                  }}
+                >
+                  <Upload className="w-[22px] h-[22px] text-white" strokeWidth={2.5} />
+                </motion.div>
+              </motion.div>
 
               {/* Title */}
-              <h3 className="font-roboto font-semibold text-[17px] leading-[22px] text-white text-center mb-[6px]">
-                Upload Product Image
-              </h3>
+              {!hideText && (
+                <h3 className="font-roboto font-semibold text-[17px] leading-[22px] text-white text-center mb-[6px]">
+                  {title || "Upload Product Image"}
+                </h3>
+              )}
 
               {/* Subtitle */}
-              <p className="font-roboto font-normal text-[13px] leading-[18px] text-[#99A1AF] text-center mb-[3px]">
-                Drag and drop or click to select
-              </p>
-              <p className="font-roboto font-normal text-[13px] leading-[18px] text-[#99A1AF] text-center mb-6">
-                Supports JPG, PNG (Max 10MB)
-              </p>
+              {!hideText && (
+                <>
+                  <p className="font-roboto font-normal text-[13px] leading-[18px] text-[#99A1AF] text-center mb-[3px]">
+                    {subTitle || "Drag and drop or click to select"}
+                  </p>
+                  <p className="font-roboto font-normal text-[13px] leading-[18px] text-[#99A1AF] text-center mb-6">
+                    {subTitle ? "" : "Supports JPG, PNG (Max 10MB)"}
+                  </p>
+                </>
+              )}
 
               {/* Action Buttons — stacked vertically, full width */}
               <div className="flex flex-col gap-3 w-full">
                 <button 
                   onClick={(e) => { e.stopPropagation(); cameraInputRef.current?.click(); }}
-                  className="w-full h-[42px] flex items-center justify-center gap-2 bg-transparent border border-[#C5B6DE]/60 rounded-[10px] hover:bg-white/5 hover:border-[#C5B6DE] transition-all"
+                  className="w-full h-[42px] flex items-center justify-center gap-2 bg-transparent border border-[#C5B6DE]/60 rounded-[10px] hover:bg-white/5 hover:border-[#C5B6DE] transition-all cursor-pointer"
                 >
                   <Camera className="w-[17px] h-[17px] text-[#C5B6DE]" strokeWidth={1.8} />
                   <span className="font-roboto font-medium text-[13px] leading-[18px] text-[#C5B6DE]">
@@ -182,7 +216,7 @@ const UploadZone = ({
 
                 <button 
                   onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                  className="w-full h-[42px] flex items-center justify-center gap-2 bg-transparent border border-[#C5B6DE]/60 rounded-[10px] hover:bg-white/5 hover:border-[#C5B6DE] transition-all"
+                  className="w-full h-[42px] flex items-center justify-center gap-2 bg-transparent border border-[#C5B6DE]/60 rounded-[10px] hover:bg-white/5 hover:border-[#C5B6DE] transition-all cursor-pointer"
                 >
                   <Upload className="w-[17px] h-[17px] text-[#C5B6DE]" strokeWidth={1.8} />
                   <span className="font-roboto font-medium text-[13px] leading-[18px] text-[#C5B6DE]">

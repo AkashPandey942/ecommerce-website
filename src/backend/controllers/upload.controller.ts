@@ -30,7 +30,7 @@ export const UploadController = {
             folder: `ecom-hub/user-${userId}`,
             resource_type: "auto",
           },
-          (error, result) => {
+          (error: any, result: any) => {
             if (error || !result) reject(error || new Error("Cloudinary upload failed"));
             else resolve(result as { secure_url: string });
           }
@@ -39,8 +39,9 @@ export const UploadController = {
       });
 
       return NextResponse.json({ success: true, url: result.secure_url });
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Upload failed";
+    } catch (error: any) {
+      console.error("❌ [UploadController] Error:", error);
+      const message = error?.message || (typeof error === 'string' ? error : "Upload failed");
       return NextResponse.json({ success: false, error: message }, { status: 500 });
     }
   }
