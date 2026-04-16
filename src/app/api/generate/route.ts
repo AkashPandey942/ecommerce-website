@@ -1,17 +1,19 @@
 // src/app/api/generate/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { runComfyService } from "@/services/runComfyService";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { geminiService } from "@/services/geminiService";
 import { generationService } from "@/services/generationService";
+import { storageService } from "@/services/storageService";
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { modelId, background, style, prompt, garmentImageUrl, modelImageUrl } = await request.json();
+    const { modelId, background, style, prompt, garmentImageUrl } = await request.json();
 
     const userId = (session.user as any).id;
 
@@ -21,16 +23,24 @@ export async function POST(request: Request) {
       modelId,
       background,
       outputStyle: style,
-      prompt,
+      prompt: prompt || "",
     });
 
-    // 2. Trigger RunComfy workflow
+    const { runComfyService } = require("@/services/runComfyService");
+    
+    // Fallback for simple numeric model IDs sent from frontend UI
+    let modelImagePath: string = modelId;
+    if (!modelImagePath || !modelImagePath.includes("/")) {
+      modelImagePath = "/assets/ladies/western-wear/photo-beautiful-female-model.jpg";
+    }
+
+    // 2. Trigger RunComfy Model API Workflow
     const requestId = await runComfyService.triggerWorkflow({
       garmentImageUrl,
-      modelImageUrl
+      modelImageUrl: modelImagePath
     });
 
-    // 3. Update job with RunComfy requestId
+    // 3. Update job with the RunComfy requestId for status polling
     await generationService.updateJob(jobId, { 
       requestId,
       status: "processing" 

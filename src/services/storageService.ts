@@ -13,21 +13,21 @@ export const storageService = {
       formData.append("file", file);
       formData.append("userId", userId);
 
-      // We will create this API route next if you want to use Cloudinary or S3
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error("Upload failed");
+        const err = await response.json();
+        throw new Error(err.error || "Upload failed");
       }
 
       const data = await response.json();
-      return data.url; // The permanent URL for the input image
-    } catch (error) {
+      return data.url; // Returns the permanent /api/files/[id] URL
+    } catch (error: any) {
       console.error("❌ [storageService] uploadGarment Error:", error);
-      throw new Error("Failed to upload image. Please setup a storage provider (like Cloudinary).");
+      throw new Error(error.message || "Failed to upload image.");
     }
   }
 };
