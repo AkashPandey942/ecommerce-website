@@ -2,6 +2,99 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import cloudinary from "@/shared/config/cloudinary";
+import { env } from "@/shared/config/env";
+
+type CloudinaryLikeError = {
+  message?: string;
+  error?: {
+    message?: string;
+    http_code?: number;
+  };
+  http_code?: number;
+};
+
+const CATBOX_UPLOAD_URL = "https://catbox.moe/user/api.php";
+
+function hasCloudinaryConfig() {
+  return Boolean(env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY && env.CLOUDINARY_API_SECRET);
+}
+
+function isCloudinaryConfigError(message: string) {
+  return /unknown\s+api[_\s-]?key|must\s+supply\s+api[_\s-]?key|invalid\s+api[_\s-]?key/i.test(message);
+}
+
+async function uploadToCloudinary(buffer: Buffer, userId: string) {
+  const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: `ecom-hub/user-${userId}`,
+        resource_type: "auto",
+      },
+      (error, uploadResult) => {
+        if (error || !uploadResult) {
+          reject(error || new Error("Cloudinary upload failed"));
+          return;
+        }
+        resolve(uploadResult as { secure_url: string });
+      }
+    );
+    uploadStream.end(buffer);
+  });
+
+  return result.secure_url;
+}
+
+async function uploadToCatbox(file: File) {
+  const form = new FormData();
+  form.append("reqtype", "fileupload");
+  form.append("fileToUpload", file, file.name || "upload.jpg");
+
+  const response = await fetch(CATBOX_UPLOAD_URL, {
+    method: "POST",
+    body: form,
+  });
+
+  const bodyText = (await response.text()).trim();
+
+  if (!response.ok) {
+    throw new Error(`Catbox upload failed: ${bodyText || response.statusText}`);
+  }
+
+  if (!bodyText.startsWith("http://") && !bodyText.startsWith("https://")) {
+    throw new Error(`Catbox upload returned invalid URL: ${bodyText}`);
+  }
+
+  return bodyText;
+}
+
+function normalizeUploadError(error: unknown): string {
+  const toSafeMessage = (raw: string) => {
+    const message = raw.trim();
+    if (/unknown\s+api[_\s-]?key/i.test(message) || /invalid\s+api[_\s-]?key/i.test(message)) {
+      return "Cloudinary credentials are invalid. Please update CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET in .env.";
+    }
+    if (/invalid\s+signature/i.test(message)) {
+      return "Cloudinary signature validation failed. Please verify CLOUDINARY_API_SECRET in .env.";
+    }
+    return message;
+  };
+
+  if (error instanceof Error && error.message) {
+    return toSafeMessage(error.message);
+  }
+
+  if (error && typeof error === "object") {
+    const cloudinaryError = error as CloudinaryLikeError;
+    if (cloudinaryError.error?.message) {
+      return toSafeMessage(cloudinaryError.error.message);
+    }
+    if (cloudinaryError.message) {
+      return toSafeMessage(cloudinaryError.message);
+    }
+  }
+
+  return "Upload failed";
+}
 
 export const UploadController = {
   async handleUpload(request: Request) {
@@ -23,24 +116,27 @@ export const UploadController = {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      // Upload to Cloudinary
-      const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          {
-            folder: `ecom-hub/user-${userId}`,
-            resource_type: "auto",
-          },
-          (error, result) => {
-            if (error || !result) reject(error || new Error("Cloudinary upload failed"));
-            else resolve(result as { secure_url: string });
-          }
-        );
-        uploadStream.end(buffer);
-      });
+      if (!hasCloudinaryConfig()) {
+        const fallbackUrl = await uploadToCatbox(file);
+        return NextResponse.json({ success: true, url: fallbackUrl, provider: "catbox" });
+      }
 
-      return NextResponse.json({ success: true, url: result.secure_url });
+      try {
+        const cloudinaryUrl = await uploadToCloudinary(buffer, userId);
+        return NextResponse.json({ success: true, url: cloudinaryUrl, provider: "cloudinary" });
+      } catch (cloudinaryError) {
+        const message = normalizeUploadError(cloudinaryError);
+
+        if (isCloudinaryConfigError(message)) {
+          const fallbackUrl = await uploadToCatbox(file);
+          return NextResponse.json({ success: true, url: fallbackUrl, provider: "catbox" });
+        }
+
+        throw cloudinaryError;
+      }
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Upload failed";
+      const message = normalizeUploadError(error);
+      console.error("❌ [API/Upload] Error:", message);
       return NextResponse.json({ success: false, error: message }, { status: 500 });
     }
   }

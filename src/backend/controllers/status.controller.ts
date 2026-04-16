@@ -28,11 +28,40 @@ export const StatusController = {
         const runComfyData = await runComfyService.checkStatus(job.requestId);
 
         if (runComfyData.status === "completed" && runComfyData.outputImage) {
+          const rawOutputImage = runComfyData.outputImage;
+          const rawOutputImages = Array.isArray((runComfyData as { outputImages?: string[] }).outputImages)
+            ? (runComfyData as { outputImages?: string[] }).outputImages
+            : [rawOutputImage];
+
+          const isLikelyReference = (url: string) => {
+            const token = url.toLowerCase();
+            return /(input|garment|cloth|mask|source|reference|upload)/.test(token);
+          };
+
+          const outputImages = (rawOutputImages ?? []).filter((url) => url && url !== job.inputImage && !isLikelyReference(url));
+          const outputImage = outputImages[0] || rawOutputImage;
+
           await generationService.updateJob(jobId, {
             status: "completed",
-            outputImage: runComfyData.outputImage
+            outputImage,
           });
-          return NextResponse.json({ success: true, ...job, status: "completed", outputImage: runComfyData.outputImage });
+          return NextResponse.json({
+            success: true,
+            ...job,
+            status: "completed",
+            outputImage,
+            outputImages,
+          });
+        }
+
+        if (runComfyData.status === "completed" && !runComfyData.outputImage) {
+          const outputError = runComfyData.error || "Generation completed but no output image was returned";
+          await generationService.updateJob(jobId, {
+            status: "failed",
+            error: outputError,
+          });
+          await generationService.refundJob(jobId);
+          return NextResponse.json({ success: true, ...job, status: "failed", error: outputError });
         }
 
         if (runComfyData.status === "failed") {
