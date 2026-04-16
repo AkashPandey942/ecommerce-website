@@ -1,15 +1,15 @@
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import Footer from "@/components/Footer";
-import ProgressStepper from "@/components/ProgressStepper";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import Footer from "@/frontend/components/Footer";
+import ProgressStepper from "@/frontend/components/ProgressStepper";
 import { Download, Share2, Maximize2, Play, CheckCircle2, Image as ImageIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import StackedImagePreview from "@/components/StackedImagePreview";
+import StackedImagePreview from "@/frontend/components/StackedImagePreview";
 
 export default function JewelleryResultPage() {
   const params = useParams();

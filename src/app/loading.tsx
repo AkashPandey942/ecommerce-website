@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import BrandLogo from "@/components/BrandLogo";
+import BrandLogo from "@/frontend/components/BrandLogo";
 
 export default function Loading() {
   return (

@@ -1,15 +1,15 @@
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import ProgressStepper from "@/components/ProgressStepper";
-import Footer from "@/components/Footer";
-import LoadingActionButton from "@/components/LoadingActionButton";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import ProgressStepper from "@/frontend/components/ProgressStepper";
+import Footer from "@/frontend/components/Footer";
+import LoadingActionButton from "@/frontend/components/LoadingActionButton";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { Check, RefreshCcw, Sparkles, Wand2, MessageSquare, X } from "lucide-react";
-import { useProject } from "@/context/ProjectContext";
+import { useProject } from "@/frontend/context/ProjectContext";
 
 export default function ApprovePrimeImagePage() {
   const params = useParams();

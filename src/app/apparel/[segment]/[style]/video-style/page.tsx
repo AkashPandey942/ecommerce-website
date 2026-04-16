@@ -1,9 +1,9 @@
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import ProgressStepper from "@/components/ProgressStepper";
-import Footer from "@/components/Footer";
-import LoadingActionButton from "@/components/LoadingActionButton";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import ProgressStepper from "@/frontend/components/ProgressStepper";
+import Footer from "@/frontend/components/Footer";
+import LoadingActionButton from "@/frontend/components/LoadingActionButton";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useState } from "react";

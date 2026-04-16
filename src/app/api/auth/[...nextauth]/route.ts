@@ -1,9 +1,9 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import dbConnect from "@/lib/mongodb";
-import User from "@/models/User";
+import dbConnect from "@/backend/lib/mongodb";
+import User from "@/backend/models/User";
 import bcrypt from "bcryptjs";
-import { env } from "@/config/env";
+import { env } from "@/shared/config/env";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -19,7 +19,8 @@ export const authOptions: NextAuthOptions = {
         }
 
         await dbConnect();
-        const user = await User.findOne({ email: credentials.email });
+        const normalizedEmail = credentials.email.trim().toLowerCase();
+        const user = await User.findOne({ email: normalizedEmail });
 
         if (!user || !user.password) {
           throw new Error("No user found with this email");
@@ -48,16 +49,16 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.firstName = (user as any).firstName;
-        token.lastName = (user as any).lastName;
+        token.firstName = user.firstName;
+        token.lastName = user.lastName;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).firstName = token.firstName;
-        (session.user as any).lastName = token.lastName;
+        session.user.id = token.id || "";
+        session.user.firstName = token.firstName;
+        session.user.lastName = token.lastName;
       }
       return session;
     }

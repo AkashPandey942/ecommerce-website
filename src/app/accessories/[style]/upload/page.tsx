@@ -1,30 +1,30 @@
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import ProgressStepper from "@/components/ProgressStepper";
-import Footer from "@/components/Footer";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import ProgressStepper from "@/frontend/components/ProgressStepper";
+import Footer from "@/frontend/components/Footer";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useState } from "react";
-import LoadingActionButton from "@/components/LoadingActionButton";
-import { Skeleton } from "@/components/ui/Skeleton";
-import ProductTag from "@/components/ProductTag";
+import LoadingActionButton from "@/frontend/components/LoadingActionButton";
+import { Skeleton } from "@/frontend/components/ui/Skeleton";
+import ProductTag from "@/frontend/components/ProductTag";
 
 // Dynamic components
-const UploadZone = dynamic(() => import("@/components/UploadZone"), { 
+const UploadZone = dynamic(() => import("@/frontend/components/UploadZone"), { 
   ssr: false, 
   loading: () => <Skeleton className="w-full h-[240px] rounded-2xl" /> 
 });
-const ModelScroll = dynamic(() => import("@/components/ModelScroll"), { 
+const ModelScroll = dynamic(() => import("@/frontend/components/ModelScroll"), { 
   ssr: false, 
   loading: () => <Skeleton className="w-full h-[170px] rounded-xl" /> 
 });
-const BackgroundGrid = dynamic(() => import("@/components/BackgroundGrid"), { 
+const BackgroundGrid = dynamic(() => import("@/frontend/components/BackgroundGrid"), { 
   ssr: false, 
   loading: () => <div className="grid grid-cols-2 gap-4"><Skeleton className="h-[100px]" /><Skeleton className="h-[100px]" /></div> 
 });
-const AIDirectorNotes = dynamic(() => import("@/components/AIDirectorNotes"), { ssr: false });
-const SelectionPreviewModal = dynamic(() => import("@/components/SelectionPreviewModal"), { ssr: false });
+const AIDirectorNotes = dynamic(() => import("@/frontend/components/AIDirectorNotes"), { ssr: false });
+const SelectionPreviewModal = dynamic(() => import("@/frontend/components/SelectionPreviewModal"), { ssr: false });
 
 export default function AccessoriesUnifiedSetupPage() {
   const params = useParams();

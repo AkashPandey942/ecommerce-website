@@ -1,15 +1,15 @@
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import ProgressStepper from "@/components/ProgressStepper";
-import ProductScroll from "@/components/ProductScroll";
-import ProductTag from "@/components/ProductTag";
-import Footer from "@/components/Footer";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import ProgressStepper from "@/frontend/components/ProgressStepper";
+import ProductScroll from "@/frontend/components/ProductScroll";
+import ProductTag from "@/frontend/components/ProductTag";
+import Footer from "@/frontend/components/Footer";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import LoadingActionButton from "@/components/LoadingActionButton";
-import { useRecentBranch } from "@/hooks/useRecentBranch";
+import LoadingActionButton from "@/frontend/components/LoadingActionButton";
+import { useRecentBranch } from "@/frontend/hooks/useRecentBranch";
 import { Check, RefreshCcw, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
 
 export default function ProductsLeafPage() {

@@ -1,10 +1,10 @@
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import ProgressStepper from "@/components/ProgressStepper";
-import StyleCard from "@/components/StyleCard";
-import Footer from "@/components/Footer";
-import LoadingActionButton from "@/components/LoadingActionButton";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import ProgressStepper from "@/frontend/components/ProgressStepper";
+import StyleCard from "@/frontend/components/StyleCard";
+import Footer from "@/frontend/components/Footer";
+import LoadingActionButton from "@/frontend/components/LoadingActionButton";
 import { Sparkles, X, Wand2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";

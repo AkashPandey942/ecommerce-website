@@ -1,16 +1,16 @@
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import Footer from "@/components/Footer";
-import ProgressStepper from "@/components/ProgressStepper";
-import ResultCarousel from "@/components/ResultCarousel";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import Footer from "@/frontend/components/Footer";
+import ProgressStepper from "@/frontend/components/ProgressStepper";
+import ResultCarousel from "@/frontend/components/ResultCarousel";
 import { Download, RefreshCcw, Share2, Maximize2, Play, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import LoadingActionButton from "@/components/LoadingActionButton";
+import LoadingActionButton from "@/frontend/components/LoadingActionButton";
 
 export default function ResultPage() {
   const params = useParams();

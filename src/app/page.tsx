@@ -1,22 +1,22 @@
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import BottomNav from "@/components/BottomNav";
-import Hero from "@/components/Hero";
-import CategoryCard from "@/components/CategoryCard";
-import RecentlyVisited from "@/components/RecentlyVisited";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import BottomNav from "@/frontend/components/BottomNav";
+import Hero from "@/frontend/components/Hero";
+import CategoryCard from "@/frontend/components/CategoryCard";
+import RecentlyVisited from "@/frontend/components/RecentlyVisited";
 import Link from "next/link";
 import { Shirt, Gem, Watch, Package, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
-import { CardSkeleton } from "@/components/ui/Skeleton";
+import { CardSkeleton } from "@/frontend/components/ui/Skeleton";
 
-import ProductScroll from "@/components/ProductScroll";
-import Footer from "@/components/Footer";
+import ProductScroll from "@/frontend/components/ProductScroll";
+import Footer from "@/frontend/components/Footer";
 
 // Performance Optimization: Defer only truly browser-specific heavy components
-const JewelleryOverlaySVG = dynamic(() => import("@/components/JewelleryOverlaySVG").then(mod => mod.JewelleryOverlaySVG), { ssr: false });
+const JewelleryOverlaySVG = dynamic(() => import("@/frontend/components/JewelleryOverlaySVG").then(mod => mod.JewelleryOverlaySVG), { ssr: false });
 
 export default function Home() {
   const categories = [

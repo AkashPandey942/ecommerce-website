@@ -1,10 +1,10 @@
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import ProgressStepper from "@/components/ProgressStepper";
-import ProductHero from "@/components/ProductHero";
-import ProductTag from "@/components/ProductTag";
-import Footer from "@/components/Footer";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import ProgressStepper from "@/frontend/components/ProgressStepper";
+import ProductHero from "@/frontend/components/ProductHero";
+import ProductTag from "@/frontend/components/ProductTag";
+import Footer from "@/frontend/components/Footer";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";

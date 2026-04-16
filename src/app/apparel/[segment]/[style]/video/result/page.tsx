@@ -1,8 +1,8 @@
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import ProgressStepper from "@/components/ProgressStepper";
-import Footer from "@/components/Footer";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import ProgressStepper from "@/frontend/components/ProgressStepper";
+import Footer from "@/frontend/components/Footer";
 import { Play, CheckCircle2, Download, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";

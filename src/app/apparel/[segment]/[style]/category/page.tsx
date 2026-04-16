@@ -1,16 +1,16 @@
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import ProgressStepper from "@/components/ProgressStepper";
-import ProductTag from "@/components/ProductTag";
-import Footer from "@/components/Footer";
-import LoadingActionButton from "@/components/LoadingActionButton";
-import InfiniteCarousel from "@/components/InfiniteCarousel";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import ProgressStepper from "@/frontend/components/ProgressStepper";
+import ProductTag from "@/frontend/components/ProductTag";
+import Footer from "@/frontend/components/Footer";
+import LoadingActionButton from "@/frontend/components/LoadingActionButton";
+import InfiniteCarousel from "@/frontend/components/InfiniteCarousel";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { useRecentBranch } from "@/hooks/useRecentBranch";
+import { useRecentBranch } from "@/frontend/hooks/useRecentBranch";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { TAXONOMY } from "@/registry/taxonomy";
 

@@ -1,14 +1,14 @@
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import ProgressStepper from "@/components/ProgressStepper";
-import Footer from "@/components/Footer";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import ProgressStepper from "@/frontend/components/ProgressStepper";
+import Footer from "@/frontend/components/Footer";
 import { Download, Plus, Play } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import StackedImagePreview from "@/components/StackedImagePreview";
+import StackedImagePreview from "@/frontend/components/StackedImagePreview";
 
 export default function FinalResultsPage() {
   const params = useParams();

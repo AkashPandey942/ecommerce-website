@@ -1,13 +1,13 @@
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import Footer from "@/components/Footer";
-import ProgressStepper from "@/components/ProgressStepper";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import Footer from "@/frontend/components/Footer";
+import ProgressStepper from "@/frontend/components/ProgressStepper";
 import { Download, Share2, CornerUpRight, Image as ImageIcon, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
-import StackedImagePreview from "@/components/StackedImagePreview";
+import StackedImagePreview from "@/frontend/components/StackedImagePreview";
 
 export default function AccessoriesResultPage() {
   const params = useParams();

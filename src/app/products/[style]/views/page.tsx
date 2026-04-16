@@ -1,14 +1,14 @@
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import ProgressStepper from "@/components/ProgressStepper";
-import Footer from "@/components/Footer";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import ProgressStepper from "@/frontend/components/ProgressStepper";
+import Footer from "@/frontend/components/Footer";
 import { Check, Sparkles, Wand2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import LoadingActionButton from "@/components/LoadingActionButton";
+import LoadingActionButton from "@/frontend/components/LoadingActionButton";
 import { TAXONOMY } from "@/registry/taxonomy";
 
 export default function ProductsOutputViewsPage() {

@@ -1,9 +1,9 @@
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import ProgressStepper from "@/components/ProgressStepper";
-import VideoStyleCard from "@/components/VideoStyleCard";
-import Footer from "@/components/Footer";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import ProgressStepper from "@/frontend/components/ProgressStepper";
+import VideoStyleCard from "@/frontend/components/VideoStyleCard";
+import Footer from "@/frontend/components/Footer";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";

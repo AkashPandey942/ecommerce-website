@@ -2,24 +2,32 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Download, Share2, RefreshCw, Home } from "lucide-react";
-import FlowHeader from "@/components/FlowHeader";
-import Footer from "@/components/Footer";
-import ProtectedRoute from "@/components/ProtectedRoute";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import Footer from "@/frontend/components/Footer";
+import ProtectedRoute from "@/frontend/components/ProtectedRoute";
 
 export default function GenerationResultPage() {
   const params = useParams();
   const router = useRouter();
   const jobId = params.id as string;
 
-  const [job, setJob] = useState<any>(null);
+  const [job, setJob] = useState<{
+    status: "pending" | "processing" | "completed" | "failed";
+    outputImage?: string;
+    outputStyle?: string;
+    modelId?: string;
+    background?: string;
+    error?: string;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const pollInterval = useRef<NodeJS.Timeout | null>(null);
 
-  const fetchStatus = async () => {
+  const fetchStatus = useCallback(async () => {
     try {
       const response = await fetch(`/api/status?jobId=${jobId}`);
       if (!response.ok) throw new Error("Failed to fetch status");
@@ -31,11 +39,12 @@ export default function GenerationResultPage() {
       if (data.status === "completed" || data.status === "failed") {
         if (pollInterval.current) clearInterval(pollInterval.current);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("❌ [Result] Polling Error:", err);
-      // Don't set state error immediately for transient network issues
+      const message = err instanceof Error ? err.message : "Failed to fetch generation status";
+      setError(message);
     }
-  };
+  }, [jobId]);
 
   useEffect(() => {
     if (!jobId) return;
@@ -49,7 +58,7 @@ export default function GenerationResultPage() {
     return () => {
       if (pollInterval.current) clearInterval(pollInterval.current);
     };
-  }, [jobId]);
+  }, [fetchStatus, jobId]);
 
   const handleDownload = () => {
     if (job?.outputImage) {

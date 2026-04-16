@@ -1,7 +1,7 @@
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import Footer from "@/components/Footer";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import Footer from "@/frontend/components/Footer";
 import { motion } from "framer-motion";
 
 export default function TermsOfServicePage() {

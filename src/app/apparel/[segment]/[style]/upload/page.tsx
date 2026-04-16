@@ -1,37 +1,37 @@
 // src/app/apparel/[segment]/[style]/upload/page.tsx
 "use client";
 
-import FlowHeader from "@/components/FlowHeader";
-import ProgressStepper from "@/components/ProgressStepper";
-import Footer from "@/components/Footer";
+import FlowHeader from "@/frontend/components/FlowHeader";
+import ProgressStepper from "@/frontend/components/ProgressStepper";
+import Footer from "@/frontend/components/Footer";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import LoadingActionButton from "@/components/LoadingActionButton";
-import { Skeleton } from "@/components/ui/Skeleton";
-import ProductTag from "@/components/ProductTag";
+import LoadingActionButton from "@/frontend/components/LoadingActionButton";
+import { Skeleton } from "@/frontend/components/ui/Skeleton";
+import ProductTag from "@/frontend/components/ProductTag";
 
 // Services & Context
-import { useAuth } from "@/context/AuthContext";
-import { useGeneration } from "@/context/GenerationContext";
-import { storageService } from "@/services/storageService";
+import { useAuth } from "@/frontend/context/AuthContext";
+import { useGeneration } from "@/frontend/context/GenerationContext";
+import { storageService } from "@/backend/services/storageService";
 
 // Dynamic components
-const UploadZone = dynamic(() => import("@/components/UploadZone"), { 
+const UploadZone = dynamic(() => import("@/frontend/components/UploadZone"), { 
   ssr: false, 
   loading: () => <Skeleton className="w-full h-[240px] rounded-2xl" /> 
 });
-const ModelScroll = dynamic(() => import("@/components/ModelScroll"), { 
+const ModelScroll = dynamic(() => import("@/frontend/components/ModelScroll"), { 
   ssr: false, 
   loading: () => <Skeleton className="w-full h-[170px] rounded-xl" /> 
 });
-const BackgroundGrid = dynamic(() => import("@/components/BackgroundGrid"), { 
+const BackgroundGrid = dynamic(() => import("@/frontend/components/BackgroundGrid"), { 
   ssr: false, 
   loading: () => <div className="grid grid-cols-2 gap-4"><Skeleton className="h-[100px]" /><Skeleton className="h-[100px]" /></div> 
 });
-const AIDirectorNotes = dynamic(() => import("@/components/AIDirectorNotes"), { ssr: false });
-const SelectionPreviewModal = dynamic(() => import("@/components/SelectionPreviewModal"), { ssr: false });
+const AIDirectorNotes = dynamic(() => import("@/frontend/components/AIDirectorNotes"), { ssr: false });
+const SelectionPreviewModal = dynamic(() => import("@/frontend/components/SelectionPreviewModal"), { ssr: false });
 
 export default function UnifiedUploadSetupPage() {
   const params = useParams();
@@ -93,7 +93,7 @@ export default function UnifiedUploadSetupPage() {
 
     try {
       // 1. Upload Image to Storage
-      const imageUrl = await storageService.uploadGarment(user.uid, rawFile);
+      const imageUrl = await storageService.uploadGarment(user.id, rawFile);
       setUploadedImageUrl(imageUrl);
 
       // 2. Call the server-side API to create the job + trigger RunComfy
@@ -120,9 +120,10 @@ export default function UnifiedUploadSetupPage() {
       // 3. Redirect to Result Page
       router.push(`/result/${jobId}`);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("❌ [Generate Flow] Error:", err);
-      setError(err.message || "Failed to start generation. Try again.");
+      const message = err instanceof Error ? err.message : "Failed to start generation. Try again.";
+      setError(message);
       setIsGenerating(false);
     }
   };
