@@ -127,8 +127,13 @@ const InfiniteCarousel = ({ items, autoPlayInterval = 4000 }: InfiniteCarouselPr
         {items.map((_, idx) => (
           <div
             key={idx}
-            className={`h-1 rounded-full transition-all duration-500 ease-out ${
-              logicalIndex === idx ? "w-8 bg-[#AF8CFF] shadow-[0_0_10px_rgba(175,140,255,0.5)]" : "w-1.5 bg-white/10"
+            onClick={() => {
+              if (isTransitioning) return;
+              setIsTransitioning(true);
+              setCurrentIndex(idx + 1);
+            }}
+            className={`h-1 rounded-full transition-all duration-500 ease-out cursor-pointer ${
+              logicalIndex === idx ? "w-8 bg-[#AF8CFF] shadow-[0_0_10px_rgba(175,140,255,0.5)]" : "w-1.5 bg-white/10 hover:bg-white/20"
             }`}
           />
         ))}

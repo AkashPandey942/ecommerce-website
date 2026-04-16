@@ -92,7 +92,7 @@ export default function CategorySelectionPage() {
             {hasMore && (
               <button 
                 onClick={() => setShowAll(!showAll)}
-                className="flex items-center gap-1 text-[#7C4DFF] text-sm font-medium hover:opacity-80 transition-opacity"
+                className="flex items-center gap-1 text-[#7C4DFF] text-sm font-medium hover:opacity-80 transition-opacity cursor-pointer"
               >
                 {showAll ? (
                   <><ChevronUp className="w-4 h-4" /> Less</>
