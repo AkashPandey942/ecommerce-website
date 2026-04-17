@@ -1,4 +1,3 @@
-// src/services/generationService.ts
 import dbConnect from "@/backend/lib/mongodb";
 import Generation, { IGeneration, GenerationStatus } from "@/backend/models/Generation";
 import User from "@/backend/models/User";

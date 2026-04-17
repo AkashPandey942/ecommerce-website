@@ -4,10 +4,11 @@ import React, { useState } from "react";
 import FlowHeader from "@/frontend/components/FlowHeader";
 import UploadZone from "@/frontend/components/UploadZone";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Image as ImageIcon, Sparkles, User, Layout, Check, Download, Share2 } from "lucide-react";
+import { Loader2, Image as ImageIcon, Sparkles, User, Layout, UserCircle, ChevronDown, Check, Download, Share2, MousePointer2 } from "lucide-react";
 import ProgressStepper from "@/frontend/components/ProgressStepper";
 import SegmentCard from "@/frontend/components/SegmentCard";
 import ProductScroll from "@/frontend/components/ProductScroll";
+import ModelScroll from "@/frontend/components/ModelScroll";
 import Footer from "@/frontend/components/Footer";
 import Image from "next/image";
 import { storageService } from "@/backend/services/storageService";
@@ -70,6 +71,9 @@ export const VirtualTryOnView = () => {
   const [activeTab, setActiveTab] = useState<"Virtual Try-On" | "AI Studio">("Virtual Try-On");
   const [userPoint, setUserPoint] = useState<{x: number, y: number} | null>(null);
   const [clothingPoint, setClothingPoint] = useState<{x: number, y: number} | null>(null);
+  const [fashionPrompt, setFashionPrompt] = useState("");
+  const [resolution, setResolution] = useState("2048x2048 (1:1)");
+  const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [backgroundStyle, setBackgroundStyle] = useState<string | null>(null);
   const [outputStyle, setOutputStyle] = useState<string | null>(null);
@@ -142,7 +146,7 @@ export const VirtualTryOnView = () => {
     setResults(null);
 
     try {
-      const userId = session?.user?.id ?? "guest-user";
+      const userId = (session?.user as any)?.id ?? "guest-user";
       let modelUrl = selectedModel;
       let garmentUrl = "";
 
@@ -302,45 +306,45 @@ export const VirtualTryOnView = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F111A] text-[#E2E2E8] font-roboto">
+    <div className="min-h-screen bg-black text-[#E2E2E8] font-roboto selection:bg-[#5B45FF]/30 relative overflow-hidden">
       <FlowHeader title=" " showBack={true} />
       
-      <div className="max-w-[1400px] mx-auto px-6 pt-[120px] pb-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-[120px] lg:pt-[140px] pb-20 relative z-10">
         
-        <div className="flex border-b border-white/5 mb-8">
+        <div className="flex bg-[#1A1D2B]/40 border border-white/5 rounded-full p-1 mb-16 w-fit mx-auto relative">
+          <motion.div 
+            layoutId="tabBackground"
+            className="absolute inset-y-1 bg-gradient-to-r from-[#5B45FF] to-[#7C4DFF] rounded-full shadow-lg"
+            initial={false}
+            animate={{
+              left: activeTab === "Virtual Try-On" ? 4 : "calc(50% + 2px)",
+              width: "calc(50% - 6px)"
+            }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          />
           <button 
             onClick={() => setActiveTab("Virtual Try-On")}
-            className={`px-8 py-4 font-bold text-sm transition-all relative ${
-              activeTab === "Virtual Try-On" 
-                ? "text-white" 
-                : "text-[#9CA3AF] hover:text-white"
+            className={`px-6 sm:px-10 py-3.5 font-bold text-xs sm:text-sm transition-all relative z-10 w-[140px] sm:w-[180px] cursor-pointer ${
+              activeTab === "Virtual Try-On" ? "text-white" : "text-[#9CA3AF] hover:text-white"
             }`}
           >
             Virtual Try-On
-            {activeTab === "Virtual Try-On" && (
-              <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-figma-gradient shadow-[0_0_10px_rgba(124,77,255,0.5)]" />
-            )}
           </button>
           <button 
             onClick={() => {
               setActiveTab("AI Studio");
               setProductType(null);
             }}
-            className={`px-8 py-4 font-bold text-sm transition-all relative ${
-              activeTab === "AI Studio" 
-                ? "text-white" 
-                : "text-[#9CA3AF] hover:text-white"
+            className={`px-6 sm:px-10 py-3.5 font-bold text-xs sm:text-sm transition-all relative z-10 w-[140px] sm:w-[180px] cursor-pointer ${
+              activeTab === "AI Studio" ? "text-white" : "text-[#9CA3AF] hover:text-white"
             }`}
           >
             AI Studio
-            {activeTab === "AI Studio" && (
-              <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-figma-gradient shadow-[0_0_10px_rgba(124,77,255,0.5)]" />
-            )}
           </button>
         </div>
 
         {activeTab === "AI Studio" && !productType ? (
-          <div className="w-full max-w-full lg:max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Progress Indication (Stepper) - Step 1 for Selective Hub */}
             <ProgressStepper currentStep={1} />
 
@@ -388,7 +392,7 @@ export const VirtualTryOnView = () => {
                   Trending in AI Lab
                 </h2>
                 
-                <button className="flex items-center justify-center px-[10px] py-[5px] h-6 bg-black/30 shadow-[2px_2px_2px_rgba(0,0,0,0.54)] rounded-full group">
+                <button className="flex items-center justify-center px-[10px] py-[5px] h-6 bg-black/30 shadow-[2px_2px_2px_rgba(0,0,0,0.54)] rounded-full group cursor-pointer">
                   <span className="font-roboto font-medium text-[12px] leading-[14px] text-center uppercase text-figma-gradient group-hover:scale-105 transition-transform">
                     See gallery
                   </span>
@@ -403,29 +407,49 @@ export const VirtualTryOnView = () => {
             <Footer />
           </div>
         ) : (
-          <div className="flex flex-col lg:flex-row gap-6 animate-in fade-in slide-in-from-right-4 duration-500">
-            
-            {/* Left Panel - Uploads */}
-            <aside className="w-full lg:w-[320px] space-y-6">
-              <div className="bg-[#1A1D2B] border border-white/5 rounded-[24px] p-6 space-y-8">
-                <ProgressStepper currentStep={2} />
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-16"
+          >
+            {/* 1. Setup Phase */}
+            <div className="space-y-10">
+              <div className="max-w-xl">
+                 <ProgressStepper currentStep={2} />
+              </div>
                 
-                <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                  <h2 className="text-xl font-bold tracking-tight text-white px-1">
-                    {activeTab === "Virtual Try-On" ? "Virtual Try-On" : productType}
-                  </h2>
-                  {activeTab === "AI Studio" && (
-                    <button 
-                      onClick={() => setProductType(null)}
-                      className="text-[10px] font-bold text-figma-gradient hover:underline uppercase tracking-widest"
-                    >
-                      Change Type
-                    </button>
-                  )}
-                </div>
-                
-                <div className="space-y-6">
-                {/* 1. Upload User Photo (Only for Virtual Try-On) */}
+              <div className="flex items-center justify-between border-b border-white/5 pb-6">
+                <h1 className="text-3xl font-bold tracking-tight text-white">
+                  {activeTab === "Virtual Try-On" ? "Virtual Try-On" : "AI Studio"}
+                </h1>
+                {activeTab === "AI Studio" && (
+                  <button 
+                    onClick={() => setProductType(null)}
+                    className="text-[10px] font-bold text-figma-gradient hover:underline uppercase tracking-widest cursor-pointer"
+                  >
+                    Change Type
+                  </button>
+                )}
+              </div>
+              
+              <div className="space-y-16">
+                {/* Model Selection (Always show for AI Studio Apparel, or contextually) */}
+                {activeTab === "AI Studio" && productType === "Apparel" && (
+                   <div className="space-y-6">
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-bold text-white uppercase tracking-wide">Select Model</h3>
+                        <p className="text-sm text-[#99A1AF]">Choose a model to showcase your product design.</p>
+                      </div>
+                      <ModelScroll 
+                        selectedId={selectedModelId || ""} 
+                        onSelect={(m) => {
+                          setSelectedModel(m.image);
+                          setSelectedModelId(m.id);
+                        }} 
+                      />
+                   </div>
+                )}
+
                 {activeTab === "Virtual Try-On" && (
                   <div className="space-y-4">
                     <div className="relative aspect-[4/3] bg-[#0F111A] rounded-[20px] border border-dashed border-white/10 overflow-hidden group">
@@ -451,7 +475,6 @@ export const VirtualTryOnView = () => {
                   </div>
                 )}
 
-                {/* 2. Upload Clothing (Both modes) */}
                 <div className="space-y-4">
                   <div className="relative aspect-[4/3] bg-[#0F111A] rounded-[20px] border border-dashed border-white/10 overflow-hidden group">
                       <UploadZone 
@@ -474,17 +497,12 @@ export const VirtualTryOnView = () => {
                   </div>
                   {formErrors.clothingImage && <p className="text-xs text-red-400">{formErrors.clothingImage}</p>}
                 </div>
-
-                {/* 3. Choose Product Type (Removed from sidebar since it's the primary selector now) */}
               </div>
             </div>
-          </aside>
 
-          {/* Right Panel - Results & Controls */}
           <main className="flex-grow bg-[#1A1D2B] border border-white/5 rounded-[24px] p-8 shadow-2xl relative transition-all duration-500">
             <div className="space-y-12">
               
-              {/* Select Model Section (Only for AI Studio "Apparel") */}
               {activeTab === "AI Studio" && productType === "Apparel" && (
                 <div className="space-y-6">
                   <h3 className="text-sm font-bold text-white uppercase tracking-wider">Select Model</h3>
@@ -493,7 +511,7 @@ export const VirtualTryOnView = () => {
                       <button
                         key={idx}
                         onClick={() => setSelectedModel(model)}
-                        className={`relative aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all ${
+                        className={`relative aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
                           selectedModel === model ? "border-[#5B45FF] scale-105 shadow-[0_0_20px_rgba(91,69,255,0.4)]" : "border-transparent opacity-60 hover:opacity-100"
                         }`}
                       >
@@ -509,7 +527,6 @@ export const VirtualTryOnView = () => {
                 </div>
               )}
 
-              {/* Dynamic Settings Based on Product Type */}
               {activeTab === "AI Studio" && productType && productType !== "Apparel" && (
                  <motion.div 
                    initial={{ opacity: 0, y: 10 }}
@@ -521,7 +538,6 @@ export const VirtualTryOnView = () => {
                  </motion.div>
               )}
 
-              {/* Background Style Section (Only for AI Studio) */}
               {activeTab === "AI Studio" && productType && (
                 <div className="space-y-6">
                   <h3 className="text-sm font-bold text-white uppercase tracking-wider">Background Style</h3>
@@ -530,7 +546,7 @@ export const VirtualTryOnView = () => {
                       <div key={idx} className="space-y-2 group">
                         <button
                           onClick={() => setBackgroundStyle(bg.name)}
-                          className={`relative w-full aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all ${
+                          className={`relative w-full aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
                             backgroundStyle === bg.name ? "border-[#5B45FF] scale-102 shadow-[0_0_15px_rgba(91,69,255,0.3)]" : "border-transparent opacity-60 hover:opacity-90"
                           }`}
                         >
@@ -545,15 +561,12 @@ export const VirtualTryOnView = () => {
                 </div>
               )}
 
-              {/* Controls and Output Section */}
               <div className="flex flex-col xl:flex-row gap-12">
                 <div className="w-full xl:w-[350px] space-y-12">
-                   {/* Gender and Category */}
                    <div className="grid grid-cols-2 lg:grid-cols-1 xl:grid-cols-1 gap-8">
-                      {/* Category selection (Only relevant for apparel-like items) */}
                       {(activeTab === "Virtual Try-On" || productType === "Apparel") && (
                         <div className="space-y-5">
-                          <h3 className="text-sm font-bold text-white">Clothing Category</h3>
+                          <h3 className="text-sm font-bold text-white uppercase tracking-wider">Clothing Category</h3>
                           <div className="flex flex-col gap-3">
                             {CATEGORIES.map((c) => (
                               <button
@@ -564,7 +577,7 @@ export const VirtualTryOnView = () => {
                                   setFormErrors((prev) => ({ ...prev, category: undefined }));
                                 }}
                                 disabled={!canSelectCategory}
-                                className={`px-6 py-4 rounded-2xl text-left text-[12px] font-bold transition-all border ${
+                                className={`px-6 py-4 rounded-2xl text-left text-[12px] font-bold transition-all border cursor-pointer ${
                                   category === c 
                                     ? "bg-[#5B45FF] border-transparent text-white shadow-lg" 
                                     : "bg-[#2D324D]/40 border-white/5 text-[#9CA3AF] hover:border-white/20"
@@ -577,9 +590,7 @@ export const VirtualTryOnView = () => {
                           {formErrors.category && <p className="text-xs text-red-400">{formErrors.category}</p>}
                         </div>
                       )}
-                   </div>
 
-                   {/* Output Style (Both modes) */}
                    <div className="space-y-5">
                      <h3 className="text-sm font-bold text-white uppercase tracking-wider">Output Style</h3>
                      <div className="flex flex-wrap gap-3">
@@ -592,7 +603,7 @@ export const VirtualTryOnView = () => {
                               setFormErrors((prev) => ({ ...prev, style: undefined }));
                             }}
                             disabled={!canSelectStyle}
-                            className={`px-5 py-2.5 rounded-full text-[12px] font-bold transition-all border ${
+                            className={`px-5 py-2.5 rounded-full text-[12px] font-bold transition-all border cursor-pointer ${
                               outputStyle === s 
                                 ? "bg-gradient-to-r from-[#7C4DFF] to-[#EC4899] border-transparent text-white shadow-lg" 
                                 : "bg-[#2D324D]/40 border-white/5 text-[#9CA3AF] hover:border-white/20"
@@ -615,7 +626,7 @@ export const VirtualTryOnView = () => {
                               setOutputFormat(option.value);
                               setFormErrors((prev) => ({ ...prev, format: undefined }));
                             }}
-                            className={`px-5 py-2.5 rounded-full text-[12px] font-bold transition-all border ${
+                            className={`px-5 py-2.5 rounded-full text-[12px] font-bold transition-all border cursor-pointer ${
                               outputFormat === option.value
                                 ? "bg-[#5B45FF] border-transparent text-white shadow-lg"
                                 : "bg-[#2D324D]/40 border-white/5 text-[#9CA3AF] hover:border-white/20"
@@ -628,10 +639,9 @@ export const VirtualTryOnView = () => {
                      {formErrors.format && <p className="text-xs text-red-400">{formErrors.format}</p>}
                    </div>
 
-                   {/* AI Director Notes (Both modes) */}
                    <div className="space-y-5">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-bold text-white">AI Director Notes</h3>
+                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">AI Director Notes</h3>
                         <span className="text-[10px] text-[#FF9E45] font-bold tracking-widest">(OPTIONAL)</span>
                       </div>
                       <textarea 
@@ -643,12 +653,11 @@ export const VirtualTryOnView = () => {
                       />
                    </div>
 
-                   {/* Generate Button Container */}
                    <div className="space-y-6 pt-4">
                       <button
                           onClick={handleGenerateTryOn}
                           disabled={!canGenerate}
-                          className={`w-full py-5 rounded-[24px] font-bold text-sm tracking-wide transition-all ${
+                          className={`w-full py-5 rounded-[24px] font-bold text-sm tracking-wide transition-all cursor-pointer ${
                           canGenerate
                               ? "bg-gradient-to-r from-[#5B45FF] to-[#7C4DFF] text-white shadow-[0_12px_28px_rgba(91,69,255,0.4)] hover:scale-[1.02]"
                               : "bg-[#2D324D]/50 text-[#6E7180] border border-white/5 cursor-not-allowed"
@@ -671,7 +680,7 @@ export const VirtualTryOnView = () => {
                       {!results && !loading && (
                           <div className="flex flex-col items-center text-center">
                               <Sparkles className="w-8 h-8 text-[#FF9E45] opacity-50 mb-3" />
-                              <h4 className="text-sm font-bold text-white mb-2 font-roboto">Studio Results</h4>
+                              <h4 className="text-sm font-bold text-white mb-2 font-roboto uppercase tracking-wider">Studio Results</h4>
                               <p className="text-[11px] text-[#9CA3AF] leading-relaxed max-w-[200px]">
                                   Generate your look once to see Front, Side, Back, and Detail views instantly.
                               </p>
@@ -679,6 +688,7 @@ export const VirtualTryOnView = () => {
                       )}
                    </div>
                 </div>
+              </div>
 
                 {/* Grid Column */}
                 <div className="flex-grow bg-[#0F111A] rounded-[24px] p-6 border border-white/5 min-h-[600px] h-fit">
@@ -693,7 +703,7 @@ export const VirtualTryOnView = () => {
                         key={item.label}
                         onClick={() => item.url && setActiveResultLabel(item.label)}
                         disabled={!item.url}
-                        className={`px-4 py-2 rounded-lg text-xs font-semibold border transition-all ${
+                        className={`px-4 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
                           activeResultLabel === item.label
                             ? "bg-[#5B45FF] border-transparent text-white"
                             : item.url
@@ -754,7 +764,7 @@ export const VirtualTryOnView = () => {
               </div>
             </div>
           </main>
-        </div>
+        </motion.div>
         )}
       </div>
     </div>

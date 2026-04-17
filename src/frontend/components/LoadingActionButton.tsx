@@ -44,7 +44,7 @@ const LoadingActionButton = ({
         boxShadow: "0 0 40px rgba(124, 77, 255, 0.6)"
       } : {}}
       whileTap={!disabled && !isLoading ? { scale: 0.98 } : {}}
-      className={`${baseStyles} ${variants[variant]} ${className} ${disabled || isLoading ? "opacity-50 grayscale cursor-not-allowed" : ""}`}
+      className={`${baseStyles} ${variants[variant]} ${className} ${disabled || isLoading ? "opacity-50 grayscale cursor-not-allowed" : "cursor-pointer"}`}
     >
       <motion.div 
         animate={isLoading ? { opacity: 0.8 } : { opacity: 1 }}

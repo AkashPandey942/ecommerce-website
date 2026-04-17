@@ -10,7 +10,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ title, image }: ProductCardProps) => {
   return (
-    <div className="flex-none w-[131px] lg:w-[200px] h-[194px] lg:h-[300px] relative group overflow-hidden">
+    <div className="flex-none w-[131px] lg:w-[200px] h-[194px] lg:h-[300px] relative group overflow-hidden cursor-pointer">
       {/* Image Container (Rectangle 5/6/7) */}
       <div className="w-[131px] lg:w-[200px] h-[169px] lg:h-[260px] relative rounded-[5px] lg:rounded-[15px] overflow-hidden">
         <Image
@@ -49,7 +49,7 @@ const ProductScroll = () => {
         </h2>
         
         {/* View All Button (Frame 3) */}
-        <button className="flex items-center justify-center px-[10px] py-[5px] h-6 bg-black/30 shadow-[2px_2px_2px_rgba(0,0,0,0.54)] rounded-full group">
+        <button className="flex items-center justify-center px-[10px] py-[5px] h-6 bg-black/30 shadow-[2px_2px_2px_rgba(0,0,0,0.54)] rounded-full group cursor-pointer">
           <span className="font-roboto font-medium text-[12px] leading-[14px] text-center uppercase text-figma-gradient group-hover:scale-105 transition-transform">
             View All
           </span>
