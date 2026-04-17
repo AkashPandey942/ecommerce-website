@@ -146,7 +146,7 @@ export const VirtualTryOnView = () => {
     setResults(null);
 
     try {
-      const userId = session?.user?.id ?? "guest-user";
+      const userId = (session?.user as any)?.id ?? "guest-user";
       let modelUrl = selectedModel;
       let garmentUrl = "";
 
@@ -684,60 +684,35 @@ export const VirtualTryOnView = () => {
                               <p className="text-[11px] text-[#9CA3AF] leading-relaxed max-w-[200px]">
                                   Generate your look once to see Front, Side, Back, and Detail views instantly.
                               </p>
-
-                          {/* AI Director Notes */}
-                          <div className="space-y-5">
-                             <div className="flex items-center gap-2">
-                               <h3 className="text-[11px] font-bold text-[#9CA3AF] uppercase tracking-widest">AI Director Notes</h3>
-                               <span className="text-[10px] text-[#FF9E45] font-bold tracking-widest">(OPTIONAL)</span>
-                             </div>
-                             <textarea 
-                               value={directorNotes}
-                               onChange={(e) => setDirectorNotes(e.target.value)}
-                               placeholder="E.g. Focus on the golden pallu details, add warm sunlight flare..."
-                               className="w-full bg-[#0F111A] border border-white/10 rounded-2xl p-6 text-sm text-gray-300 placeholder-gray-700 focus:ring-1 focus:ring-[#5B45FF] transition-all min-h-[140px] resize-none"
-                             />
                           </div>
-
-                          {/* Generate Button Container */}
-                          <div className="pt-4">
-                             <button
-                                 onClick={handleGenerateTryOn}
-                                 disabled={loading}
-                                 className={`w-full py-5 rounded-full font-bold text-sm tracking-wide transition-all cursor-pointer ${
-                                 ((activeTab === "Virtual Try-On" && isFormValid) || (activeTab === "AI Studio" && clothingPhoto)) && !loading
-                                     ? "bg-gradient-to-r from-[#5B45FF] to-[#7C4DFF] text-white shadow-[0_12px_28px_rgba(91,69,255,0.4)] hover:scale-[1.02]"
-                                     : "bg-[#2D324D]/50 text-[#6E7180] border border-white/5 cursor-not-allowed"
-                                 }`}
-                             >
-                                 {loading ? (
-                                   <div className="flex items-center justify-center gap-2">
-                                     <Loader2 className="w-5 h-5 animate-spin" />
-                                     <span>AI is processing...</span>
-                                   </div>
-                                 ) : "Generate Prime Results"}
-                             </button>
-                          </div>
-                      </div>
-                  </div>
+                      )}
+                   </div>
                 </div>
+              </div>
 
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {resultItems.map((item) => (
-                    <button
-                      key={item.label}
-                      onClick={() => item.url && setActiveResultLabel(item.label)}
-                      disabled={!item.url}
-                      className={`px-4 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                        activeResultLabel === item.label
-                          ? "bg-[#5B45FF] border-transparent text-white"
-                          : item.url
-                            ? "bg-[#2D324D]/60 border-white/10 text-[#C2C6D6] hover:border-white/30"
-                            : "bg-[#2D324D]/30 border-white/5 text-[#667085] cursor-not-allowed"
-                      }`}
-                    >
-                      {item.label}
-                    </button>
+                {/* Grid Column */}
+                <div className="flex-grow bg-[#0F111A] rounded-[24px] p-6 border border-white/5 min-h-[600px] h-fit">
+                  <div className="flex items-center gap-3 mb-8">
+                    <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#9CA3AF]">Trial Results</h2>
+                    <span className="bg-[#5B45FF] text-[9px] font-bold px-2 py-0.5 rounded-md text-white">360° STUDIO</span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {resultItems.map((item) => (
+                      <button
+                        key={item.label}
+                        onClick={() => item.url && setActiveResultLabel(item.label)}
+                        disabled={!item.url}
+                        className={`px-4 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                          activeResultLabel === item.label
+                            ? "bg-[#5B45FF] border-transparent text-white"
+                            : item.url
+                              ? "bg-[#2D324D]/60 border-white/10 text-[#C2C6D6] hover:border-white/30"
+                              : "bg-[#2D324D]/30 border-white/5 text-[#667085] cursor-not-allowed"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
                     ))}
                   </div>
 
@@ -786,8 +761,10 @@ export const VirtualTryOnView = () => {
                     )}
                   </div>
                 </div>
+              </div>
             </div>
-          </motion.div>
+          </main>
+        </motion.div>
         )}
       </div>
     </div>
