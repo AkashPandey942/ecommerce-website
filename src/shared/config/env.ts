@@ -17,9 +17,11 @@ const envSchema = z.object({
   // AI Services
   GEMINI_API_KEY: z.string().optional(),
   FAL_KEY: z.string().optional(),
+  VITE_RUNCOMFY_API_KEY: z.string().optional(),
+  VITE_RUNCOMFY_API_URL: z.string().optional(),
+  VITE_RUNCOMFY_MODEL_ID: z.string().optional(),
   RUNCOMFY_API_KEY: z.string().optional(),
   RUNCOMFY_API_URL: z.string().optional(),
-  RUNCOMFY_DEPLOYMENT_ID: z.string().optional(),
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
