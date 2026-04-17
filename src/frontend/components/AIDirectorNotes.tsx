@@ -7,11 +7,11 @@ interface AIDirectorNotesProps {
 
 const AIDirectorNotes = ({ value, onChange }: AIDirectorNotesProps) => {
   return (
-    <div className="relative w-full h-[95px] bg-black/30 rounded-[10px] p-4 border border-white/20 focus-within:border-[#7C4DFF] transition-all text-sm">
+    <div className="relative w-full h-[120px] bg-black border border-white/10 rounded-[18px] p-6 focus-within:border-[#5B45FF]/50 transition-all shadow-xl group">
       <textarea
         aria-label="AI Director Notes (Optional)"
         placeholder="E.g. Focus on the golden pallu details, add warm sunlight flare from left..."
-        className="w-full h-full bg-transparent resize-none font-roboto font-normal text-base leading-[19px] text-white placeholder:text-[#C2C6D6]/40 focus:outline-none"
+        className="w-full h-full bg-transparent resize-none font-roboto font-normal text-sm leading-relaxed text-white placeholder:text-[#3A3F4B] focus:outline-none scrollbar-hide"
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
       />

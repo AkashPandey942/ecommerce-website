@@ -104,7 +104,7 @@ const UploadZone = ({
             >
               <Image 
                 src={selectedImage} 
-                alt="Uploaded product" 
+                alt="Uploaded preview" 
                 fill 
                 className="object-contain" 
                 loading="lazy"
@@ -125,24 +125,24 @@ const UploadZone = ({
 
               <button
                 onClick={clearImage}
-                className="absolute top-3 right-3 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-black/80 transition-colors z-10 shadow-lg border border-white/10"
+                className="absolute top-4 right-4 w-9 h-9 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/80 transition-colors z-10 shadow-lg border border-white/10"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
               
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-              <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3 px-4 z-10 w-full pointer-events-auto">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute bottom-5 left-0 right-0 flex justify-center gap-4 px-5 z-10 w-full pointer-events-auto">
                 <button 
                   onClick={(e) => { e.stopPropagation(); cameraInputRef.current?.click(); }}
-                  className="flex-1 max-w-[140px] h-[36px] flex items-center justify-center gap-2 bg-black/50 backdrop-blur-md border border-white/20 hover:border-figma-gradient rounded-[10px] hover:bg-black/70 transition-all font-roboto text-[12px] text-white cursor-pointer"
+                  className="flex-1 max-w-[160px] h-[44px] flex items-center justify-center gap-2 bg-black/40 backdrop-blur-xl border border-white/10 hover:border-[#7C3AED] rounded-[14px] hover:bg-black/60 transition-all font-roboto font-medium text-[13px] text-white cursor-pointer"
                 >
-                  <Camera size={14} /> Retake
+                  <Camera size={16} /> Retake
                 </button>
                 <button 
                   onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                  className="flex-1 max-w-[140px] h-[36px] flex items-center justify-center gap-2 bg-black/50 backdrop-blur-md border border-white/20 hover:border-figma-gradient rounded-[10px] hover:bg-black/70 transition-all font-roboto text-[12px] text-white cursor-pointer"
+                  className="flex-1 max-w-[160px] h-[44px] flex items-center justify-center gap-2 bg-black/40 backdrop-blur-xl border border-white/10 hover:border-[#7C3AED] rounded-[14px] hover:bg-black/60 transition-all font-roboto font-medium text-[13px] text-white cursor-pointer"
                 >
-                  <Upload size={14} /> Re-upload
+                  <Upload size={16} /> Re-upload
                 </button>
               </div>
             </motion.div>
@@ -152,74 +152,64 @@ const UploadZone = ({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col items-center w-full"
+              className="flex flex-col items-center w-full px-4"
             >
-              {/* Upload Icon — gradient circle with motion */}
+              {/* Upload Icon — centered with glowing effect */}
               <motion.div 
                 animate={{ 
+                  y: [0, -8, 0],
                   scale: [1, 1.05, 1],
                   boxShadow: [
-                    "0 0 21px rgba(236,72,153,0.35)",
-                    "0 0 35px rgba(236,72,153,0.6)",
-                    "0 0 21px rgba(236,72,153,0.35)"
+                    "0 0 25px rgba(124,58,237,0.3)",
+                    "0 0 45px rgba(236,72,153,0.5)",
+                    "0 0 25px rgba(124,58,237,0.3)"
                   ]
                 }}
                 transition={{ 
-                  duration: 2, 
+                  duration: 2.5, 
                   repeat: Infinity, 
                   ease: "easeInOut" 
                 }}
-                className="w-[54px] h-[54px] bg-gradient-to-br from-[#7C3AED] to-[#EC4899] rounded-full flex items-center justify-center mb-4 cursor-pointer"
+                className="w-[68px] h-[68px] bg-gradient-to-br from-[#7C3AED] to-[#EC4899] rounded-full flex items-center justify-center mb-6 cursor-pointer relative"
               >
-                <motion.div
-                  animate={{ y: [0, -4, 0] }}
-                  transition={{ 
-                    duration: 1.5, 
-                    repeat: Infinity, 
-                    ease: "easeInOut" 
-                  }}
-                >
-                  <Upload className="w-[22px] h-[22px] text-white" strokeWidth={2.5} />
-                </motion.div>
+                 <Upload className="w-[28px] h-[28px] text-white" strokeWidth={2.2} />
               </motion.div>
 
-              {/* Title */}
+              {/* Title & Instructions */}
               {!hideText && (
-                <h3 className="font-roboto font-semibold text-[17px] leading-[22px] text-white text-center mb-[6px]">
-                  {title || "Upload Product Image"}
-                </h3>
-              )}
-
-              {/* Subtitle */}
-              {!hideText && (
-                <>
-                  <p className="font-roboto font-normal text-[13px] leading-[18px] text-[#99A1AF] text-center mb-[3px]">
+                <div className="text-center mb-8">
+                  <h3 className="font-roboto font-bold text-[18px] text-white mb-2 tracking-tight">
+                    {title || "Upload Image"}
+                  </h3>
+                  <p className="font-roboto font-normal text-[14px] text-[#9CA3AF] leading-relaxed max-w-[220px] mx-auto">
                     {subTitle || "Drag and drop or click to select"}
                   </p>
-                  <p className="font-roboto font-normal text-[13px] leading-[18px] text-[#99A1AF] text-center mb-6">
-                    {subTitle ? "" : "Supports JPG, PNG (Max 10MB)"}
-                  </p>
-                </>
+                  {!subTitle && (
+                    <p className="font-roboto text-[12px] text-[#9CA3AF]/60 mt-1 uppercase tracking-widest font-bold">
+                       JPG, PNG, WEBP (Max 10MB)
+                    </p>
+                  )}
+                </div>
               )}
 
-              {/* Action Buttons — stacked vertically, full width */}
-              <div className="flex flex-col gap-3 w-full">
+              {/* Primary Action Buttons */}
+              <div className="flex flex-col gap-3.5 w-full max-w-[320px]">
                 <button 
                   onClick={(e) => { e.stopPropagation(); cameraInputRef.current?.click(); }}
-                  className="w-full h-[42px] flex items-center justify-center gap-2 bg-transparent border border-[#C5B6DE]/60 rounded-[10px] hover:bg-white/5 hover:border-[#C5B6DE] transition-all cursor-pointer"
+                  className="w-full h-[48px] flex items-center justify-center gap-3 bg-[#1A1E29]/60 backdrop-blur-md border border-white/10 rounded-[14px] hover:bg-white/5 hover:border-white/20 transition-all cursor-pointer group"
                 >
-                  <Camera className="w-[17px] h-[17px] text-[#C5B6DE]" strokeWidth={1.8} />
-                  <span className="font-roboto font-medium text-[13px] leading-[18px] text-[#C5B6DE]">
+                  <Camera className="w-[18px] h-[18px] text-white/70 group-hover:text-white" strokeWidth={1.5} />
+                  <span className="font-roboto font-bold text-[14px] text-white/80 group-hover:text-white">
                     Take Photo
                   </span>
                 </button>
 
                 <button 
                   onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                  className="w-full h-[42px] flex items-center justify-center gap-2 bg-transparent border border-[#C5B6DE]/60 rounded-[10px] hover:bg-white/5 hover:border-[#C5B6DE] transition-all cursor-pointer"
+                  className="w-full h-[48px] flex items-center justify-center gap-3 bg-[#1A1E29]/60 backdrop-blur-md border border-white/10 rounded-[14px] hover:bg-white/5 hover:border-white/20 transition-all cursor-pointer group"
                 >
-                  <Upload className="w-[17px] h-[17px] text-[#C5B6DE]" strokeWidth={1.8} />
-                  <span className="font-roboto font-medium text-[13px] leading-[18px] text-[#C5B6DE]">
+                  <Upload className="w-[18px] h-[18px] text-white/70 group-hover:text-white" strokeWidth={1.5} />
+                  <span className="font-roboto font-bold text-[14px] text-white/80 group-hover:text-white">
                     Upload
                   </span>
                 </button>

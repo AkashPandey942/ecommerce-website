@@ -7,6 +7,7 @@ interface SelectionState {
   modelId: string | null;
   backgroundId: string | null;
   styleId: string | null;
+  productCategory: string | null;
   prompt: string;
 }
 
@@ -31,6 +32,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
     modelId: null,
     backgroundId: null,
     styleId: null,
+    productCategory: null,
     prompt: "",
   });
 
@@ -68,6 +70,7 @@ export const GenerationProvider = ({ children }: { children: ReactNode }) => {
       modelId: null,
       backgroundId: null,
       styleId: null,
+      productCategory: null,
       prompt: "",
     });
     setRawFile(null);
