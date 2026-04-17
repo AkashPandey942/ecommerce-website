@@ -20,18 +20,34 @@ export const StatusController = {
 
       // If already finished, return immediately
       if (job.status === "completed" || job.status === "failed") {
-        return NextResponse.json(job);
+        const existingImages = Array.isArray((job as { outputImages?: string[] }).outputImages)
+          ? ((job as { outputImages?: string[] }).outputImages || []).filter(Boolean)
+          : [];
+        const existingImage = (job as { outputImage?: string }).outputImage;
+        const normalizedImages = existingImages.length
+          ? existingImages
+          : existingImage
+            ? [existingImage]
+            : [];
+
+        return NextResponse.json({
+          ...job,
+          outputImage: existingImage || normalizedImages[0] || null,
+          outputImages: normalizedImages,
+        });
       }
 
       // 2. Polling RunComfy
       if (job.requestId) {
         const runComfyData = await runComfyService.checkStatus(job.requestId);
 
-        if (runComfyData.status === "completed" && runComfyData.outputImage) {
+        const runComfyOutputImages = Array.isArray((runComfyData as { outputImages?: string[] }).outputImages)
+          ? ((runComfyData as { outputImages?: string[] }).outputImages || []).filter(Boolean)
+          : [];
+
+        if (runComfyData.status === "completed" && (runComfyData.outputImage || runComfyOutputImages.length > 0)) {
           const rawOutputImage = runComfyData.outputImage;
-          const rawOutputImages = Array.isArray((runComfyData as { outputImages?: string[] }).outputImages)
-            ? (runComfyData as { outputImages?: string[] }).outputImages
-            : [rawOutputImage];
+          const rawOutputImages = runComfyOutputImages.length > 0 ? runComfyOutputImages : [rawOutputImage];
 
           const isLikelyReference = (url: string) => {
             const token = url.toLowerCase();
@@ -44,6 +60,7 @@ export const StatusController = {
           await generationService.updateJob(jobId, {
             status: "completed",
             outputImage,
+            outputImages,
           });
           return NextResponse.json({
             success: true,

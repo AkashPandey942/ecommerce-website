@@ -12,6 +12,7 @@ function isPublicHttpUrl(value: string) {
 const generateRequestSchema = z.object({
   userImage: z.string().nullable().optional(),
   clothImage: z.string().nullable().optional(),
+  gender: z.enum(["Male", "Female", "Kids", "Man", "Woman", "Person"]).optional(),
   category: z.string().min(1, "Category is required").nullable().optional(),
   style: z.string().min(1, "Style is required"),
   outputFormat: z.enum(["single", "triple", "multi-view"]).default("multi-view"),
@@ -52,6 +53,7 @@ export const GenerateController = {
         modelImageUrl,
         clothImage,
         userImage,
+        gender,
         category,
         mode,
         outputFormat,
@@ -117,6 +119,7 @@ export const GenerateController = {
         modelImageUrl: normalizedUserImage || normalizedGarmentImage,
         prompt: normalizedPrompt,
         style,
+        gender,
         category: category ?? undefined,
         mode,
         outputFormat,
@@ -151,10 +154,11 @@ export const GenerateController = {
     } catch (error: unknown) {
       console.error("❌ [API/Generate] Error:", error);
       const message = error instanceof Error ? error.message : "Internal Server Error";
+      const status = /insufficient credits/i.test(message) ? 402 : 500;
       return NextResponse.json({ 
         success: false,
         error: message
-      }, { status: 500 });
+      }, { status });
     }
   }
 };

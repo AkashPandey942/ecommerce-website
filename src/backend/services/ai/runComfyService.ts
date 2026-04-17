@@ -3,18 +3,46 @@ import { env } from "@/shared/config/env";
 
 // Node IDs from ComfyUI Workflow (Customize based on your workflow_api.json)
 const DEFAULT_MODEL_ID = "blackforestlabs/flux-1-kontext/pro/edit";
+const MODEL_API_BASE_URL = "https://model-api.runcomfy.net/v1";
+const DEPLOYMENT_API_BASE_URL = "https://api.runcomfy.net/prod/v1";
 
 type RunComfyStatus = "queued" | "processing" | "completed" | "failed";
-
-const MODEL_API_BASE_URL = "https://model-api.runcomfy.net/v1";
 
 function normalizeBaseUrl(baseUrl: string) {
   return baseUrl.replace(/\/+$/, "");
 }
 
-function getRunComfyBaseUrl() {
-  const configured = env.VITE_RUNCOMFY_API_URL?.trim();
-  return normalizeBaseUrl(configured || MODEL_API_BASE_URL);
+function resolveBaseUrl(configuredBaseUrl: string, deploymentId?: string) {
+  const cleanedConfigured = configuredBaseUrl.trim();
+  const deploymentMode = Boolean(deploymentId);
+
+  if (!cleanedConfigured) {
+    return deploymentMode ? DEPLOYMENT_API_BASE_URL : MODEL_API_BASE_URL;
+  }
+
+  // When deployment mode is enabled, model-api host cannot serve /deployments/{id}/inference.
+  if (deploymentMode && /model-api\.runcomfy\.net/i.test(cleanedConfigured)) {
+    return DEPLOYMENT_API_BASE_URL;
+  }
+
+  return cleanedConfigured;
+}
+
+function getRunComfyConfig() {
+  const apiKey = (env.RUNCOMFY_API_KEY || env.VITE_RUNCOMFY_API_KEY || "").trim();
+  const deploymentId = env.RUNCOMFY_DEPLOYMENT_ID?.trim();
+  const modelId = (env.RUNCOMFY_MODEL_ID || env.VITE_RUNCOMFY_MODEL_ID || DEFAULT_MODEL_ID).trim();
+  const configuredBaseUrl = (env.RUNCOMFY_API_URL || env.VITE_RUNCOMFY_API_URL || "").trim();
+
+  const baseUrl = normalizeBaseUrl(resolveBaseUrl(configuredBaseUrl, deploymentId));
+
+  return {
+    apiKey,
+    deploymentId,
+    modelId,
+    baseUrl,
+    isDeploymentMode: Boolean(deploymentId),
+  };
 }
 
 function isUrl(value: string) {
@@ -158,6 +186,18 @@ type RunComfySubmitResponse = {
   detail?: unknown;
 };
 
+function mapGenderToPromptSubject(value?: "Male" | "Female" | "Kids" | "Man" | "Woman" | "Person") {
+  if (!value) return "person";
+
+  const normalized = value.toLowerCase();
+
+  if (normalized === "male" || normalized === "man") return "male";
+  if (normalized === "female" || normalized === "woman") return "female";
+  if (normalized === "kids") return "kid";
+
+  return "person";
+}
+
 function buildModelPayload(params: {
   garmentImageUrl: string;
   modelImageUrl: string;
@@ -165,33 +205,61 @@ function buildModelPayload(params: {
   style?: string;
   background?: string;
   mode?: "Virtual Try-On" | "AI Studio";
+  gender?: "Male" | "Female" | "Kids" | "Man" | "Woman" | "Person";
   category?: string;
   outputFormat?: "single" | "triple" | "multi-view";
   outputCount?: number;
+  userPoint?: { x: number; y: number } | null;
+  clothingPoint?: { x: number; y: number } | null;
 }) {
   const mergedPrompt = [params.prompt, params.style, params.background, params.category ? `Category: ${params.category}` : ""]
     .filter(Boolean)
     .join(", ")
     .trim();
 
-  const virtualTryOnPrompt = [
-    "Create a photorealistic virtual try-on result.",
-    "Keep the same person identity, body proportions, skin tone, face, hair, and pose from the person image.",
-    "Transfer the garment fabric, texture, wrinkles, fit, and drape from the garment image onto the person naturally.",
-    "Preserve realistic lighting and shadows from the original person scene.",
-    "Do not output isolated clothing product image.",
-    mergedPrompt,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
   const aiStudioPrompt = mergedPrompt || "fashion e-commerce product generation";
 
   const isVirtualTryOn = params.mode === "Virtual Try-On";
   const requestedCount = Math.max(1, Math.min(8, params.outputCount || (params.outputFormat === "single" ? 1 : params.outputFormat === "triple" ? 3 : 6)));
+  const genderHint = mapGenderToPromptSubject(params.gender);
+  const isKidsMode = (params.gender || "").toLowerCase() === "kids";
+  const viewHint =
+    params.outputFormat === "single"
+      ? "front view"
+      : params.outputFormat === "triple"
+        ? "front, side, and back views"
+        : "multi-view (front, side, back, and detailed angles)";
+  const categoryHint = params.category || "garment";
 
   return {
-    prompt: isVirtualTryOn ? virtualTryOnPrompt : aiStudioPrompt,
+    prompt: isVirtualTryOn
+      ? [
+          ...(isKidsMode
+            ? [
+                "Use the EXACT SAME person from the input image.",
+                "Do NOT change the face, age, or identity.",
+                "The person must remain a child (kid), same face, same body.",
+                "Apply the given garment on this exact person naturally.",
+                "Keep original pose and proportions.",
+                "Ultra realistic, do not generate a new model.",
+              ]
+            : [
+                "A highly realistic image of the SAME person from the input photo wearing the provided garment.",
+                "Preserve the exact face, identity, skin tone, hairstyle, and body shape. Do not change the person.",
+                `The person is ${genderHint}, with natural and accurate body proportions.`,
+                `The garment belongs to the category: ${categoryHint}, and must be applied correctly on the body.`,
+                "The clothing should fit naturally with realistic fabric draping, folds, and alignment according to the body posture.",
+                "Ensure proper placement of sleeves, collar, waistline, and overall structure of the garment.",
+                "Maintain consistent lighting, shadows, and perspective between the person and the clothing.",
+                "The final image should look like a real photograph taken in a studio.",
+                `Camera view: ${viewHint}.`,
+                "Ultra realistic, high quality, detailed fabric texture, sharp focus, fashion photography, 4k quality.",
+              ]),
+          mergedPrompt,
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : aiStudioPrompt,
     task: isVirtualTryOn ? "virtual_try_on" : "fashion_generation",
     mode: isVirtualTryOn ? "virtual_try_on" : "studio_generation",
     output_format: params.outputFormat || "multi-view",
@@ -207,6 +275,105 @@ function buildModelPayload(params: {
     garment: params.garmentImageUrl,
     input_person_image: params.modelImageUrl,
     input_garment_image: params.garmentImageUrl,
+    user_point: params.userPoint || undefined,
+    cloth_point: params.clothingPoint || undefined,
+    model_point: params.userPoint || undefined,
+    garment_point: params.clothingPoint || undefined,
+  };
+}
+
+function buildDeploymentPayload(params: {
+  garmentImageUrl: string;
+  modelImageUrl: string;
+  prompt?: string;
+  style?: string;
+  background?: string;
+  mode?: "Virtual Try-On" | "AI Studio";
+  gender?: "Male" | "Female" | "Kids" | "Man" | "Woman" | "Person";
+  category?: string;
+  outputFormat?: "single" | "triple" | "multi-view";
+  outputCount?: number;
+  userPoint?: { x: number; y: number } | null;
+  clothingPoint?: { x: number; y: number } | null;
+}) {
+  const input = buildModelPayload(params);
+  const isVirtualTryOn = params.mode === "Virtual Try-On";
+
+  if (!isVirtualTryOn) {
+    return {
+      input,
+      ...input,
+    };
+  }
+
+  const vtonWorkflow = {
+    workflow_type: "virtual_try_on",
+    workflow_name: "ipadapter_openpose_cloth_ksampler_output",
+    pipeline: {
+      steps: [
+        "ipadapter",
+        "openpose",
+        "cloth_input",
+        "ksampler",
+        "output",
+      ],
+    },
+    nodes: {
+      ipadapter: {
+        enabled: true,
+        image_url: params.modelImageUrl,
+        mode: "identity_lock",
+        lock_identity: true,
+        output: "identity_conditioning",
+      },
+      openpose: {
+        enabled: true,
+        image_url: params.modelImageUrl,
+        lock_pose: true,
+        output: "pose",
+      },
+      cloth_input: {
+        enabled: true,
+        image_url: params.garmentImageUrl,
+        output: "cloth",
+      },
+      ksampler: {
+        enabled: true,
+        sampler_name: "euler",
+        scheduler: "normal",
+        steps: 28,
+        cfg: 6,
+        denoise: 0.2,
+        prompt: input.prompt,
+        conditioning: {
+          identity_source: "ipadapter",
+          pose_source: "openpose",
+          cloth_source: "cloth_input",
+        },
+        user_point: params.userPoint || undefined,
+        cloth_point: params.clothingPoint || undefined,
+        output: "latent",
+      },
+      output: {
+        enabled: true,
+        decode: "vae",
+        source: "ksampler",
+      },
+    },
+    ipadapter_image_url: params.modelImageUrl,
+    openpose_image_url: params.modelImageUrl,
+    cloth_input_image_url: params.garmentImageUrl,
+    ksampler_denoise: 0.2,
+    output_source: "output",
+  };
+
+  return {
+    input: {
+      ...input,
+      ...vtonWorkflow,
+    },
+    ...input,
+    ...vtonWorkflow,
   };
 }
 
@@ -249,38 +416,61 @@ export const runComfyService = {
     style?: string;
     background?: string;
     mode?: "Virtual Try-On" | "AI Studio";
+    gender?: "Male" | "Female" | "Kids" | "Man" | "Woman" | "Person";
     category?: string;
     outputFormat?: "single" | "triple" | "multi-view";
     outputCount?: number;
     userPoint?: { x: number, y: number } | null;
     clothingPoint?: { x: number, y: number } | null;
   }) {
-    if (!env.VITE_RUNCOMFY_API_KEY) {
-      throw new Error("VITE_RUNCOMFY_API_KEY is missing");
+    const config = getRunComfyConfig();
+
+    if (!config.apiKey) {
+      throw new Error("RUNCOMFY_API_KEY is missing");
     }
 
     try {
-      const baseUrl = getRunComfyBaseUrl();
-      const modelId = env.VITE_RUNCOMFY_MODEL_ID || DEFAULT_MODEL_ID;
-      const url = `${baseUrl}/models/${modelId}`;
+      const url = config.isDeploymentMode
+        ? `${config.baseUrl}/deployments/${config.deploymentId}/inference`
+        : `${config.baseUrl}/models/${config.modelId}`;
+
+      const requestPayload = config.isDeploymentMode
+        ? buildDeploymentPayload({
+            garmentImageUrl: params.garmentImageUrl,
+            modelImageUrl: params.modelImageUrl,
+            prompt: params.prompt,
+            style: params.style,
+            background: params.background,
+            mode: params.mode,
+            gender: params.gender,
+            category: params.category,
+            outputFormat: params.outputFormat,
+            outputCount: params.outputCount,
+            userPoint: params.userPoint,
+            clothingPoint: params.clothingPoint,
+          })
+        : buildModelPayload({
+            garmentImageUrl: params.garmentImageUrl,
+            modelImageUrl: params.modelImageUrl,
+            prompt: params.prompt,
+            style: params.style,
+            background: params.background,
+            mode: params.mode,
+            gender: params.gender,
+            category: params.category,
+            outputFormat: params.outputFormat,
+            outputCount: params.outputCount,
+            userPoint: params.userPoint,
+            clothingPoint: params.clothingPoint,
+          });
 
       const response = await fetch(url, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${env.VITE_RUNCOMFY_API_KEY}`,
+          "Authorization": `Bearer ${config.apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(buildModelPayload({
-          garmentImageUrl: params.garmentImageUrl,
-          modelImageUrl: params.modelImageUrl,
-          prompt: params.prompt,
-          style: params.style,
-          background: params.background,
-          mode: params.mode,
-          category: params.category,
-          outputFormat: params.outputFormat,
-          outputCount: params.outputCount,
-        })),
+        body: JSON.stringify(requestPayload),
       });
 
       if (!response.ok) {
@@ -289,7 +479,7 @@ export const runComfyService = {
       }
 
       const data = (await response.json()) as RunComfySubmitResponse;
-      return normalizeSubmitResponse(data, "requests");
+      return normalizeSubmitResponse(data, `${config.baseUrl}/requests`);
     } catch (error: unknown) {
       console.error("❌ [runComfyService] triggerWorkflow Error:", error);
       throw error;
@@ -300,20 +490,21 @@ export const runComfyService = {
    * Phase 2: Check the status of a request.
    */
   async checkStatus(requestId: string) {
-    if (!env.VITE_RUNCOMFY_API_KEY) {
+    const config = getRunComfyConfig();
+
+    if (!config.apiKey) {
       return { status: "failed", error: "Missing RunComfy API Key" };
     }
 
     try {
-      const baseUrl = getRunComfyBaseUrl();
       const statusUrl = isUrl(requestId)
         ? requestId
-        : `${baseUrl}/${requestId.includes("/") ? requestId : `requests/${requestId}/status`}`;
+        : `${config.baseUrl}/${requestId.includes("/") ? requestId : `requests/${requestId}/status`}`;
 
       const statusResponse = await fetch(statusUrl, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${env.VITE_RUNCOMFY_API_KEY}`,
+          "Authorization": `Bearer ${config.apiKey}`,
         },
       });
 
@@ -337,7 +528,7 @@ export const runComfyService = {
         const resultResponse = await fetch(resultUrl, {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${env.VITE_RUNCOMFY_API_KEY}`,
+            "Authorization": `Bearer ${config.apiKey}`,
           },
         });
 

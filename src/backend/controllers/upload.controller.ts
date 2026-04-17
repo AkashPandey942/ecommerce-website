@@ -13,8 +13,6 @@ type CloudinaryLikeError = {
   http_code?: number;
 };
 
-const CATBOX_UPLOAD_URL = "https://catbox.moe/user/api.php";
-
 function hasCloudinaryConfig() {
   return Boolean(env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY && env.CLOUDINARY_API_SECRET);
 }
@@ -42,29 +40,6 @@ async function uploadToCloudinary(buffer: Buffer, userId: string) {
   });
 
   return result.secure_url;
-}
-
-async function uploadToCatbox(file: File) {
-  const form = new FormData();
-  form.append("reqtype", "fileupload");
-  form.append("fileToUpload", file, file.name || "upload.jpg");
-
-  const response = await fetch(CATBOX_UPLOAD_URL, {
-    method: "POST",
-    body: form,
-  });
-
-  const bodyText = (await response.text()).trim();
-
-  if (!response.ok) {
-    throw new Error(`Catbox upload failed: ${bodyText || response.statusText}`);
-  }
-
-  if (!bodyText.startsWith("http://") && !bodyText.startsWith("https://")) {
-    throw new Error(`Catbox upload returned invalid URL: ${bodyText}`);
-  }
-
-  return bodyText;
 }
 
 function normalizeUploadError(error: unknown): string {
@@ -117,8 +92,13 @@ export const UploadController = {
       const buffer = Buffer.from(bytes);
 
       if (!hasCloudinaryConfig()) {
-        const fallbackUrl = await uploadToCatbox(file);
-        return NextResponse.json({ success: true, url: fallbackUrl, provider: "catbox" });
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in .env.",
+          },
+          { status: 500 }
+        );
       }
 
       try {
@@ -126,10 +106,8 @@ export const UploadController = {
         return NextResponse.json({ success: true, url: cloudinaryUrl, provider: "cloudinary" });
       } catch (cloudinaryError) {
         const message = normalizeUploadError(cloudinaryError);
-
         if (isCloudinaryConfigError(message)) {
-          const fallbackUrl = await uploadToCatbox(file);
-          return NextResponse.json({ success: true, url: fallbackUrl, provider: "catbox" });
+          return NextResponse.json({ success: false, error: message }, { status: 500 });
         }
 
         throw cloudinaryError;
