@@ -52,7 +52,7 @@ export default function UnifiedUploadSetupPage() {
   const [error, setError] = useState<string | null>(null);
   
   // Selection states (for shorthand/readability)
-  const { modelId, backgroundId, styleId, prompt } = selectionState;
+  const { modelId, backgroundId, styleId, prompt, productCategory } = selectionState;
   
   // Preview States
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -77,6 +77,25 @@ export default function UnifiedUploadSetupPage() {
     setPreviewImage(bg.image);
     setIsPreviewOpen(true);
   };
+
+  // Category-specific model mapping
+  const getFilteredModels = () => {
+    if (productCategory === "Saree") {
+      return Array.from({ length: 9 }, (_, i) => ({
+        id: `saree-${i + 1}`,
+        image: `/assets/ladies/ethnic-wear/saree-modal/saaree_Model${i + 1}.jpg`
+      }));
+    }
+    if (productCategory === "Kurti") {
+      return Array.from({ length: 7 }, (_, i) => ({
+        id: `kurti-${i + 1}`,
+        image: `/assets/ladies/ethnic-wear/kurti-modal/kurti_modal${i + 1}.jpg`
+      }));
+    }
+    return []; // Fallback to default models in ModelScroll component
+  };
+
+  const filteredModels = getFilteredModels();
 
   const handleGenerate = async () => {
     if (!user) {
@@ -159,6 +178,7 @@ export default function UnifiedUploadSetupPage() {
                 selectedId={modelId} 
                 onSelect={handleModelSelect} 
                 onPreview={handleModelPreview}
+                modelsOverride={filteredModels}
               />
             </div>
           </section>

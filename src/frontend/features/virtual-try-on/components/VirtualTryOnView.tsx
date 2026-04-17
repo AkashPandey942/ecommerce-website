@@ -11,6 +11,8 @@ import ProductScroll from "@/frontend/components/ProductScroll";
 import ModelScroll from "@/frontend/components/ModelScroll";
 import Footer from "@/frontend/components/Footer";
 import Image from "next/image";
+import ProductTag from "@/frontend/components/ProductTag";
+import AIDirectorNotes from "@/frontend/components/AIDirectorNotes";
 import { storageService } from "@/backend/services/storageService";
 import { useSession } from "next-auth/react";
 
@@ -92,9 +94,9 @@ export const VirtualTryOnView = () => {
   const hasStyle = Boolean(outputStyle);
   const hasFormat = Boolean(outputFormat);
 
-  const canSelectCategory = !isVirtualFlow || (hasUserImage && hasClothingImage);
-  const canSelectStyle = !isVirtualFlow || (canSelectCategory && hasCategory);
-  const canAddNotes = !isVirtualFlow || (canSelectStyle && hasStyle && hasFormat);
+  const canSelectCategory = true;
+  const canSelectStyle = true;
+  const canAddNotes = true;
   const canGenerateVirtual = hasUserImage && hasClothingImage && hasCategory && hasStyle && hasFormat;
   const canGenerateAIStudio = Boolean(clothingPhoto && hasStyle && hasFormat);
   const canGenerate = loading ? false : (isVirtualFlow ? canGenerateVirtual : canGenerateAIStudio);
@@ -412,96 +414,199 @@ export const VirtualTryOnView = () => {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-16"
           >
-            {/* 1. Setup Phase */}
-            <div className="space-y-10">
-              <div className="max-w-xl">
-                 <ProgressStepper currentStep={2} />
+            <div className="flex flex-col gap-14">
+              {/* 1. Progress Indication */}
+              <div className="max-w-xl mx-auto w-full">
+                <ProgressStepper currentStep={2} />
               </div>
-                
+
+              {/* 2. Page Header (Conditional Tab Title) */}
               <div className="flex items-center justify-between border-b border-white/5 pb-6">
-                <h1 className="text-3xl font-bold tracking-tight text-white">
+                <h1 className="font-roboto font-semibold text-2xl lg:text-3xl text-white">
                   {activeTab === "Virtual Try-On" ? "Virtual Try-On" : "AI Studio"}
                 </h1>
                 {activeTab === "AI Studio" && (
                   <button 
                     onClick={() => setProductType(null)}
-                    className="text-[10px] font-bold text-figma-gradient hover:underline uppercase tracking-widest cursor-pointer"
+                    className="text-[12px] font-bold text-[#C5B6DE] hover:text-white uppercase tracking-widest cursor-pointer transition-colors"
                   >
-                    Change Type
+                    Change Hub
                   </button>
                 )}
               </div>
-              
-              <div className="space-y-16">
-                {/* Model Selection (Always show for AI Studio Apparel, or contextually) */}
-                {activeTab === "AI Studio" && productType === "Apparel" && (
-                   <div className="space-y-6">
-                      <div className="space-y-2">
-                        <h3 className="text-xl font-bold text-white uppercase tracking-wide">Select Model</h3>
-                        <p className="text-sm text-[#99A1AF]">Choose a model to showcase your product design.</p>
-                      </div>
-                      <ModelScroll 
-                        selectedId={selectedModelId || ""} 
-                        onSelect={(m) => {
-                          setSelectedModel(m.image);
-                          setSelectedModelId(m.id);
-                        }} 
-                      />
-                   </div>
-                )}
 
-                {activeTab === "Virtual Try-On" && (
-                  <div className="space-y-4">
-                    <div className="relative aspect-[4/3] bg-[#0F111A] rounded-[20px] border border-dashed border-white/10 overflow-hidden group">
-                        <UploadZone 
-                          onFileSelect={(file) => {
-                            setUserPhoto(file);
-                            setFormErrors((prev) => ({ ...prev, userImage: undefined }));
-                          }}
-                          hideText={true} 
-                          allowPointSelection={true}
-                          onPointSelect={setUserPoint}
-                        />
-                      {!userPhoto && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center p-4 pointer-events-none text-center bg-black/40">
-                          <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-3">
-                              <User className="w-5 h-5 text-gray-400" />
-                          </div>
-                          <p className="text-sm font-bold text-white mb-1">Upload Your Image</p>
-                        </div>
-                      )}
-                    </div>
-                    {formErrors.userImage && <p className="text-xs text-red-400">{formErrors.userImage}</p>}
+              {/* 3. Model Selection (AI Studio context) */}
+              {activeTab === "AI Studio" && productType === "Apparel" && (
+                <section aria-labelledby="model-section-title">
+                  <h2 id="model-section-title" className="font-roboto font-semibold text-xl text-white mb-6">Select Model</h2>
+                  <div className="-mx-5 px-5">
+                    <ModelScroll 
+                      selectedId={selectedModelId || ""} 
+                      onSelect={(m) => {
+                        setSelectedModel(m.image);
+                        setSelectedModelId(m.id);
+                      }} 
+                    />
                   </div>
+                </section>
+              )}
+
+              {/* 4. Upload Section(s) */}
+              {activeTab === "Virtual Try-On" && (
+                <section aria-labelledby="user-photo-title">
+                  <div className="mb-6">
+                    <h2 id="user-photo-title" className="font-roboto font-semibold text-xl text-white mb-2">Upload Your Photo</h2>
+                    <p className="text-sm text-[#99A1AF]">Upload a clear photo of yourself to try on clothing digitally.</p>
+                  </div>
+                  <UploadZone 
+                    onFileSelect={(file) => {
+                      setUserPhoto(file);
+                      setFormErrors((prev) => ({ ...prev, userImage: undefined }));
+                    }}
+                    hideText={false} 
+                    allowPointSelection={true}
+                    onPointSelect={setUserPoint}
+                    title="Upload Your Image"
+                    subTitle="Drag and drop or click to select"
+                  />
+                  {formErrors.userImage && <p className="mt-2 text-xs text-red-400">{formErrors.userImage}</p>}
+                </section>
+              )}
+
+              <section aria-labelledby="clothing-photo-title">
+                <div className="mb-6">
+                  <h2 id="clothing-photo-title" className="font-roboto font-semibold text-xl text-white mb-2">
+                    Upload {activeTab === "Virtual Try-On" ? "Clothing" : "Product"}
+                  </h2>
+                  <p className="text-sm text-[#99A1AF]">
+                    Upload a clear photo of the {activeTab === "Virtual Try-On" ? "clothing item" : "product"}.
+                  </p>
+                </div>
+                <UploadZone 
+                  onFileSelect={(file) => {
+                    setClothingPhoto(file);
+                    setFormErrors((prev) => ({ ...prev, clothingImage: undefined }));
+                  }}
+                  hideText={false} 
+                  allowPointSelection={true}
+                  onPointSelect={setClothingPoint}
+                  title={activeTab === "Virtual Try-On" ? "Upload Clothing Image" : "Upload Product Image"}
+                  subTitle="Drag and drop or click to select"
+                />
+                {formErrors.clothingImage && <p className="mt-2 text-xs text-red-400">{formErrors.clothingImage}</p>}
+              </section>
+
+              {/* 5. Configuration Tags Section */}
+              <div className="grid grid-cols-1 gap-14">
+                {/* Clothing Category */}
+                {(activeTab === "Virtual Try-On" || productType === "Apparel") && (
+                  <section aria-labelledby="category-section-title">
+                    <h2 id="category-section-title" className="font-roboto font-semibold text-xl text-white mb-6">Clothing Category</h2>
+                    <div className="flex flex-wrap gap-3">
+                      {CATEGORIES.map((c) => (
+                        <ProductTag 
+                          key={c}
+                          label={c}
+                          selected={category === c}
+                          onClick={() => {
+                            if (!canSelectCategory) return;
+                            setCategory(c);
+                            setFormErrors((prev) => ({ ...prev, category: undefined }));
+                          }}
+                        />
+                      ))}
+                    </div>
+                    {formErrors.category && <p className="mt-2 text-xs text-red-400">{formErrors.category}</p>}
+                  </section>
                 )}
 
-                <div className="space-y-4">
-                  <div className="relative aspect-[4/3] bg-[#0F111A] rounded-[20px] border border-dashed border-white/10 overflow-hidden group">
-                      <UploadZone 
-                        onFileSelect={(file) => {
-                          setClothingPhoto(file);
-                          setFormErrors((prev) => ({ ...prev, clothingImage: undefined }));
+                {/* Output Style */}
+                <section aria-labelledby="style-section-title">
+                  <h2 id="style-section-title" className="font-roboto font-semibold text-xl text-white mb-6">Output Style</h2>
+                  <div className="flex flex-wrap gap-3">
+                    {OUTPUT_STYLES.map((s) => (
+                      <ProductTag 
+                        key={s}
+                        label={s}
+                        selected={outputStyle === s}
+                        onClick={() => {
+                          if (!canSelectStyle) return;
+                          setOutputStyle(s);
+                          setFormErrors((prev) => ({ ...prev, style: undefined }));
                         }}
-                        hideText={true} 
-                        allowPointSelection={true}
-                        onPointSelect={setClothingPoint}
                       />
-                    {!clothingPhoto && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center p-4 pointer-events-none text-center bg-black/40">
-                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-3">
-                            <Layout className="w-5 h-5 text-gray-400" />
-                        </div>
-                        <p className="text-sm font-bold text-white mb-1">Upload Clothing</p>
+                    ))}
+                  </div>
+                  {formErrors.style && <p className="mt-2 text-xs text-red-400">{formErrors.style}</p>}
+                </section>
+
+                {/* Output Format */}
+                <section aria-labelledby="format-section-title">
+                  <h2 id="format-section-title" className="font-roboto font-semibold text-xl text-white mb-6">Output Format</h2>
+                  <div className="flex flex-wrap gap-3">
+                    {OUTPUT_FORMATS.map((option) => (
+                      <ProductTag 
+                        key={option.value}
+                        label={option.label}
+                        selected={outputFormat === option.value}
+                        onClick={() => {
+                          setOutputFormat(option.value);
+                          setFormErrors((prev) => ({ ...prev, format: undefined }));
+                        }}
+                      />
+                    ))}
+                  </div>
+                  {formErrors.format && <p className="mt-2 text-xs text-red-400">{formErrors.format}</p>}
+                </section>
+
+                {/* AI Director Notes */}
+                <section aria-labelledby="notes-section-title">
+                  <div className="flex items-center gap-2 mb-6">
+                    <h2 id="notes-section-title" className="font-roboto font-semibold text-xl text-white">AI Director Notes</h2>
+                    <span className="text-[12px] text-[#C2C6D6]/60 font-bold tracking-widest uppercase">(Optional)</span>
+                  </div>
+                  <AIDirectorNotes 
+                    value={directorNotes}
+                    onChange={(val) => setDirectorNotes(val)}
+                  />
+                </section>
+              </div>
+
+              {/* 6. Generate Action Button */}
+              <div className="pt-8 mb-10">
+                <div className="w-full max-w-[400px] mx-auto">
+                    <button
+                        onClick={handleGenerateTryOn}
+                        disabled={!canGenerate}
+                        className={`w-full h-[61px] rounded-full font-bold text-[18px] tracking-wide transition-all cursor-pointer ${
+                        canGenerate
+                            ? "bg-gradient-to-r from-[#5B45FF] to-[#7C4DFF] text-white shadow-[0_12px_28px_rgba(91,69,255,0.4)] hover:scale-[1.02]"
+                            : "bg-[#2D324D]/50 text-[#6E7180] border border-white/5 cursor-not-allowed"
+                        }`}
+                    >
+                        {loading ? "AI Processing..." : "Generate Prime Image"}
+                    </button>
+
+                    {submitError && (
+                      <div className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+                        {submitError}
                       </div>
                     )}
-                  </div>
-                  {formErrors.clothingImage && <p className="text-xs text-red-400">{formErrors.clothingImage}</p>}
                 </div>
+
+                {!results && !loading && (
+                    <div className="mt-16 flex flex-col items-center text-center p-12 bg-[#0F111A]/40 rounded-[32px] border border-white/5">
+                        <Sparkles className="w-12 h-12 text-[#FF9E45] opacity-50 mb-4" />
+                        <h4 className="text-lg font-bold text-white mb-2 font-roboto uppercase tracking-wider">Studio Results</h4>
+                        <p className="text-sm text-[#9CA3AF] leading-relaxed max-w-[280px]">
+                            Generate your look once to see Front, Side, Back, and Detail views instantly.
+                        </p>
+                    </div>
+                )}
               </div>
             </div>
 
-          <main className="flex-grow bg-[#1A1D2B] border border-white/5 rounded-[24px] p-8 shadow-2xl relative transition-all duration-500">
-            <div className="space-y-12">
+
               
               {activeTab === "AI Studio" && productType === "Apparel" && (
                 <div className="space-y-6">
@@ -560,135 +665,6 @@ export const VirtualTryOnView = () => {
                   </div>
                 </div>
               )}
-
-              <div className="flex flex-col xl:flex-row gap-12">
-                <div className="w-full xl:w-[350px] space-y-12">
-                   <div className="grid grid-cols-2 lg:grid-cols-1 xl:grid-cols-1 gap-8">
-                      {(activeTab === "Virtual Try-On" || productType === "Apparel") && (
-                        <div className="space-y-5">
-                          <h3 className="text-sm font-bold text-white uppercase tracking-wider">Clothing Category</h3>
-                          <div className="flex flex-col gap-3">
-                            {CATEGORIES.map((c) => (
-                              <button
-                                key={c}
-                                onClick={() => {
-                                  if (!canSelectCategory) return;
-                                  setCategory(c);
-                                  setFormErrors((prev) => ({ ...prev, category: undefined }));
-                                }}
-                                disabled={!canSelectCategory}
-                                className={`px-6 py-4 rounded-2xl text-left text-[12px] font-bold transition-all border cursor-pointer ${
-                                  category === c 
-                                    ? "bg-[#5B45FF] border-transparent text-white shadow-lg" 
-                                    : "bg-[#2D324D]/40 border-white/5 text-[#9CA3AF] hover:border-white/20"
-                                }`}
-                              >
-                                {c}
-                              </button>
-                            ))}
-                          </div>
-                          {formErrors.category && <p className="text-xs text-red-400">{formErrors.category}</p>}
-                        </div>
-                      )}
-
-                   <div className="space-y-5">
-                     <h3 className="text-sm font-bold text-white uppercase tracking-wider">Output Style</h3>
-                     <div className="flex flex-wrap gap-3">
-                        {OUTPUT_STYLES.map((s) => (
-                          <button
-                            key={s}
-                            onClick={() => {
-                              if (!canSelectStyle) return;
-                              setOutputStyle(s);
-                              setFormErrors((prev) => ({ ...prev, style: undefined }));
-                            }}
-                            disabled={!canSelectStyle}
-                            className={`px-5 py-2.5 rounded-full text-[12px] font-bold transition-all border cursor-pointer ${
-                              outputStyle === s 
-                                ? "bg-gradient-to-r from-[#7C4DFF] to-[#EC4899] border-transparent text-white shadow-lg" 
-                                : "bg-[#2D324D]/40 border-white/5 text-[#9CA3AF] hover:border-white/20"
-                            }`}
-                          >
-                            {s}
-                          </button>
-                        ))}
-                     </div>
-                     {formErrors.style && <p className="text-xs text-red-400">{formErrors.style}</p>}
-                   </div>
-
-                   <div className="space-y-5">
-                     <h3 className="text-sm font-bold text-white uppercase tracking-wider">Output Format</h3>
-                     <div className="flex flex-wrap gap-3">
-                        {OUTPUT_FORMATS.map((option) => (
-                          <button
-                            key={option.value}
-                            onClick={() => {
-                              setOutputFormat(option.value);
-                              setFormErrors((prev) => ({ ...prev, format: undefined }));
-                            }}
-                            className={`px-5 py-2.5 rounded-full text-[12px] font-bold transition-all border cursor-pointer ${
-                              outputFormat === option.value
-                                ? "bg-[#5B45FF] border-transparent text-white shadow-lg"
-                                : "bg-[#2D324D]/40 border-white/5 text-[#9CA3AF] hover:border-white/20"
-                            }`}
-                          >
-                            {option.label}
-                          </button>
-                        ))}
-                     </div>
-                     {formErrors.format && <p className="text-xs text-red-400">{formErrors.format}</p>}
-                   </div>
-
-                   <div className="space-y-5">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-bold text-white uppercase tracking-wider">AI Director Notes</h3>
-                        <span className="text-[10px] text-[#FF9E45] font-bold tracking-widest">(OPTIONAL)</span>
-                      </div>
-                      <textarea 
-                        value={directorNotes}
-                        onChange={(e) => setDirectorNotes(e.target.value)}
-                        placeholder="E.g. Focus on the golden pallu details, add warm sunlight flare from left..."
-                        disabled={!canAddNotes}
-                        className="w-full bg-[#0F111A] border border-white/10 rounded-2xl p-5 text-sm text-gray-300 placeholder-gray-700 focus:ring-1 focus:ring-[#5B45FF] transition-all min-h-[120px] resize-none"
-                      />
-                   </div>
-
-                   <div className="space-y-6 pt-4">
-                      <button
-                          onClick={handleGenerateTryOn}
-                          disabled={!canGenerate}
-                          className={`w-full py-5 rounded-[24px] font-bold text-sm tracking-wide transition-all cursor-pointer ${
-                          canGenerate
-                              ? "bg-gradient-to-r from-[#5B45FF] to-[#7C4DFF] text-white shadow-[0_12px_28px_rgba(91,69,255,0.4)] hover:scale-[1.02]"
-                              : "bg-[#2D324D]/50 text-[#6E7180] border border-white/5 cursor-not-allowed"
-                          }`}
-                      >
-                          {loading ? (
-                            <div className="flex items-center justify-center gap-2">
-                              <Loader2 className="w-5 h-5 animate-spin" />
-                              <span>AI Processing...</span>
-                            </div>
-                          ) : "Generate Prime Image"}
-                      </button>
-
-                      {submitError && (
-                        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
-                          {submitError}
-                        </div>
-                      )}
-
-                      {!results && !loading && (
-                          <div className="flex flex-col items-center text-center">
-                              <Sparkles className="w-8 h-8 text-[#FF9E45] opacity-50 mb-3" />
-                              <h4 className="text-sm font-bold text-white mb-2 font-roboto uppercase tracking-wider">Studio Results</h4>
-                              <p className="text-[11px] text-[#9CA3AF] leading-relaxed max-w-[200px]">
-                                  Generate your look once to see Front, Side, Back, and Detail views instantly.
-                              </p>
-                          </div>
-                      )}
-                   </div>
-                </div>
-              </div>
 
                 {/* Grid Column */}
                 <div className="flex-grow bg-[#0F111A] rounded-[24px] p-6 border border-white/5 min-h-[600px] h-fit">
@@ -759,12 +735,9 @@ export const VirtualTryOnView = () => {
                         <ImageIcon className="w-14 h-14" />
                       </div>
                     )}
-                  </div>
+                   </div>
                 </div>
-              </div>
-            </div>
-          </main>
-        </motion.div>
+          </motion.div>
         )}
       </div>
     </div>

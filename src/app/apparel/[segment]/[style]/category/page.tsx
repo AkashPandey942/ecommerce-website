@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRecentBranch } from "@/frontend/hooks/useRecentBranch";
+import { useGeneration } from "@/frontend/context/GenerationContext";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { TAXONOMY } from "@/registry/taxonomy";
 
@@ -20,7 +21,8 @@ export default function CategorySelectionPage() {
   const segment = (params.segment as string) || "ladies";
   const styleParam = (params.style as string) || "ethnic-wear";
 
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const { selectionState, updateSelection } = useGeneration();
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(selectionState.productCategory);
   const [isContinuing, setIsContinuing] = useState(false);
   const [showAll, setShowAll] = useState(false);
 
@@ -52,6 +54,12 @@ export default function CategorySelectionPage() {
 
   const handleContinue = async () => {
     setIsContinuing(true);
+    // Save to context
+    updateSelection({ 
+      productCategory: selectedCategory,
+      // Reset model if category changed to ensure compatibility
+      ...(selectedCategory !== selectionState.productCategory ? { modelId: null } : {})
+    });
     await new Promise(resolve => setTimeout(resolve, 800));
     router.push(`/apparel/${segment}/${styleParam}/upload`);
   };

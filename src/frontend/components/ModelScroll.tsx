@@ -14,10 +14,11 @@ interface ModelScrollProps {
   selectedId: string | null;
   onSelect: (model: ModelItem) => void;
   onPreview?: (model: ModelItem) => void;
+  modelsOverride?: ModelItem[];
 }
 
-const ModelScroll = ({ selectedId, onSelect, onPreview }: ModelScrollProps) => {
-  const models = [
+const ModelScroll = ({ selectedId, onSelect, onPreview, modelsOverride }: ModelScrollProps) => {
+  const defaultModels = [
     { id: "1", image: "/Model_1.jpg" },
     { id: "2", image: "/Model_2.jpg" },
     { id: "3", image: "/Model_3.jpg" },
@@ -27,6 +28,8 @@ const ModelScroll = ({ selectedId, onSelect, onPreview }: ModelScrollProps) => {
     { id: "7", image: "/Model_7.jpg" },
     { id: "8", image: "/Model_8.jpg" },
   ];
+  
+  const models = modelsOverride && modelsOverride.length > 0 ? modelsOverride : defaultModels;
 
   return (
     <div
