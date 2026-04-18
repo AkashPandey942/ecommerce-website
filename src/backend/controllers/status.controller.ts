@@ -54,8 +54,10 @@ export const StatusController = {
             return /(input|garment|cloth|mask|source|reference|upload)/.test(token);
           };
 
-          const outputImages = (rawOutputImages ?? []).filter((url) => url && url !== job.inputImage && !isLikelyReference(url));
-          const outputImage = outputImages[0] || rawOutputImage;
+          const outputImages = (rawOutputImages ?? []).filter(
+            (url): url is string => typeof url === "string" && url !== job.inputImage && !isLikelyReference(url)
+          );
+          const outputImage = outputImages[0] || rawOutputImage || undefined;
 
           await generationService.updateJob(jobId, {
             status: "completed",
