@@ -332,15 +332,17 @@ function buildModelPayload(params: {
     .join(" ");
 
   const aiStudioPrompt = [
-    "Generate a realistic fashion image using the provided product image and selected model/background inputs.",
-    "Maintain correct body proportions, pose, and perspective.",
-    "Preserve fabric texture, folds, shadows, and lighting.",
-    "Seamlessly blend the model into the selected background.",
-    "Ensure the clothing fits naturally with no distortion or floating.",
-    "Keep the model's face, identity, and skin tone unchanged.",
-    `Style should be ${styleHint}.`,
-    params.background ? `Background should be ${backgroundHint}.` : "",
-    mergedPrompt ? `AI Director Notes (optional): ${mergedPrompt}` : "",
+    "Task: Apply the uploaded product/clothing image onto the exact selected model image.",
+    "Do NOT generate a new person. Do NOT change the model. Do NOT change the face.",
+    "Preserve the model’s face, identity, body proportions, skin tone, and pose exactly.",
+    "Replace only the clothing.",
+    "Ensure realistic fit, alignment, perspective, and natural fabric draping/folds/texture.",
+    `Background: ${backgroundHint}. Match lighting, shadows, and color grading to the selected background.`,
+    `Output Style: ${styleHint}.`,
+    mergedPrompt ? `AI Director Notes: ${mergedPrompt}` : "",
+    "Photography: premium fashion catalog framing, soft diffused lighting, 85mm lens look, f/22 clarity.",
+    "Output: ultra-photorealistic, high-resolution, clean, artifact-free fashion image where the selected model wears the product.",
+    `Negative Prompt: ${negativePrompt}, no person swap, no face swap, no pose change, no identity drift.`,
   ]
     .filter(Boolean)
     .join(" ");

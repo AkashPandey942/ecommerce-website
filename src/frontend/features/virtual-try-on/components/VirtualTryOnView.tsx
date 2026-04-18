@@ -389,21 +389,6 @@ export const VirtualTryOnView = () => {
               <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-figma-gradient shadow-[0_0_10px_rgba(124,77,255,0.5)]" />
             )}
           </button>
-          <button 
-            onClick={() => {
-              setActiveTab("AI Studio");
-            }}
-            className={`px-8 py-4 font-bold text-sm transition-all relative ${
-              activeTab === "AI Studio" 
-                ? "text-white" 
-                : "text-[#9CA3AF] hover:text-white"
-            }`}
-          >
-            AI Studio
-            {activeTab === "AI Studio" && (
-              <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-figma-gradient shadow-[0_0_10px_rgba(124,77,255,0.5)]" />
-            )}
-          </button>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6 animate-in fade-in slide-in-from-right-4 duration-500">
