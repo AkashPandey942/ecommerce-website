@@ -332,16 +332,15 @@ function buildModelPayload(params: {
     .join(" ");
 
   const aiStudioPrompt = [
-    "Task: Apply the uploaded product/clothing image onto the exact selected model image.",
-    "Do NOT generate a new person. Do NOT change the model. Do NOT change the face.",
-    "Preserve the model’s face, identity, body proportions, skin tone, and pose exactly.",
-    "Replace only the clothing.",
-    "Ensure realistic fit, alignment, perspective, and natural fabric draping/folds/texture.",
-    `Background: ${backgroundHint}. Match lighting, shadows, and color grading to the selected background.`,
-    `Output Style: ${styleHint}.`,
+    "Task: Take the clothing from the uploaded product image and put it directly onto the selected model image.",
+    "Constraint 1: Use the exact selected model; do NOT generate a new person.",
+    "Constraint 2: Keep the face, identity, body proportions, skin tone, and pose exactly the same.",
+    "Ensure a realistic fit, accurate fabric draping, natural folds, and correct alignment/perspective.",
+    `Use Background: ${backgroundHint}. Match lighting, shadows, and color grading to this background.`,
+    `Style Output Using: ${styleHint}.`,
     mergedPrompt ? `AI Director Notes: ${mergedPrompt}` : "",
-    "Photography: premium fashion catalog framing, soft diffused lighting, 85mm lens look, f/22 clarity.",
-    "Output: ultra-photorealistic, high-resolution, clean, artifact-free fashion image where the selected model wears the product.",
+    "Photography: clean, ultra-realistic, high-quality premium fashion image.",
+    "Output: the exact same model wearing the product, with proper lighting and artifact-free clarity.",
     `Negative Prompt: ${negativePrompt}, no person swap, no face swap, no pose change, no identity drift.`,
   ]
     .filter(Boolean)
