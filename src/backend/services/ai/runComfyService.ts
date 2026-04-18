@@ -61,7 +61,7 @@ function isImageEditModel(modelId: string) {
   return isNanoBananaEditModel(modelId) || isSeedreamEditModel(modelId);
 }
 
-function buildImageEditPayload(params: {
+function buildNanoBananaEditPayload(params: {
   garmentImageUrl: string;
   modelImageUrl: string;
   prompt?: string;
@@ -90,7 +90,7 @@ function buildImageEditPayload(params: {
     clothingPoint: null,
   });
 
-  // Many image-edit endpoints expect `image_urls[0]`.
+  // Pydantic error path shows this model expects `input.image_urls[0]`.
   // Provide both images to maximize conditioning: model/person first, then product reference.
   const imageUrls = [params.modelImageUrl, params.garmentImageUrl].filter(Boolean);
 
@@ -286,7 +286,7 @@ function buildModelPayload(params: {
 
   const mergedPrompt = (params.prompt || "").trim();
 
-  const styleHint = params.style || "catalog";
+  const styleHint = params.style || "Natural";
   const backgroundHint = params.background || "studio";
   const isVirtualTryOn = params.mode === "Virtual Try-On";
   const isAIStudio = params.mode === "AI Studio";
@@ -295,53 +295,56 @@ function buildModelPayload(params: {
   const isKidsMode = (params.gender || "").toLowerCase() === "kids";
   const viewHint =
     params.outputFormat === "single"
-      ? "Single: one high-quality image"
+      ? "Single: Generate one high-quality image"
       : params.outputFormat === "triple"
-        ? "3 Views: Front, Side, Back"
-        : "6 Views: Front, Back, Left, Right, Close-up, Detail";
+        ? "3 Views: Generate Front, Side, Back views"
+        : "6 Views: Generate Front, Back, Left, Right, Close-up, Detail views";
   const categoryHint = (params.category || "").trim();
-  const productType = params.garmentType || "Fabric";
+  const garmentType = params.garmentType || "Fabric";
 
-  const basePrompt = [
-    `Redress the subject in the model image using the clothing from the garment image. Product Type: ${productType}.`,
-    "Preserve the face, expression, body shape, skin tone, and identity of the subject exactly as in the model image.",
-    "Replace only the outfit, applying the clothing with high realism.",
-    "Ensure accurate fabric texture, patterns, stitching, folds, and natural draping according to body posture.",
-    "Maintain proper fit, scale, alignment, and perspective.",
-    ...(productType === "Ready-made"
+  const negativePrompt =
+    "no face change, no body distortion, no slimming, no blur, no low-res, no waxy skin, no broken anatomy, no extra limbs, no fabric distortion, no texture stretching, no lighting mismatch";
+
+  const virtualTryOnPrompt = [
+    "Task: Redress the subject in the model/person image with the clothing from the garment/product image.",
+    "Replace only the clothing while strictly preserving the subject’s face, identity, expression, body proportions, posture, and skin tone.",
+    "Identity Lock (hard constraints): preserve 100% facial identity (pores, freckles, moles, micro-details); maintain exact body shape and pose; no body reshaping; no facial or anatomical alterations.",
+    ...(isKidsMode ? ["If the subject is a child, keep age and identity unchanged."] : []),
+    `Fabric Pipeline: ${garmentType}.`,
+    ...(garmentType === "Ready-made"
       ? [
-          "Ready-made: directly apply the outfit from the garment image to the subject.",
-          `Style the final output based on Output Style: ${styleHint}.`,
-          `Output Format behavior: ${viewHint}.`,
+          "Ready-made: directly map the garment with accurate fit, scale, alignment, and perspective.",
+          `Refine using Output Style: ${styleHint}, Output Format: ${viewHint}.`,
         ]
       : [
-          `Fabric: generate a new outfit concept using Person Type: ${genderHint}${categoryHint ? ` and Clothing Category: ${categoryHint}` : ""}.`,
-          "Then apply the generated outfit onto the subject with realistic stitching, fitting, and fabric simulation.",
-          `Style the output based on Output Style: ${styleHint}.`,
-          `Output Format behavior: ${viewHint}.`,
+          `Fabric: generate garment using Person Type: ${genderHint}${categoryHint ? ` and Clothing Category: ${categoryHint}` : ""}.`,
+          "Define realistic material properties (thickness, weight, elasticity, gravity-driven drape), then apply with precise tailoring, seams, and cloth simulation.",
+          `Style using Output Style: ${styleHint}, Output Format: ${viewHint}.`,
         ]),
-    "Pose, Scene & Background: place the subject in a professional fashion catalog pose.",
-    `Use a clean studio or context-aware background${params.background ? " (or the selected background if provided)" : ""}.`,
-    "Ensure the subject blends naturally with the environment.",
-    "Lighting & Camera: use soft, neutral, studio-quality lighting.",
-    "Simulate a professional camera (f/22) with subtle depth of field.",
-    "Maintain consistent shadows, highlights, and exposure.",
-    "Final Output Requirements: photorealistic rendering (no distortions, no artifacts).",
-    "Maintain natural cloth physics and body alignment.",
-    "Output should look like a premium fashion catalog / e-commerce shoot.",
-    ...(isKidsMode
-      ? [
-          "The person must remain a child (kid) with unchanged age and identity.",
-        ]
-      : []),
-    mergedPrompt ? `AI Director Notes: ${mergedPrompt}` : "",
-    params.background ? `Background: ${backgroundHint}.` : "",
+    "Rendering Fidelity: high photorealism, accurate fabric texture and color, patterns, stitching, seams; natural folds and draping; correct fit and perspective.",
+    "Photography Direction: professional catalog pose (S-curve or 3/4 turn); clean studio or selected environment; soft neutral diffused lighting.",
+    "Camera: 85mm prime lens look; aperture f/22 (all-in-focus clarity).",
+    "Physics & Grounding: realistic cloth physics, tension lines, strong contact shadows + ambient occlusion; no floating/clipping.",
+    mergedPrompt ? `AI Director Notes (optional): ${mergedPrompt}` : "",
+    `Negative Prompt: ${negativePrompt}.`,
   ]
     .filter(Boolean)
     .join(" ");
 
-  const aiStudioPrompt = basePrompt;
-  const virtualTryOnPrompt = basePrompt;
+  const aiStudioPrompt = [
+    "Task: Take the clothing from the uploaded product image and put it directly onto the selected model image.",
+    "Constraint 1: Use the exact selected model; do NOT generate a new person.",
+    "Constraint 2: Keep the face, identity, body proportions, skin tone, and pose exactly the same.",
+    "Ensure a realistic fit, accurate fabric draping, natural folds, and correct alignment/perspective.",
+    `Use Background: ${backgroundHint}. Match lighting, shadows, and color grading to this background.`,
+    `Style Output Using: ${styleHint}.`,
+    mergedPrompt ? `AI Director Notes: ${mergedPrompt}` : "",
+    "Photography: clean, ultra-realistic, high-quality premium fashion image.",
+    "Output: the exact same model wearing the product, with proper lighting and artifact-free clarity.",
+    `Negative Prompt: ${negativePrompt}, no person swap, no face swap, no pose change, no identity drift.`,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   // Many image-edit model endpoints expect a single primary image to edit.
   // For AI Studio, the primary image should be the selected model (person), with the product image provided as a reference.
@@ -562,7 +565,7 @@ export const runComfyService = {
             clothingPoint: params.clothingPoint,
           })
         : isImageEditModel(config.modelId)
-          ? buildImageEditPayload({
+          ? buildNanoBananaEditPayload({
               garmentImageUrl: params.garmentImageUrl,
               modelImageUrl: params.modelImageUrl,
               prompt: params.prompt,
