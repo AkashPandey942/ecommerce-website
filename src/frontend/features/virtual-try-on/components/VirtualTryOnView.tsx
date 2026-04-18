@@ -228,9 +228,8 @@ export const VirtualTryOnView = () => {
       };
 
       console.log("[VirtualTryOn] Sending payload", {
-        garmentType: (payload as any).garmentType,
-        gender: (payload as any).gender,
-        category: (payload as any).category,
+        gender: payload.gender,
+        category: payload.category,
         style: payload.style,
         outputFormat: payload.outputFormat,
         outputCount: payload.outputCount,
@@ -590,7 +589,7 @@ export const VirtualTryOnView = () => {
                 <div className="w-full xl:w-[350px] space-y-12">
                    {/* Gender and Category */}
                    <div className="grid grid-cols-2 lg:grid-cols-1 xl:grid-cols-1 gap-8">
-                      {/* Product type (Virtual Try-On) */}
+                      {/* Product type (Virtual Try-On only) */}
                       {activeTab === "Virtual Try-On" && (
                         <div className="space-y-5 col-span-2 lg:col-span-1">
                           <h3 className="text-sm font-bold text-white">Product Type</h3>
