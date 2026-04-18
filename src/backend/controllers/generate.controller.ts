@@ -12,6 +12,8 @@ function isPublicHttpUrl(value: string) {
 const generateRequestSchema = z.object({
   userImage: z.string().nullable().optional(),
   clothImage: z.string().nullable().optional(),
+  gender: z.enum(["Male", "Female", "Kids", "Man", "Woman", "Person"]).optional(),
+  garmentType: z.enum(["Fabric", "Ready-made"]).optional(),
   category: z.string().min(1, "Category is required").nullable().optional(),
   style: z.string().min(1, "Style is required"),
   outputFormat: z.enum(["single", "triple", "multi-view"]).default("multi-view"),
@@ -52,6 +54,8 @@ export const GenerateController = {
         modelImageUrl,
         clothImage,
         userImage,
+        gender,
+        garmentType,
         category,
         mode,
         outputFormat,
@@ -63,9 +67,16 @@ export const GenerateController = {
       const normalizedGarmentImage = garmentImageUrl ?? clothImage ?? "";
       const normalizedUserImage = modelImageUrl ?? userImage ?? "";
       const normalizedPrompt = [prompt ?? "", notes ?? "", category ? `Category: ${category}` : ""].filter(Boolean).join("\n");
+      const normalizedCategory = (category || "").trim();
+      const normalizedGarmentType = garmentType ?? "Fabric";
+      const normalizedMode =
+        mode === "Virtual Try-On" && !normalizedCategory && Boolean(modelId || background)
+          ? "AI Studio"
+          : mode;
 
       console.log("[API/Generate] Request received", {
-        mode,
+        mode: normalizedMode,
+        garmentType: normalizedGarmentType,
         category,
         style,
         outputFormat,
@@ -78,11 +89,12 @@ export const GenerateController = {
         return NextResponse.json({ success: false, error: "Garment image is required" }, { status: 400 });
       }
 
-      if (!normalizedUserImage && mode === "Virtual Try-On") {
+      if (!normalizedUserImage && normalizedMode === "Virtual Try-On") {
         return NextResponse.json({ success: false, error: "Model image is required for virtual try-on" }, { status: 400 });
       }
 
-      if (mode === "Virtual Try-On" && !category) {
+      const requiresCategory = normalizedMode === "Virtual Try-On" && normalizedGarmentType === "Fabric";
+      if (requiresCategory && !normalizedCategory) {
         return NextResponse.json({ success: false, error: "Clothing category is required" }, { status: 400 });
       }
 
@@ -117,8 +129,10 @@ export const GenerateController = {
         modelImageUrl: normalizedUserImage || normalizedGarmentImage,
         prompt: normalizedPrompt,
         style,
-        category: category ?? undefined,
-        mode,
+        gender,
+        garmentType: normalizedGarmentType,
+        category: normalizedCategory || undefined,
+        mode: normalizedMode,
         outputFormat,
         outputCount,
         background: background ?? undefined,
@@ -151,10 +165,16 @@ export const GenerateController = {
     } catch (error: unknown) {
       console.error("❌ [API/Generate] Error:", error);
       const message = error instanceof Error ? error.message : "Internal Server Error";
+      const status =
+        /insufficient credits/i.test(message)
+          ? 402
+          : /text-to-image model/i.test(message)
+            ? 400
+            : 500;
       return NextResponse.json({ 
         success: false,
         error: message
-      }, { status: 500 });
+      }, { status });
     }
   }
 };

@@ -11,6 +11,17 @@ type GenerationPayload = {
   creditsCost?: number;
 };
 
+function shouldEnforceCredits() {
+  const disableCreditCheck = String(process.env.DISABLE_CREDIT_CHECK || "").toLowerCase() === "true";
+
+  if (disableCreditCheck) {
+    return false;
+  }
+
+  // Keep local/dev pipelines unblocked unless explicitly enabled.
+  return process.env.NODE_ENV === "production";
+}
+
 export const generationService = {
   /**
    * Creates a new generation job record in MongoDB.
@@ -22,8 +33,8 @@ export const generationService = {
     // 1. Deduct Credits (Secured on Backend)
     const cost = data.creditsCost || 10;
     const user = userId !== "guest-user" ? await User.findById(userId) : null;
-    
-    if (userId !== "guest-user") {
+
+    if (shouldEnforceCredits() && userId !== "guest-user") {
       if (!user || user.credits < cost) {
         throw new Error("Insufficient credits");
       }
@@ -64,6 +75,13 @@ export const generationService = {
     await dbConnect();
     const job = await Generation.findById(jobId);
     if (!job || job.status === "failed") return; // Prevent double refund
+
+    if (!shouldEnforceCredits()) {
+      job.status = "failed";
+      job.error = "Generation failed.";
+      await job.save();
+      return;
+    }
 
     const user = job.userId !== "guest-user" ? await User.findById(job.userId) : null;
     if (user) {

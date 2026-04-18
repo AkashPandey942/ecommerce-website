@@ -12,6 +12,7 @@ export interface IGeneration extends Document {
   status: GenerationStatus;
   requestId?: string; // RunComfy Request ID
   outputImage?: string; // RunComfy Output URL
+  outputImages?: string[]; // RunComfy multiple output URLs
   error?: string;
   createdAt: Date;
 }
@@ -30,6 +31,7 @@ const GenerationSchema: Schema = new Schema({
   },
   requestId: { type: String },
   outputImage: { type: String },
+  outputImages: [{ type: String }],
   error: { type: String },
   createdAt: { type: Date, default: Date.now },
 });

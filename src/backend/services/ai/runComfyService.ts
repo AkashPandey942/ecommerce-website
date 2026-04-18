@@ -2,23 +2,119 @@
 import { env } from "@/shared/config/env";
 
 // Node IDs from ComfyUI Workflow (Customize based on your workflow_api.json)
-const DEFAULT_MODEL_ID = "blackforestlabs/flux-1-kontext/pro/edit";
+const DEFAULT_MODEL_ID = "blackforestlabs/flux-2/dev/text-to-image";
+const MODEL_API_BASE_URL = "https://model-api.runcomfy.net/v1";
+const DEPLOYMENT_API_BASE_URL = "https://api.runcomfy.net/prod/v1";
 
 type RunComfyStatus = "queued" | "processing" | "completed" | "failed";
-
-const MODEL_API_BASE_URL = "https://model-api.runcomfy.net/v1";
 
 function normalizeBaseUrl(baseUrl: string) {
   return baseUrl.replace(/\/+$/, "");
 }
 
-function getRunComfyBaseUrl() {
-  const configured = env.VITE_RUNCOMFY_API_URL?.trim();
-  return normalizeBaseUrl(configured || MODEL_API_BASE_URL);
+function resolveBaseUrl(configuredBaseUrl: string, deploymentId?: string) {
+  const cleanedConfigured = configuredBaseUrl.trim();
+  const deploymentMode = Boolean(deploymentId);
+
+  if (!cleanedConfigured) {
+    return deploymentMode ? DEPLOYMENT_API_BASE_URL : MODEL_API_BASE_URL;
+  }
+
+  // When deployment mode is enabled, model-api host cannot serve /deployments/{id}/inference.
+  if (deploymentMode && /model-api\.runcomfy\.net/i.test(cleanedConfigured)) {
+    return DEPLOYMENT_API_BASE_URL;
+  }
+
+  return cleanedConfigured;
+}
+
+function getRunComfyConfig() {
+  const apiKey = (env.RUNCOMFY_API_KEY || env.VITE_RUNCOMFY_API_KEY || "").trim();
+  const deploymentId = env.RUNCOMFY_DEPLOYMENT_ID?.trim();
+  const modelId = (env.RUNCOMFY_MODEL_ID || env.VITE_RUNCOMFY_MODEL_ID || DEFAULT_MODEL_ID).trim();
+  const configuredBaseUrl = (env.RUNCOMFY_API_URL || env.VITE_RUNCOMFY_API_URL || "").trim();
+
+  const baseUrl = normalizeBaseUrl(resolveBaseUrl(configuredBaseUrl, deploymentId));
+
+  return {
+    apiKey,
+    deploymentId,
+    modelId,
+    baseUrl,
+    isDeploymentMode: Boolean(deploymentId),
+  };
+}
+
+function isTextToImageModel(modelId: string) {
+  return /text-to-image/i.test(modelId);
+}
+
+function isNanoBananaEditModel(modelId: string) {
+  return /google\/nano-banana\/pro\/edit/i.test(modelId);
+}
+
+function isSeedreamEditModel(modelId: string) {
+  return /bytedance\/seedream-4-5\/edit/i.test(modelId);
+}
+
+function isImageEditModel(modelId: string) {
+  return isNanoBananaEditModel(modelId) || isSeedreamEditModel(modelId);
+}
+
+function buildImageEditPayload(params: {
+  garmentImageUrl: string;
+  modelImageUrl: string;
+  prompt?: string;
+  style?: string;
+  background?: string;
+  mode?: "Virtual Try-On" | "AI Studio";
+  gender?: "Male" | "Female" | "Kids" | "Man" | "Woman" | "Person";
+  garmentType?: "Fabric" | "Ready-made";
+  category?: string;
+  outputFormat?: "single" | "triple" | "multi-view";
+  outputCount?: number;
+}) {
+  const base = buildModelPayload({
+    garmentImageUrl: params.garmentImageUrl,
+    modelImageUrl: params.modelImageUrl,
+    prompt: params.prompt,
+    style: params.style,
+    background: params.background,
+    mode: params.mode,
+    gender: params.gender,
+    garmentType: params.garmentType,
+    category: params.category,
+    outputFormat: params.outputFormat,
+    outputCount: params.outputCount,
+    userPoint: null,
+    clothingPoint: null,
+  });
+
+  // Many image-edit endpoints expect `image_urls[0]`.
+  // Provide both images to maximize conditioning: model/person first, then product reference.
+  const imageUrls = [params.modelImageUrl, params.garmentImageUrl].filter(Boolean);
+
+  const outputFormat = base.output_format || "png";
+  // This model is an image edit endpoint; keep a stable mode string.
+  const editMode = "edit";
+
+  // Model validation errors show the schema expects top-level fields (prompt, image_urls, ...).
+  return {
+    prompt: base.prompt,
+    image_urls: imageUrls,
+    num_outputs: base.num_outputs,
+    output_format: outputFormat,
+    mode: editMode,
+  };
 }
 
 function isUrl(value: string) {
   return value.startsWith("http://") || value.startsWith("https://");
+}
+
+function isTransientStatus(status: number) {
+  // Cloudflare / gateway / overload responses that should be retried.
+  return [408, 425, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524].includes(status);
 }
 
 function scoreCandidate(url: string, sourceHint: string) {
@@ -158,6 +254,18 @@ type RunComfySubmitResponse = {
   detail?: unknown;
 };
 
+function mapGenderToPromptSubject(value?: "Male" | "Female" | "Kids" | "Man" | "Woman" | "Person") {
+  if (!value) return "person";
+
+  const normalized = value.toLowerCase();
+
+  if (normalized === "male" || normalized === "man") return "male";
+  if (normalized === "female" || normalized === "woman") return "female";
+  if (normalized === "kids") return "kid";
+
+  return "person";
+}
+
 function buildModelPayload(params: {
   garmentImageUrl: string;
   modelImageUrl: string;
@@ -165,48 +273,206 @@ function buildModelPayload(params: {
   style?: string;
   background?: string;
   mode?: "Virtual Try-On" | "AI Studio";
+  gender?: "Male" | "Female" | "Kids" | "Man" | "Woman" | "Person";
+  garmentType?: "Fabric" | "Ready-made";
   category?: string;
   outputFormat?: "single" | "triple" | "multi-view";
   outputCount?: number;
+  userPoint?: { x: number; y: number } | null;
+  clothingPoint?: { x: number; y: number } | null;
 }) {
-  const mergedPrompt = [params.prompt, params.style, params.background, params.category ? `Category: ${params.category}` : ""]
-    .filter(Boolean)
-    .join(", ")
-    .trim();
+  const requestedViewLayout = params.outputFormat || "multi-view";
+  const outputImageFormat = "png";
 
-  const virtualTryOnPrompt = [
-    "Create a photorealistic virtual try-on result.",
-    "Keep the same person identity, body proportions, skin tone, face, hair, and pose from the person image.",
-    "Transfer the garment fabric, texture, wrinkles, fit, and drape from the garment image onto the person naturally.",
-    "Preserve realistic lighting and shadows from the original person scene.",
-    "Do not output isolated clothing product image.",
-    mergedPrompt,
+  const mergedPrompt = (params.prompt || "").trim();
+
+  const styleHint = params.style || "catalog";
+  const backgroundHint = params.background || "studio";
+  const isVirtualTryOn = params.mode === "Virtual Try-On";
+  const isAIStudio = params.mode === "AI Studio";
+  const requestedCount = Math.max(1, Math.min(8, params.outputCount || (params.outputFormat === "single" ? 1 : params.outputFormat === "triple" ? 3 : 6)));
+  const genderHint = mapGenderToPromptSubject(params.gender);
+  const isKidsMode = (params.gender || "").toLowerCase() === "kids";
+  const viewHint =
+    params.outputFormat === "single"
+      ? "Single: one high-quality image"
+      : params.outputFormat === "triple"
+        ? "3 Views: Front, Side, Back"
+        : "6 Views: Front, Back, Left, Right, Close-up, Detail";
+  const categoryHint = (params.category || "").trim();
+  const productType = params.garmentType || "Fabric";
+
+  const basePrompt = [
+    `Redress the subject in the model image using the clothing from the garment image. Product Type: ${productType}.`,
+    "Preserve the face, expression, body shape, skin tone, and identity of the subject exactly as in the model image.",
+    "Replace only the outfit, applying the clothing with high realism.",
+    "Ensure accurate fabric texture, patterns, stitching, folds, and natural draping according to body posture.",
+    "Maintain proper fit, scale, alignment, and perspective.",
+    ...(productType === "Ready-made"
+      ? [
+          "Ready-made: directly apply the outfit from the garment image to the subject.",
+          `Style the final output based on Output Style: ${styleHint}.`,
+          `Output Format behavior: ${viewHint}.`,
+        ]
+      : [
+          `Fabric: generate a new outfit concept using Person Type: ${genderHint}${categoryHint ? ` and Clothing Category: ${categoryHint}` : ""}.`,
+          "Then apply the generated outfit onto the subject with realistic stitching, fitting, and fabric simulation.",
+          `Style the output based on Output Style: ${styleHint}.`,
+          `Output Format behavior: ${viewHint}.`,
+        ]),
+    "Pose, Scene & Background: place the subject in a professional fashion catalog pose.",
+    `Use a clean studio or context-aware background${params.background ? " (or the selected background if provided)" : ""}.`,
+    "Ensure the subject blends naturally with the environment.",
+    "Lighting & Camera: use soft, neutral, studio-quality lighting.",
+    "Simulate a professional camera (f/22) with subtle depth of field.",
+    "Maintain consistent shadows, highlights, and exposure.",
+    "Final Output Requirements: photorealistic rendering (no distortions, no artifacts).",
+    "Maintain natural cloth physics and body alignment.",
+    "Output should look like a premium fashion catalog / e-commerce shoot.",
+    ...(isKidsMode
+      ? [
+          "The person must remain a child (kid) with unchanged age and identity.",
+        ]
+      : []),
+    mergedPrompt ? `AI Director Notes: ${mergedPrompt}` : "",
+    params.background ? `Background: ${backgroundHint}.` : "",
   ]
     .filter(Boolean)
     .join(" ");
 
-  const aiStudioPrompt = mergedPrompt || "fashion e-commerce product generation";
+  const aiStudioPrompt = basePrompt;
+  const virtualTryOnPrompt = basePrompt;
 
-  const isVirtualTryOn = params.mode === "Virtual Try-On";
-  const requestedCount = Math.max(1, Math.min(8, params.outputCount || (params.outputFormat === "single" ? 1 : params.outputFormat === "triple" ? 3 : 6)));
+  // Many image-edit model endpoints expect a single primary image to edit.
+  // For AI Studio, the primary image should be the selected model (person), with the product image provided as a reference.
+  const primaryImageUrl = isAIStudio ? params.modelImageUrl : params.garmentImageUrl;
+  const referenceImageUrl = isAIStudio ? params.garmentImageUrl : params.modelImageUrl;
 
   return {
     prompt: isVirtualTryOn ? virtualTryOnPrompt : aiStudioPrompt,
     task: isVirtualTryOn ? "virtual_try_on" : "fashion_generation",
     mode: isVirtualTryOn ? "virtual_try_on" : "studio_generation",
-    output_format: params.outputFormat || "multi-view",
+    // RunComfy flux-2 endpoint validates output_format as image type enum: jpeg|png|webp.
+    output_format: outputImageFormat,
+    image_format: outputImageFormat,
+    result_format: outputImageFormat,
+    // Preserve requested multi-view layout semantics for downstream workflows.
+    view_layout: requestedViewLayout,
+    requested_view_layout: requestedViewLayout,
     num_outputs: requestedCount,
     output_count: requestedCount,
-    image_url: params.garmentImageUrl,
+    image_url: primaryImageUrl,
+    input_image_url: primaryImageUrl,
+    init_image_url: primaryImageUrl,
+    base_image_url: primaryImageUrl,
+    source_image_url: primaryImageUrl,
+    reference_image_url: referenceImageUrl,
+    edit_image_url: referenceImageUrl,
     model_image_url: params.modelImageUrl,
     garment_image_url: params.garmentImageUrl,
     person_image_url: params.modelImageUrl,
     human_image_url: params.modelImageUrl,
     cloth_image_url: params.garmentImageUrl,
+    product_image_url: params.garmentImageUrl,
     person: params.modelImageUrl,
     garment: params.garmentImageUrl,
     input_person_image: params.modelImageUrl,
     input_garment_image: params.garmentImageUrl,
+    user_point: params.userPoint || undefined,
+    cloth_point: params.clothingPoint || undefined,
+    model_point: params.userPoint || undefined,
+    garment_point: params.clothingPoint || undefined,
+  };
+}
+
+function buildDeploymentPayload(params: {
+  garmentImageUrl: string;
+  modelImageUrl: string;
+  prompt?: string;
+  style?: string;
+  background?: string;
+  mode?: "Virtual Try-On" | "AI Studio";
+  gender?: "Male" | "Female" | "Kids" | "Man" | "Woman" | "Person";
+  garmentType?: "Fabric" | "Ready-made";
+  category?: string;
+  outputFormat?: "single" | "triple" | "multi-view";
+  outputCount?: number;
+  userPoint?: { x: number; y: number } | null;
+  clothingPoint?: { x: number; y: number } | null;
+}) {
+  const input = buildModelPayload(params);
+  const isVirtualTryOn = params.mode === "Virtual Try-On";
+
+  const vtonWorkflow = {
+    workflow_type: "virtual_try_on",
+    workflow_name: "ipadapter_openpose_cloth_ksampler_output",
+    pipeline: {
+      steps: [
+        "ipadapter",
+        "openpose",
+        "cloth_input",
+        "ksampler",
+        "output",
+      ],
+    },
+    nodes: {
+      ipadapter: {
+        enabled: true,
+        image_url: params.modelImageUrl,
+        mode: "identity_lock",
+        lock_identity: true,
+        output: "identity_conditioning",
+      },
+      openpose: {
+        enabled: true,
+        image_url: params.modelImageUrl,
+        lock_pose: true,
+        output: "pose",
+      },
+      cloth_input: {
+        enabled: true,
+        image_url: params.garmentImageUrl,
+        output: "cloth",
+      },
+      ksampler: {
+        enabled: true,
+        sampler_name: "euler",
+        scheduler: "normal",
+        steps: 28,
+        cfg: 6,
+        denoise: 0.2,
+        prompt: input.prompt,
+        conditioning: {
+          identity_source: "ipadapter",
+          pose_source: "openpose",
+          cloth_source: "cloth_input",
+        },
+        user_point: params.userPoint || undefined,
+        cloth_point: params.clothingPoint || undefined,
+        output: "latent",
+      },
+      output: {
+        enabled: true,
+        decode: "vae",
+        source: "ksampler",
+      },
+    },
+    ipadapter_image_url: params.modelImageUrl,
+    openpose_image_url: params.modelImageUrl,
+    cloth_input_image_url: params.garmentImageUrl,
+    ksampler_denoise: 0.2,
+    output_source: "output",
+  };
+
+  return {
+    input: {
+      ...input,
+      ...vtonWorkflow,
+      workflow_type: isVirtualTryOn ? "virtual_try_on" : "ai_studio_try_on",
+    },
+    ...input,
+    ...vtonWorkflow,
+    workflow_type: isVirtualTryOn ? "virtual_try_on" : "ai_studio_try_on",
   };
 }
 
@@ -249,38 +515,89 @@ export const runComfyService = {
     style?: string;
     background?: string;
     mode?: "Virtual Try-On" | "AI Studio";
+    gender?: "Male" | "Female" | "Kids" | "Man" | "Woman" | "Person";
+    garmentType?: "Fabric" | "Ready-made";
     category?: string;
     outputFormat?: "single" | "triple" | "multi-view";
     outputCount?: number;
     userPoint?: { x: number, y: number } | null;
     clothingPoint?: { x: number, y: number } | null;
   }) {
-    if (!env.VITE_RUNCOMFY_API_KEY) {
-      throw new Error("VITE_RUNCOMFY_API_KEY is missing");
+    const config = getRunComfyConfig();
+
+    if (!config.apiKey) {
+      throw new Error("RUNCOMFY_API_KEY is missing");
+    }
+
+    // AI Studio / Virtual Try-On require image conditioning (product + model images).
+    // The Flux "text-to-image" model endpoint ignores image inputs and will generate unrelated outfits.
+    if (!config.isDeploymentMode && isTextToImageModel(config.modelId)) {
+      const mode = params.mode || "AI Studio";
+      throw new Error(
+        `RunComfy is configured with a text-to-image model (${config.modelId}). ` +
+          `${mode} requires an image-conditioned ComfyUI deployment to apply the uploaded product onto the selected model. ` +
+          `Set RUNCOMFY_DEPLOYMENT_ID to your deployed try-on workflow (recommended), or switch RUNCOMFY_MODEL_ID to a workflow/model that supports image inputs.`
+      );
     }
 
     try {
-      const baseUrl = getRunComfyBaseUrl();
-      const modelId = env.VITE_RUNCOMFY_MODEL_ID || DEFAULT_MODEL_ID;
-      const url = `${baseUrl}/models/${modelId}`;
+      const url = config.isDeploymentMode
+        ? `${config.baseUrl}/deployments/${config.deploymentId}/inference`
+        : `${config.baseUrl}/models/${config.modelId}`;
+
+      const requestPayload = config.isDeploymentMode
+        ? buildDeploymentPayload({
+            garmentImageUrl: params.garmentImageUrl,
+            modelImageUrl: params.modelImageUrl,
+            prompt: params.prompt,
+            style: params.style,
+            background: params.background,
+            mode: params.mode,
+            gender: params.gender,
+            garmentType: params.garmentType,
+            category: params.category,
+            outputFormat: params.outputFormat,
+            outputCount: params.outputCount,
+            userPoint: params.userPoint,
+            clothingPoint: params.clothingPoint,
+          })
+        : isImageEditModel(config.modelId)
+          ? buildImageEditPayload({
+              garmentImageUrl: params.garmentImageUrl,
+              modelImageUrl: params.modelImageUrl,
+              prompt: params.prompt,
+              style: params.style,
+              background: params.background,
+              mode: params.mode,
+              gender: params.gender,
+              garmentType: params.garmentType,
+              category: params.category,
+              outputFormat: params.outputFormat,
+              outputCount: params.outputCount,
+            })
+          : buildModelPayload({
+              garmentImageUrl: params.garmentImageUrl,
+              modelImageUrl: params.modelImageUrl,
+              prompt: params.prompt,
+              style: params.style,
+              background: params.background,
+              mode: params.mode,
+              gender: params.gender,
+              garmentType: params.garmentType,
+              category: params.category,
+              outputFormat: params.outputFormat,
+              outputCount: params.outputCount,
+              userPoint: params.userPoint,
+              clothingPoint: params.clothingPoint,
+            });
 
       const response = await fetch(url, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${env.VITE_RUNCOMFY_API_KEY}`,
+          "Authorization": `Bearer ${config.apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(buildModelPayload({
-          garmentImageUrl: params.garmentImageUrl,
-          modelImageUrl: params.modelImageUrl,
-          prompt: params.prompt,
-          style: params.style,
-          background: params.background,
-          mode: params.mode,
-          category: params.category,
-          outputFormat: params.outputFormat,
-          outputCount: params.outputCount,
-        })),
+        body: JSON.stringify(requestPayload),
       });
 
       if (!response.ok) {
@@ -289,7 +606,7 @@ export const runComfyService = {
       }
 
       const data = (await response.json()) as RunComfySubmitResponse;
-      return normalizeSubmitResponse(data, "requests");
+      return normalizeSubmitResponse(data, `${config.baseUrl}/requests`);
     } catch (error: unknown) {
       console.error("❌ [runComfyService] triggerWorkflow Error:", error);
       throw error;
@@ -300,26 +617,41 @@ export const runComfyService = {
    * Phase 2: Check the status of a request.
    */
   async checkStatus(requestId: string) {
-    if (!env.VITE_RUNCOMFY_API_KEY) {
+    const config = getRunComfyConfig();
+
+    if (!config.apiKey) {
       return { status: "failed", error: "Missing RunComfy API Key" };
     }
 
     try {
-      const baseUrl = getRunComfyBaseUrl();
       const statusUrl = isUrl(requestId)
         ? requestId
-        : `${baseUrl}/${requestId.includes("/") ? requestId : `requests/${requestId}/status`}`;
+        : `${config.baseUrl}/${requestId.includes("/") ? requestId : `requests/${requestId}/status`}`;
 
       const statusResponse = await fetch(statusUrl, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${env.VITE_RUNCOMFY_API_KEY}`,
+          "Authorization": `Bearer ${config.apiKey}`,
         },
       });
 
       if (!statusResponse.ok) {
+        // Model API occasionally returns HTML Cloudflare error pages (e.g. 504) during long generations.
+        // Treat transient HTTP errors as still processing so the UI keeps polling.
+        if (isTransientStatus(statusResponse.status) || statusResponse.status === 404) {
+          return {
+            status: "processing" as const,
+            outputImage: null,
+            error: null,
+          };
+        }
+
         const errorText = await parseErrorResponse(statusResponse);
-        throw new Error(`Failed to check RunComfy status: ${errorText}`);
+        return {
+          status: "failed" as const,
+          outputImage: null,
+          error: `Failed to check RunComfy status: ${errorText}`,
+        };
       }
 
       const statusData = (await statusResponse.json()) as {
@@ -337,13 +669,25 @@ export const runComfyService = {
         const resultResponse = await fetch(resultUrl, {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${env.VITE_RUNCOMFY_API_KEY}`,
+            "Authorization": `Bearer ${config.apiKey}`,
           },
         });
 
         if (!resultResponse.ok) {
+          if (isTransientStatus(resultResponse.status) || resultResponse.status === 404) {
+            return {
+              status: "processing" as const,
+              outputImage: null,
+              error: null,
+            };
+          }
+
           const resultErrorText = await parseErrorResponse(resultResponse);
-          throw new Error(`Failed to fetch RunComfy result: ${resultErrorText}`);
+          return {
+            status: "failed" as const,
+            outputImage: null,
+            error: `Failed to fetch RunComfy result: ${resultErrorText}`,
+          };
         }
 
         const resultData = await resultResponse.json();
@@ -364,8 +708,23 @@ export const runComfyService = {
         error: statusData.error || statusData.message || null,
       };
     } catch (error: unknown) {
+      // Network errors / timeouts should not hard-fail polling.
+      const message = error instanceof Error ? error.message : String(error);
       console.error("❌ [runComfyService] checkStatus Error:", error);
-      throw error;
+
+      if (/timeout|timed out|gateway time-?out|cloudflare|fetch failed|ECONNRESET|ENOTFOUND/i.test(message)) {
+        return {
+          status: "processing" as const,
+          outputImage: null,
+          error: null,
+        };
+      }
+
+      return {
+        status: "failed" as const,
+        outputImage: null,
+        error: message,
+      };
     }
   }
 };
