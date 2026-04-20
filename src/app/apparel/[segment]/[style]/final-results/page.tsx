@@ -7,11 +7,12 @@ import { Download, Plus, Play } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import StackedImagePreview from "@/frontend/components/StackedImagePreview";
 
 export default function FinalResultsPage() {
   const params = useParams();
+  const router = useRouter();
   const segment = (params.segment as string) || "Ladies";
   const style = (params.style as string) || "Ethnic Wear";
 
@@ -58,55 +59,41 @@ export default function FinalResultsPage() {
       <FlowHeader title="Results" />
 
       <main className="w-full max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
-        {/* Step 6: Fully Completed */}
-        <ProgressStepper currentStep={11} />
-
-        {/* Header Message */}
-        <div className="text-left w-full mt-8 mb-8">
-          <h2 className="font-roboto font-semibold text-[32px] leading-[40px] text-white">
-            Photoshoot Complete!
-          </h2>
-          <p className="font-roboto text-[#99A1AF] text-sm mt-1">
-            Your high-fidelity assets are ready for export.
-          </p>
+        {/* Progress Dots (Figma Style) */}
+        <div className="flex justify-center gap-2 mb-8">
+           {[1, 2, 3, 4, 5].map((dot) => (
+             <div key={dot} className="h-1 w-8 rounded-full bg-[#7C4DFF]" />
+           ))}
         </div>
 
-        {/* Stacked Fan Preview (Rule 6.10 Style Enhancement) */}
-        <div className="w-full flex justify-center">
-           <StackedImagePreview images={results.map(r => r.image)} />
+        <div className="relative w-full aspect-[4/5] max-w-full sm:max-w-[353px] rounded-[24px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] mb-8 border border-white/5">
+           <Image 
+              src={segment.toLowerCase() === "gents" 
+                ? "/assets/men/western-wear/men-fashion-editorial-outdoors.jpg" 
+                : "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg"}
+              alt="Final Result"
+              fill
+              className="object-contain"
+           />
         </div>
 
-        {/* Results Sections Grouped by Type (Rule 6.10) */}
-        <div className="w-full flex flex-col gap-12">
-          {/* Images Section */}
-          <section>
-            <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-2">
-              <h3 className="font-roboto font-semibold text-lg text-white">Image Assets</h3>
-              <span className="text-xs text-[#99A1AF] bg-white/5 py-1 px-2 rounded-md">{results.filter(r => !r.isVideo).length} Files</span>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 min-h-[220px]">
-              {results.filter(r => !r.isVideo).map((res, idx) => (
-                <ResultCard key={idx} res={res} idx={idx} />
-              ))}
-            </div>
-          </section>
-
-          {/* Videos Section */}
-          <section>
-            <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-2">
-              <h3 className="font-roboto font-semibold text-lg text-white">Motion Synthesis (Step 10)</h3>
-              <span className="text-xs text-[#99A1AF] bg-white/5 py-1 px-2 rounded-md">{results.filter(r => r.isVideo).length} Files</span>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-              {results.filter(r => r.isVideo).map((res, idx) => (
-                <ResultCard key={idx} res={res} idx={idx} />
-              ))}
-            </div>
-          </section>
+        <div className="w-full max-w-full sm:max-w-[353px] flex gap-3 mb-10">
+           <button 
+             onClick={() => router.back()}
+             className="flex-1 h-[51px] bg-white/5 border border-white/10 rounded-xl flex items-center justify-center gap-2 text-sm font-medium"
+           >
+              <Plus className="w-4 h-4" /> More Angles
+           </button>
+           <button 
+             onClick={() => router.push(`/result/mock-id/video-style`)}
+             className="flex-1 h-[51px] bg-white/5 border border-white/10 rounded-xl flex items-center justify-center gap-2 text-sm font-medium"
+           >
+              <Play className="w-4 h-4 ml-0.5" /> Create Video
+           </button>
         </div>
 
         {/* Dashboard Actions */}
-        <div className="w-full max-w-full sm:max-w-[393px] flex flex-col gap-4 mt-12 md:mt-20">
+        <div className="w-full max-w-full sm:max-w-[353px] flex flex-col gap-4 mt-auto mb-10">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -122,12 +109,9 @@ export default function FinalResultsPage() {
             <motion.button
               whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.05)" }}
               whileTap={{ scale: 0.98 }}
-              className="w-full h-[61px] border border-white/10 rounded-full flex items-center justify-center gap-3 bg-transparent transition-colors"
+              className="w-full h-[61px] border border-white/10 rounded-full flex items-center justify-center gap-3 bg-transparent transition-colors text-white font-semibold text-lg"
             >
-              <Plus className="w-5 h-5 text-[#C5B6DE]" />
-              <span className="font-roboto font-semibold text-lg text-[#C5B6DE]">
-                Create New Project
-              </span>
+              Create New Project
             </motion.button>
           </Link>
         </div>

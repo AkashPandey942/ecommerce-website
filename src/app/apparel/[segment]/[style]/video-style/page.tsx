@@ -55,28 +55,33 @@ export default function VideoStyleSelectionPage() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
-      <FlowHeader title="Video Treatment" />
+      <FlowHeader title="Video Style" />
 
       <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5">
-        <ProgressStepper currentStep={10} />
+        {/* Progress Dots (Figma Style) */}
+        <div className="flex justify-center gap-2 mb-8">
+           {[1, 2, 3, 4, 5].map((dot) => (
+             <div key={dot} className={`h-1 w-8 rounded-full ${dot <= 5 ? "bg-[#7C4DFF]" : "bg-white/10"}`} />
+           ))}
+        </div>
 
-        <section className="mt-8 mb-10">
+        <section className="mb-10 lg:text-center">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
             <h1 className="font-roboto font-semibold text-3xl lg:text-[36px] leading-tight lg:leading-[45px] tracking-[-0.9px] text-[#E2E2E8] mb-4">
-              Choose Video Style
+              Select Video Style
             </h1>
             <p className="font-roboto font-normal text-base leading-[19px] text-[#C2C6D6]">
-              Select a motion preset to bring your approved prime image to life.
+              Choose video animation style
             </p>
           </motion.div>
         </section>
 
-        {/* Video Styles Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        {/* Video Styles Grid (2-column mobile) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           {videoStyles.map((style, idx) => (
             <motion.div
               key={style.id}
@@ -84,57 +89,69 @@ export default function VideoStyleSelectionPage() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: idx * 0.1 }}
               onClick={() => setSelectedStyle(style.id)}
-              className={`relative overflow-hidden rounded-[20px] cursor-pointer border-2 transition-all h-[240px] group ${
+              className={`relative aspect-[166/207] rounded-[10px] overflow-hidden cursor-pointer border-2 transition-all group ${
                 selectedStyle === style.id 
                   ? "border-[#7C4DFF] shadow-[0_0_30px_rgba(124,77,255,0.3)]" 
-                  : "border-white/10 hover:border-white/20"
+                  : "border-white/5 hover:border-white/10"
               }`}
             >
               <Image 
                 src={style.image}
                 alt={style.title}
                 fill
-                className="object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
               
-              {/* Overlay Content */}
-              <div className="absolute inset-0 p-6 flex flex-col justify-end bg-gradient-to-t from-black via-black/40 to-transparent">
-                <div className="flex items-center gap-2 mb-2">
-                  <Play className={`w-5 h-5 ${selectedStyle === style.id ? "text-[#7C4DFF]" : "text-white"}`} />
-                  <h3 className="font-roboto font-bold text-xl text-white">{style.title}</h3>
+              {/* Play Button Overlay */}
+              <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md border border-white/20 ${
+                  selectedStyle === style.id ? "bg-[#7C4DFF]" : "bg-black/40"
+                }`}>
+                  <Play className="w-4 h-4 text-white fill-white ml-0.5" />
                 </div>
-                <p className="text-sm text-gray-300 line-clamp-2">{style.description}</p>
               </div>
 
-              {/* Selection Badge */}
-              {selectedStyle === style.id && (
-                <div className="absolute top-4 right-4 bg-[#7C4DFF] p-2 rounded-full">
-                  <Sparkles className="w-4 h-4 text-white" />
-                </div>
-              )}
+              {/* Title Overlay */}
+              <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/80 to-transparent">
+                <span className="text-[12px] font-medium text-white block text-center italic">{style.title}</span>
+              </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Action Area */}
-        <div className="w-full mt-auto mb-10 lg:mb-16">
-          <div className="w-full max-w-[353px] mx-auto lg:max-w-[400px] flex flex-col gap-4">
-            <LoadingActionButton
-              isLoading={isLoading}
-              onClick={handleGenerate}
-              className="w-full h-[61px] text-lg"
-              disabled={!selectedStyle}
-            >
-              Synthesize Video
-            </LoadingActionButton>
-            <button 
-              onClick={() => router.push(`/apparel/${segment}/${styleParam}/final-results`)}
-              className="text-white/40 text-sm hover:text-white transition-colors"
-            >
-              Skip video for now
-            </button>
+        {/* AI Custom / Prompt Section (Figma Style) */}
+        <section className="w-full max-w-full sm:max-w-[353px] mx-auto flex flex-col gap-6 mb-16">
+          <div className="flex flex-col gap-3">
+             <div className="flex">
+                <span className="px-3 py-1 bg-white/10 rounded-full text-[10px] uppercase font-bold tracking-widest text-[#99A1AF]">
+                   Use Prompt
+                </span>
+             </div>
+             <p className="text-[10px] text-red-400 flex items-center gap-1 italic">
+                <span>⚠️</span> Custom prompts may vary. Use at your own risk.
+             </p>
           </div>
-        </div>
+
+          <div>
+             <div className="flex items-center gap-2 mb-3">
+                <h2 className="text-sm font-bold text-white">AI Custom</h2>
+                <span className="text-[10px] text-[#C5B6DE] uppercase">(Optional)</span>
+             </div>
+             <textarea 
+               className="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-4 text-[12px] text-white outline-none focus:border-[#7C4DFF] transition-all resize-none placeholder:text-white/20"
+               placeholder="E.g. Focus on the golden pallu details, add warm sunlight flare from left..."
+             />
+          </div>
+
+          <LoadingActionButton
+            isLoading={isLoading}
+            onClick={handleGenerate}
+            className="w-full h-[61px] text-lg font-bold rounded-full"
+            disabled={!selectedStyle}
+          >
+            Generate Video
+          </LoadingActionButton>
+        </section>
       </main>
 
       <Footer />

@@ -11,17 +11,17 @@ import { Skeleton } from "@/frontend/components/ui/Skeleton";
 import ProductTag from "@/frontend/components/ProductTag";
 
 // Dynamic components
-const UploadZone = dynamic(() => import("@/frontend/components/UploadZone"), { 
-  ssr: false, 
-  loading: () => <Skeleton className="w-full h-[240px] rounded-2xl" /> 
+const UploadZone = dynamic(() => import("@/frontend/components/UploadZone"), {
+  ssr: false,
+  loading: () => <Skeleton className="w-full h-[240px] rounded-2xl" />
 });
-const ModelScroll = dynamic(() => import("@/frontend/components/ModelScroll"), { 
-  ssr: false, 
-  loading: () => <Skeleton className="w-full h-[170px] rounded-xl" /> 
+const ModelScroll = dynamic(() => import("@/frontend/components/ModelScroll"), {
+  ssr: false,
+  loading: () => <Skeleton className="w-full h-[170px] rounded-xl" />
 });
-const BackgroundGrid = dynamic(() => import("@/frontend/components/BackgroundGrid"), { 
-  ssr: false, 
-  loading: () => <div className="grid grid-cols-2 gap-4"><Skeleton className="h-[100px]" /><Skeleton className="h-[100px]" /></div> 
+const BackgroundGrid = dynamic(() => import("@/frontend/components/BackgroundGrid"), {
+  ssr: false,
+  loading: () => <div className="grid grid-cols-2 gap-4"><Skeleton className="h-[100px]" /><Skeleton className="h-[100px]" /></div>
 });
 const AIDirectorNotes = dynamic(() => import("@/frontend/components/AIDirectorNotes"), { ssr: false });
 const SelectionPreviewModal = dynamic(() => import("@/frontend/components/SelectionPreviewModal"), { ssr: false });
@@ -69,9 +69,9 @@ export default function AccessoriesUnifiedSetupPage() {
           <section aria-labelledby="model-section-title">
             <h2 id="model-section-title" className="font-roboto font-semibold text-xl text-white mb-6">Select Model / Presentation</h2>
             <div className="-mx-5 px-5">
-              <ModelScroll 
-                selectedId={selectedModel} 
-                onSelect={(m) => setSelectedModel(m.id)} 
+              <ModelScroll
+                selectedId={selectedModel}
+                onSelect={(m) => setSelectedModel(m.id)}
                 onPreview={(m) => { setPreviewImage(m.image); setIsPreviewOpen(true); }}
               />
             </div>
@@ -79,8 +79,8 @@ export default function AccessoriesUnifiedSetupPage() {
 
           <section aria-labelledby="bg-section-title">
             <h2 id="bg-section-title" className="font-roboto font-semibold text-xl text-white mb-6">Background Style</h2>
-            <BackgroundGrid 
-              selectedTitle={selectedBackground} 
+            <BackgroundGrid
+              selectedTitle={selectedBackground}
               onSelect={(bg) => setSelectedBackground(bg.title)}
               onPreview={(bg) => { setPreviewImage(bg.image); setIsPreviewOpen(true); }}
             />
@@ -90,7 +90,7 @@ export default function AccessoriesUnifiedSetupPage() {
             <h2 id="output-section-title" className="font-roboto font-semibold text-xl text-white mb-6">Output Style</h2>
             <div className="flex flex-wrap gap-3">
               {outputStyles.map((item) => (
-                <ProductTag 
+                <ProductTag
                   key={item}
                   label={item}
                   selected={selectedOutputStyle === item}

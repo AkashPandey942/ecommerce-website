@@ -11,13 +11,13 @@ import LoadingActionButton from "@/frontend/components/LoadingActionButton";
 import { Skeleton } from "@/frontend/components/ui/Skeleton";
 
 // Dynamic components
-const ModelScroll = dynamic(() => import("@/frontend/components/ModelScroll"), { 
-  ssr: false, 
-  loading: () => <Skeleton className="w-full h-[200px] rounded-xl" /> 
+const ModelScroll = dynamic(() => import("@/frontend/components/ModelScroll"), {
+  ssr: false,
+  loading: () => <Skeleton className="w-full h-[200px] rounded-xl" />
 });
-const BackgroundGrid = dynamic(() => import("@/frontend/components/BackgroundGrid"), { 
-  ssr: false, 
-  loading: () => <div className="grid grid-cols-2 gap-4"><Skeleton className="h-[120px]" /><Skeleton className="h-[120px]" /></div> 
+const BackgroundGrid = dynamic(() => import("@/frontend/components/BackgroundGrid"), {
+  ssr: false,
+  loading: () => <div className="grid grid-cols-2 gap-4"><Skeleton className="h-[120px]" /><Skeleton className="h-[120px]" /></div>
 });
 const SelectionPreviewModal = dynamic(() => import("@/frontend/components/SelectionPreviewModal"), { ssr: false });
 const AIDirectorNotes = dynamic(() => import("@/frontend/components/AIDirectorNotes"), { ssr: false });
@@ -70,7 +70,7 @@ export default function AISetupPage() {
         <ProgressStepper currentStep={5} />
 
         <section className="mt-8 mb-10">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             className="font-roboto font-semibold text-3xl text-[#E2E2E8]"
@@ -84,9 +84,9 @@ export default function AISetupPage() {
           <section>
             <h2 className="font-roboto font-semibold text-xl text-white mb-6">Select Model</h2>
             <div className="-mx-5 px-5">
-              <ModelScroll 
-                selectedId={selectedModel} 
-                onSelect={handleModelSelect} 
+              <ModelScroll
+                selectedId={selectedModel}
+                onSelect={handleModelSelect}
                 onPreview={handleModelPreview}
               />
             </div>
@@ -95,8 +95,8 @@ export default function AISetupPage() {
           {/* 2. Background Style */}
           <section>
             <h2 className="font-roboto font-semibold text-xl text-white mb-6">Background Style</h2>
-            <BackgroundGrid 
-              selectedTitle={selectedBackground} 
+            <BackgroundGrid
+              selectedTitle={selectedBackground}
               onSelect={handleBackgroundSelect}
               onPreview={handleBackgroundPreview}
             />
@@ -105,7 +105,7 @@ export default function AISetupPage() {
           {/* 3. Director Notes */}
           <section>
             <div className="flex items-center gap-2 mb-4">
-              <h2 className="font-roboto font-semibold text-xl text-white">AI Director Notes</h2>
+              <h2 className="font-roboto font-semibold text-xl text-white">AI sdffdgDirector Notes</h2>
               <span className="text-xs text-[#C5B6DE] uppercase tracking-wider">(Optional)</span>
             </div>
             <AIDirectorNotes />

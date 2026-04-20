@@ -78,10 +78,15 @@ export default function ApprovePrimeImagePage() {
 
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
-      <FlowHeader title="Approve Prime Image" />
+      <FlowHeader title="Generated Result" />
 
       <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
-        <ProgressStepper currentStep={7} />
+        {/* Progress Dots (Figma Style) */}
+        <div className="flex gap-2 mb-8">
+           {[1, 2, 3, 4, 5].map((dot) => (
+             <div key={dot} className={`h-1 w-8 rounded-full ${dot <= 4 ? "bg-[#7C4DFF]" : "bg-white/10"}`} />
+           ))}
+        </div>
 
         <AnimatePresence mode="wait">
           {isGenerating ? (
@@ -111,72 +116,61 @@ export default function ApprovePrimeImagePage() {
               key="result"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex-1 w-full flex flex-col items-center"
+              className="flex-1 w-full flex flex-col items-center pb-20"
             >
-              <section className="mt-8 mb-6 text-center">
-                <h1 className="font-roboto font-semibold text-2xl text-white mb-2">Review Prime Image</h1>
-                <p className="text-[#C2C6D6] text-sm max-w-[280px]">
-                  Improve result through quick chips or approve to expand the pack.
-                </p>
-              </section>
-
               <div 
                 onDoubleClick={() => setShowFullPreview(true)}
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
-                className="relative w-full aspect-[3/4] max-w-full sm:max-w-[353px] rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(124,77,255,0.2)] mb-10 border border-white/10 group cursor-zoom-in active:scale-[0.98] transition-all"
+                className="relative w-full aspect-[4/5] max-w-full sm:max-w-[353px] rounded-[24px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] mb-8 border border-white/5 group cursor-zoom-in group transition-all"
               >
                 <Image 
-                  src="/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg"
+                  src={segment === "gents" 
+                    ? "/assets/men/western-wear/men-fashion-editorial-outdoors.jpg" 
+                    : "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg"}
                   alt="Prime Image Result"
                   fill
-                  className="object-cover transition-transform group-hover:scale-105"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
                   priority
                 />
-                <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-2">
-                  <Wand2 className="w-3 h-3 text-[#00C2FF]" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#00C2FF]">Prime Render</span>
+                
+                <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10">
+                    <RefreshCcw className="w-4 h-4 text-white" />
+                  </button>
+                  <button className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10">
+                    <Sparkles className="w-4 h-4 text-[#7C4DFF]" />
+                  </button>
                 </div>
-
-                {/* Simulated AI Directive Expansion */}
-                <AnimatePresence>
-                  {selectedChips.length > 0 && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      className="absolute inset-x-4 bottom-4 bg-[#7C4DFF]/90 backdrop-blur-md p-3 rounded-xl border border-white/20 z-10"
-                    >
-                      <div className="flex items-center gap-2 mb-1">
-                        <Sparkles className="w-3 h-3 text-white" />
-                        <span className="text-[10px] font-bold uppercase text-white tracking-widest">AI Directive Engine</span>
-                      </div>
-                      <p className="text-[11px] text-white/90 leading-tight">
-                        {chipPrompts[selectedChips[selectedChips.length - 1]]}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </div>
 
-              <div className="w-full max-w-full sm:max-w-[353px] flex flex-col gap-4 mb-10">
+              {/* Action Buttons under Image (Figma Style) */}
+              <div className="w-full max-w-full sm:max-w-[353px] grid grid-cols-2 gap-3 mb-10">
+                <button 
+                  onClick={() => setIsGenerating(true)}
+                  className="h-[48px] rounded-full bg-white/5 border border-white/10 flex items-center justify-center gap-2 hover:bg-white/10 transition-all text-white font-medium text-sm"
+                >
+                  <RefreshCcw className="w-4 h-4" />
+                  Regenerate
+                </button>
+                <button 
+                  onClick={() => setIsRegenerateMode(true)}
+                  className="h-[48px] rounded-full bg-white/5 border border-white/10 flex items-center justify-center gap-2 hover:bg-white/10 transition-all text-white font-medium text-sm"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Edit Prompt
+                </button>
+              </div>
+
+              {/* Main Approve Button */}
+              <div className="w-full max-w-full sm:max-w-[353px]">
                 <LoadingActionButton
                   isLoading={isApproving}
                   onClick={handleApprove}
-                  className="w-full h-[61px] text-[18px]"
-                  icon={<Check className="w-5 h-5" />}
+                  className="w-full h-[61px] text-[18px] font-bold rounded-full shadow-[0_0_30px_rgba(124,77,255,0.3)]"
                 >
-                  Approve and Continue
+                  Approve & Continue
                 </LoadingActionButton>
-
-                {!isRegenerateMode && (
-                  <button 
-                    onClick={() => setIsRegenerateMode(true)}
-                    className="text-[#7C4DFF] text-sm font-medium hover:underline transition-all"
-                  >
-                    Not happy with the result?
-                  </button>
-                )}
               </div>
 
               <AnimatePresence>

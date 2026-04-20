@@ -32,6 +32,8 @@ export default function SelectOutputViewsPage() {
       "Front View": "/assets/front_view.jpg",
       "Left View": "/assets/left_view.png",
       "Right View": "/assets/right_view.png",
+      "Close-up": "/assets/border_closeup.png",
+      "Detail Shot": "/assets/detail_shot.png",
       "Back View": "/assets/back_view.png",
       "Drape Detail": "/assets/detail_shot.png",
       "Border Close-up": "/assets/border_closeup.png"
@@ -95,73 +97,31 @@ export default function SelectOutputViewsPage() {
       <FlowHeader title="Output Views" />
 
       <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5">
-        {/* Step 7: Alternate Views selection */}
-        <ProgressStepper currentStep={9} />
-        
-        {/* Max Selection Toast */}
-        <AnimatePresence>
-          {showMaxWarning && (
-            <motion.div
-              initial={{ opacity: 0, y: 50, x: "-50%" }}
-              animate={{ opacity: 1, y: 0, x: "-50%" }}
-              exit={{ opacity: 0, y: 20, x: "-50%" }}
-              className="fixed bottom-24 left-1/2 z-[100] px-6 py-3 bg-[#E5484D] rounded-full shadow-2xl flex items-center gap-3 border border-white/20 backdrop-blur-md"
-            >
-              <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-                <Sparkles className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-white font-medium text-sm">
-                Maximum 4 views can be selected
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Progress Dots (Figma Style) */}
+        <div className="flex justify-center gap-2 mb-8">
+           {[1, 2, 3, 4, 5].map((dot) => (
+             <div key={dot} className={`h-1 w-8 rounded-full ${dot <= 5 ? "bg-[#7C4DFF]" : "bg-white/10"}`} />
+           ))}
+        </div>
 
         {/* Heading Section */}
-        <section className="mt-8 mb-10">
+        <section className="mb-10 lg:text-center">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-              <div>
-                <h1 className="font-roboto font-semibold text-3xl lg:text-[36px] leading-tight lg:leading-[45px] tracking-[-0.9px] text-[#E2E2E8] mb-4">
-                  Select Output Views
-                </h1>
-                <p className="font-roboto font-normal text-base leading-[19px] text-[#C2C6D6]">
-                  Choose the outputs you want to generate for your high-fashion catalog.
-                </p>
-              </div>
-              
-              <div className="flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-full h-fit">
-                <div className="flex items-center gap-1.5">
-                  <span className={`text-[13px] font-bold ${totalSelectedCount === MAX_VIEWS ? "text-figma-gradient bg-clip-text text-transparent" : "text-white"}`}>
-                    {totalSelectedCount}
-                  </span>
-                  <span className="text-[13px] text-[#C2C6D6]">/</span>
-                  <span className="text-[13px] text-[#C2C6D6]">{MAX_VIEWS}</span>
-                </div>
-                <div className="w-[1px] h-3 bg-white/10" />
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#99A1AF]">
-                  Premium Limit
-                </span>
-              </div>
-            </div>
-            
-            <div className="mt-6 p-4 bg-[#7C4DFF]/5 border border-[#7C4DFF]/20 rounded-xl flex items-center gap-3">
-               <div className="w-8 h-8 rounded-full bg-[#7C4DFF]/10 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-[#7C4DFF]" />
-               </div>
-               <p className="text-sm text-[#C5B6DE]">
-                 <span className="font-bold text-white">Pro Tip:</span> Selecting up to 4 views ensures maximum consistency and rendering quality across your collection.
-               </p>
-            </div>
+            <h1 className="font-roboto font-semibold text-3xl lg:text-[36px] leading-tight lg:leading-[45px] tracking-[-0.9px] text-[#E2E2E8] mb-4">
+              Select Output Views
+            </h1>
+            <p className="font-roboto font-normal text-base leading-[19px] text-[#C2C6D6]">
+              Choose the outputs you want to generate for your high-fashion catalog.
+            </p>
           </motion.div>
         </section>
 
-        {/* Views Grid (2-column mobile, responsive desktop) */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {/* Views Grid (2-column mobile) */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-20">
           {views.map((view: any, idx: number) => {
             const isSelected = selectedViews.includes(view.id);
             return (
