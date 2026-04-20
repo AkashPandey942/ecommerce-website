@@ -21,6 +21,7 @@ export type Background =
 
 export interface SharedInputs {
   hub: Hub;
+  mode?: "Virtual Try-On" | "AI Studio" | string;
   productImageUrl: string;
   modelRefUrl?: string | null;
   outputStyle?: OutputStyle;
@@ -77,6 +78,12 @@ export type PromptInputs =
 
 // ─── Constants ───────────────────────────────────────────────────
 
+const UNIVERSAL_ISOLATION = `
+UNIVERSAL PRODUCT-TYPE OUTPUT ISOLATION (MANDATORY)
+Final output MUST strictly match the selected input category/type.
+No deviation. No mixing. No substitution.
+`.trim();
+
 const IDENTITY_LOCK = `
 IDENTITY LOCK — ABSOLUTE. NON-NEGOTIABLE.
 Face geometry · pores · freckles · moles · micro-details → 100% preserved.
@@ -91,6 +98,9 @@ Identity must be pixel-consistent across all regenerations.
 
 const QUALITY_GATES = `
 QUALITY GATES — ALL MUST PASS:
+✓ Output strictly matches selected category/type (Apparel/Jewellery/Accessories/Products)
+✓ No cross-category or cross-type elements present
+✓ Only items visible in PRODUCT_IMAGE are rendered
 ✓ Item colour exact match to source image
 ✓ All surface detail reproduced — zero AI averaging or simplification
 ✓ Model identity 100% preserved from MODEL_REF
@@ -104,7 +114,10 @@ REJECT AND REGENERATE if any gate fails.
 `.trim();
 
 const NEGATIVE_PROMPT = `
---no face change, no skin tone shift, no body distortion,
+--no category mixing, no hybrid/fusion unless in PRODUCT_IMAGE,
+no AI-added extra items, no assumption-based styling,
+no replacement of product type,
+no face change, no skin tone shift, no body distortion,
 no slimming, no reshaping, no body enhancement, no blur,
 no low resolution, no waxy skin, no plastic skin,
 no broken anatomy, no extra limbs, no missing limbs,
@@ -229,6 +242,19 @@ function drapingRules(productType: string): string {
   return "Apply garment with natural draping physics appropriate to identified style.";
 }
 
+function apparelIsolation(productType: string, segment: string): string {
+  const pt = productType.toLowerCase();
+  const s = segment.toLowerCase();
+  if (pt.includes("saree")) return "→ Output ONLY Saree (with blouse + petticoat support)\n→ ❌ No lehenga / kurti / gown / fusion";
+  if (pt.includes("lehenga")) return "→ ONLY Lehenga set (lehenga + choli + dupatta)\n→ ❌ No saree drape / gown mix";
+  if (pt.includes("kurti")) return "→ ONLY Kurti (with neutral bottom if needed)\n→ ❌ No saree / lehenga styling";
+  if (pt.includes("kurta set") || pt.includes("salwar suit")) return "→ ONLY full set (kurta + bottom + dupatta if present)\n→ ❌ No unrelated garment mix";
+  if (pt.includes("blouse")) return "→ ONLY blouse-focused output\n→ ❌ No full saree/lehenga unless in PRODUCT_IMAGE";
+  if (pt.includes("sherwani") || pt.includes("menswear") || pt.includes("ethnic menswear")) return "→ ONLY that exact structure\n→ ❌ No casual/western merge";
+  if (s.includes("kids")) return "→ ONLY selected kids category\n→ Must be age-appropriate\n→ ❌ No adult styling";
+  return "→ ONLY selected western type\n→ ❌ No ethnic blending";
+}
+
 function buildApparelPrompt(inputs: ApparelInputs): string {
   const {
     segment = "Ladies",
@@ -237,6 +263,7 @@ function buildApparelPrompt(inputs: ApparelInputs): string {
     background: bg = "White Studio",
     outputStyle: style = "Catalog",
     modelRefUrl,
+    mode,
     aiNotes: notes,
   } = inputs;
 
@@ -246,6 +273,8 @@ function buildApparelPrompt(inputs: ApparelInputs): string {
     `[HUB: APPAREL] [SEGMENT: ${segment}] ` +
     `[WEAR TYPE: ${wearType}]` +
     (productType ? ` [PRODUCT TYPE: ${productType}]` : "");
+
+  const isolation = `${UNIVERSAL_ISOLATION}\n${apparelIsolation(productType, segment)}`;
 
   const extract = `
 GARMENT EXTRACTION — SOURCE OF TRUTH: PRODUCT_IMAGE. Zero deviation.
@@ -281,7 +310,7 @@ Multi-layer contact shadows and ambient occlusion applied throughout.
   const modelDirective = modelRefUrl
     ? `
 DRESS MODEL:
-Apply garment to MODEL_REF only.
+${mode === "Virtual Try-On" ? "TASK: Virtual Try-On. Redress the subject in the MODEL_REF image with the clothing from the PRODUCT_IMAGE.\nReplace ONLY the clothing while strictly preserving the subject." : "Apply garment to MODEL_REF only."}
 ${IDENTITY_LOCK}
 Correct draping physics for identified fabric weight.
 No gaps · no pulls · no warping · no misalignment.
@@ -291,6 +320,7 @@ ${isKids ? "KIDS: Scale all proportions to child body. No adult proportions. Age
 
   return [
     header,
+    isolation,
     extract,
     drapingRules(productType),
     physics,
@@ -349,6 +379,14 @@ function jewelleryGenreDirective(genre: string): string {
     : "Render jewellery with professional studio lighting and clean background.";
 }
 
+function jewelleryIsolation(genre: string, style: string): string {
+  const g = genre.toLowerCase();
+  if (g.includes("bridal")) return "→ Full set only (necklace, earrings, maang tikka, etc.)\n→ ❌ No minimal/studs-only output";
+  if (g.includes("traditional") || g.includes("temple") || g.includes("kundan") || g.includes("polki")) return "→ ONLY that heritage style\n→ ❌ No modern/minimal conversion";
+  if (g.includes("daily") || g.includes("minimal")) return "→ ONLY lightweight/simple pieces\n→ ❌ No bridal heaviness";
+  return "→ ONLY that specific item\n→ ❌ No full set unless source shows";
+}
+
 function buildJewelleryPrompt(inputs: JewelleryInputs): string {
   const {
     jewelleryGenre = "Fashion",
@@ -362,6 +400,8 @@ function buildJewelleryPrompt(inputs: JewelleryInputs): string {
   const header =
     `[HUB: JEWELLERY] [GENRE: ${jewelleryGenre}]` +
     (jewelleryStyle ? ` [STYLE: ${jewelleryStyle}]` : "");
+
+  const isolation = `${UNIVERSAL_ISOLATION}\n${jewelleryIsolation(jewelleryGenre, jewelleryStyle)}`;
 
   const extract = `
 JEWELLERY EXTRACTION — SOURCE OF TRUTH: PRODUCT_IMAGE. Zero deviation.
@@ -380,6 +420,7 @@ COMPONENTS    Every chain · pendant · earring back · clasp · tassel from sou
 
   return [
     header,
+    isolation,
     extract,
     jewelleryGenreDirective(jewelleryGenre),
     shotType,
@@ -413,6 +454,17 @@ function accessoryTypeRules(type: string): string {
     : "Render accessory with precise material physics · correct proportions · grounding shadow.";
 }
 
+function accessoryIsolation(type: string): string {
+  const t = type.toLowerCase();
+  if (t.includes("bag")) return "Bags → ONLY bag (correct structure)\n❌ No cross-accessory generation";
+  if (t.includes("footwear") || t.includes("shoe") || t.includes("boot")) return "Footwear → ONLY footwear pair/single as per source\n❌ No cross-accessory generation";
+  if (t.includes("watch")) return "Watches → ONLY watch (correct dial + strap)\n❌ No cross-accessory generation";
+  if (t.includes("eyewear") || t.includes("glass")) return "Eyewear → ONLY eyewear (frame + lens exact)\n❌ No cross-accessory generation";
+  if (t.includes("belt")) return "Belts → ONLY belt\n❌ No cross-accessory generation";
+  if (t.includes("scarf") || t.includes("stole") || t.includes("muffler")) return "Scarves → ONLY scarf\n❌ No cross-accessory generation";
+  return "❌ No cross-accessory generation (e.g., bag + shoes combo NOT allowed unless source shows)";
+}
+
 function buildAccessoriesPrompt(inputs: AccessoriesInputs): string {
   const {
     accessoryType = "",
@@ -424,6 +476,8 @@ function buildAccessoriesPrompt(inputs: AccessoriesInputs): string {
   const header =
     "[HUB: ACCESSORIES]" +
     (accessoryType ? ` [TYPE: ${accessoryType}]` : "");
+
+  const isolation = `${UNIVERSAL_ISOLATION}\n${accessoryIsolation(accessoryType)}`;
 
   const extract = `
 ACCESSORY EXTRACTION — SOURCE OF TRUTH: PRODUCT_IMAGE. Zero deviation.
@@ -444,6 +498,7 @@ SHAPE     Silhouette and proportions exactly as source.
 
   return [
     header,
+    isolation,
     extract,
     accessoryTypeRules(accessoryType),
     shotStyle,
@@ -475,6 +530,16 @@ function productFamilyRules(family: string): string {
     : "Professional product photography with clean background and correct lighting.";
 }
 
+function productIsolation(family: string): string {
+  const f = family.toLowerCase();
+  if (f.includes("home decor")) return "Home Decor → ONLY decor item (in context)\n❌ No unrelated product addition\n❌ No bundle unless present in PRODUCT_IMAGE";
+  if (f.includes("beauty") || f.includes("cosmetic")) return "Beauty / Cosmetics → ONLY that product (label visible)\n❌ No unrelated product addition\n❌ No bundle unless present in PRODUCT_IMAGE";
+  if (f.includes("handicraft")) return "Handicrafts → ONLY craft item\n❌ No unrelated product addition\n❌ No bundle unless present in PRODUCT_IMAGE";
+  if (f.includes("packaged")) return "Packaged Products → ONLY packaging SKU(s)\n❌ No unrelated product addition\n❌ No bundle unless present in PRODUCT_IMAGE";
+  if (f.includes("gift") || f.includes("lifestyle")) return "Gifts / Lifestyle → ONLY relevant product arrangement\n❌ No unrelated product addition\n❌ No bundle unless present in PRODUCT_IMAGE";
+  return "❌ No unrelated product addition\n❌ No bundle unless present in PRODUCT_IMAGE";
+}
+
 function buildProductsPrompt(inputs: ProductsInputs): string {
   const {
     productFamily = "",
@@ -486,6 +551,8 @@ function buildProductsPrompt(inputs: ProductsInputs): string {
   const header =
     "[HUB: PRODUCTS]" +
     (productFamily ? ` [FAMILY: ${productFamily}]` : "");
+
+  const isolation = `${UNIVERSAL_ISOLATION}\n${productIsolation(productFamily)}`;
 
   const extract = `
 PRODUCT EXTRACTION — SOURCE OF TRUTH: PRODUCT_IMAGE. Zero deviation.
@@ -506,6 +573,7 @@ SIZE        Relative scale must feel physically correct in final image.
 
   return [
     header,
+    isolation,
     extract,
     productFamilyRules(productFamily),
     shotStyle,
