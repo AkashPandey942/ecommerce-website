@@ -12,6 +12,7 @@ interface UploadZoneProps {
   onPointSelect?: (point: { x: number; y: number } | null) => void;
   title?: string;
   subTitle?: string;
+  icon?: React.ReactNode;
 }
 
 const UploadZone = ({ 
@@ -20,7 +21,8 @@ const UploadZone = ({
   allowPointSelection = false, 
   onPointSelect,
   title,
-  subTitle
+  subTitle,
+  icon
 }: UploadZoneProps) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [markerPoint, setMarkerPoint] = useState<{ x: number; y: number } | null>(null);
@@ -85,11 +87,11 @@ const UploadZone = ({
       />
 
       <motion.div
-        whileHover={!selectedImage ? { borderColor: "rgba(124,77,255,0.5)", backgroundColor: "rgba(46,28,77,0.4)" } : {}}
+        whileHover={!selectedImage ? { borderColor: "rgba(124,77,255,0.4)", backgroundColor: "rgba(46,28,77,0.2)" } : {}}
         onClick={() => !selectedImage && fileInputRef.current?.click()}
-        className={`relative w-full bg-[#1A1D2B]/40 backdrop-blur-xl border ${
-          selectedImage ? "border-transparent p-0 overflow-hidden h-[260px]" : "border-dashed border-white/10 px-5 pt-7 pb-6 min-h-[260px]"
-        } rounded-[20px] flex flex-col items-center justify-center cursor-pointer transition-all duration-300 gap-0 group shadow-lg`}
+        className={`relative w-full bg-[#11131E] border ${
+          selectedImage ? "border-transparent p-0 overflow-hidden h-[440px]" : "border-dashed border-white/5 py-16 min-h-[440px]"
+        } rounded-[32px] flex flex-col items-center justify-center cursor-pointer transition-all duration-300 gap-0 group shadow-2xl`}
       >
         <AnimatePresence mode="wait">
           {selectedImage ? (
@@ -172,44 +174,42 @@ const UploadZone = ({
                 }}
                 className="w-[68px] h-[68px] bg-gradient-to-br from-[#7C3AED] to-[#EC4899] rounded-full flex items-center justify-center mb-6 cursor-pointer relative"
               >
-                 <Upload className="w-[28px] h-[28px] text-white" strokeWidth={2.2} />
+                  {icon || <Upload className="w-[34px] h-[34px] text-white" strokeWidth={2.5} />}
               </motion.div>
 
               {/* Title & Instructions */}
               {!hideText && (
-                <div className="text-center mb-8">
-                  <h3 className="font-roboto font-bold text-[18px] text-white mb-2 tracking-tight">
+                <div className="text-center mb-10">
+                  <h3 className="font-roboto font-bold text-[22px] text-white mb-2 tracking-tight">
                     {title || "Upload Image"}
                   </h3>
-                  <p className="font-roboto font-normal text-[14px] text-[#9CA3AF] leading-relaxed max-w-[220px] mx-auto">
+                  <p className="font-roboto font-normal text-[15px] text-[#9CA3AF] leading-relaxed max-w-[280px] mx-auto">
                     {subTitle || "Drag and drop or click to select"}
                   </p>
-                  {!subTitle && (
-                    <p className="font-roboto text-[12px] text-[#9CA3AF]/60 mt-1 uppercase tracking-widest font-bold">
-                       JPG, PNG, WEBP (Max 10MB)
-                    </p>
-                  )}
+                  <p className="font-roboto text-[12px] text-[#9CA3AF]/60 mt-2 uppercase tracking-widest font-bold">
+                     JPG, PNG, WEBP (MAX 10MB)
+                  </p>
                 </div>
               )}
 
               {/* Primary Action Buttons */}
-              <div className="flex flex-col gap-3.5 w-full max-w-[320px]">
+              <div className="flex flex-col gap-4 w-full max-w-[320px] mt-2">
                 <button 
                   onClick={(e) => { e.stopPropagation(); cameraInputRef.current?.click(); }}
-                  className="w-full h-[48px] flex items-center justify-center gap-3 bg-[#1A1E29]/60 backdrop-blur-md border border-white/10 rounded-[14px] hover:bg-white/5 hover:border-white/20 transition-all cursor-pointer group"
+                  className="w-full h-[61px] flex items-center justify-center gap-3 bg-[#1A1E29]/60 backdrop-blur-md border border-white/10 rounded-[18px] hover:bg-white/5 hover:border-white/20 transition-all cursor-pointer group"
                 >
-                  <Camera className="w-[18px] h-[18px] text-white/70 group-hover:text-white" strokeWidth={1.5} />
-                  <span className="font-roboto font-bold text-[14px] text-white/80 group-hover:text-white">
+                  <Camera className="w-[20px] h-[20px] text-white/70 group-hover:text-white" strokeWidth={1.5} />
+                  <span className="font-roboto font-bold text-[16px] text-white/80 group-hover:text-white">
                     Take Photo
                   </span>
                 </button>
 
                 <button 
                   onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                  className="w-full h-[48px] flex items-center justify-center gap-3 bg-[#1A1E29]/60 backdrop-blur-md border border-white/10 rounded-[14px] hover:bg-white/5 hover:border-white/20 transition-all cursor-pointer group"
+                  className="w-full h-[61px] flex items-center justify-center gap-3 bg-[#1A1E29]/60 backdrop-blur-md border border-white/10 rounded-[18px] hover:bg-white/5 hover:border-white/20 transition-all cursor-pointer group"
                 >
-                  <Upload className="w-[18px] h-[18px] text-white/70 group-hover:text-white" strokeWidth={1.5} />
-                  <span className="font-roboto font-bold text-[14px] text-white/80 group-hover:text-white">
+                  <Upload className="w-[20px] h-[20px] text-white/70 group-hover:text-white" strokeWidth={1.5} />
+                  <span className="font-roboto font-bold text-[16px] text-white/80 group-hover:text-white">
                     Upload
                   </span>
                 </button>

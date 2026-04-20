@@ -73,7 +73,7 @@ export default function CategorySelectionPage() {
 
       <main className="w-full flex-1 max-w-full md:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col">
         <div className="mt-4 mb-2">
-          <ProgressStepper currentStep={3} />
+          <ProgressStepper currentStep={4} />
         </div>
 
         {/* SaaS Step 3: Gallery Carousel - Robust Infinite Implementation */}
