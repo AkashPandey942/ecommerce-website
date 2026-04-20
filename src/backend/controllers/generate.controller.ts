@@ -27,6 +27,17 @@ const generateRequestSchema = z.object({
   mode: z.enum(["Virtual Try-On", "AI Studio"]).default("Virtual Try-On"),
   userPoint: z.object({ x: z.number(), y: z.number() }).nullable().optional(),
   clothingPoint: z.object({ x: z.number(), y: z.number() }).nullable().optional(),
+
+  // ── Master Prompt v2.0 — Hub-specific fields ──────────────────
+  hub: z.enum(["Apparel", "Jewellery", "Accessories", "Products"]).optional(),
+  segment: z.string().nullable().optional(),          // Apparel: Ladies | Gents | Kids
+  wearType: z.string().nullable().optional(),          // Apparel: Ethnic Wear | Western Wear | Custom
+  productType: z.string().nullable().optional(),       // Apparel: Saree | Kurti | etc.
+  jewelleryGenre: z.string().nullable().optional(),    // Jewellery: Bridal | Fashion | etc.
+  jewelleryStyle: z.string().nullable().optional(),    // Jewellery: Full Set | Choker Set | etc.
+  accessoryType: z.string().nullable().optional(),     // Accessories: Bags | Footwear | etc.
+  productFamily: z.string().nullable().optional(),     // Products: Home Decor | Beauty | etc.
+  outputStyleV2: z.string().nullable().optional(),     // Catalog | Premium | Social Media | Lifestyle
 });
 
 export const GenerateController = {
@@ -62,6 +73,16 @@ export const GenerateController = {
         outputCount,
         userPoint,
         clothingPoint,
+        // Hub-specific fields
+        hub,
+        segment,
+        wearType,
+        productType,
+        jewelleryGenre,
+        jewelleryStyle,
+        accessoryType,
+        productFamily,
+        outputStyleV2,
       } = parsed.data;
 
       const normalizedGarmentImage = garmentImageUrl ?? clothImage ?? "";
@@ -75,6 +96,7 @@ export const GenerateController = {
           : mode;
 
       console.log("[API/Generate] Request received", {
+        hub: hub || "Apparel (legacy)",
         mode: normalizedMode,
         garmentType: normalizedGarmentType,
         category,
@@ -137,7 +159,17 @@ export const GenerateController = {
         outputCount,
         background: background ?? undefined,
         userPoint,
-        clothingPoint
+        clothingPoint,
+        // Hub context for Master Prompt v2.0
+        hub: hub ?? undefined,
+        segment: segment ?? undefined,
+        wearType: wearType ?? undefined,
+        productType: productType ?? undefined,
+        jewelleryGenre: jewelleryGenre ?? undefined,
+        jewelleryStyle: jewelleryStyle ?? undefined,
+        accessoryType: accessoryType ?? undefined,
+        productFamily: productFamily ?? undefined,
+        outputStyleV2: outputStyleV2 ?? undefined,
       });
 
       console.log("[API/Generate] Trigger response", { jobId, hasRequestId: Boolean(requestId) });

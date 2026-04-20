@@ -1,5 +1,7 @@
 // src/services/runComfyService.ts
 import { env } from "@/shared/config/env";
+import { buildMasterPrompt, type Hub, type PromptInputs } from "@/backend/services/ai/promptEngine";
+import { buildLegacyPrompt } from "@/backend/services/ai/legacyPrompts";
 
 // Node IDs from ComfyUI Workflow (Customize based on your workflow_api.json)
 const DEFAULT_MODEL_ID = "blackforestlabs/flux-2/dev/text-to-image";
@@ -280,6 +282,16 @@ function buildModelPayload(params: {
   outputCount?: number;
   userPoint?: { x: number; y: number } | null;
   clothingPoint?: { x: number; y: number } | null;
+  // Master Prompt v2.0 hub context
+  hub?: Hub;
+  segment?: string;
+  wearType?: string;
+  productType?: string;
+  jewelleryGenre?: string;
+  jewelleryStyle?: string;
+  accessoryType?: string;
+  productFamily?: string;
+  outputStyleV2?: string;
 }) {
   const requestedViewLayout = params.outputFormat || "multi-view";
   const outputImageFormat = "png";
@@ -305,46 +317,55 @@ function buildModelPayload(params: {
   const negativePrompt =
     "no face change, no body distortion, no slimming, no blur, no low-res, no waxy skin, no broken anatomy, no extra limbs, no fabric distortion, no texture stretching, no lighting mismatch";
 
-  const virtualTryOnPrompt = [
-    "Task: Redress the subject in the model/person image with the clothing from the garment/product image.",
-    "Replace only the clothing while strictly preserving the subject’s face, identity, expression, body proportions, posture, and skin tone.",
-    "Identity Lock (hard constraints): preserve 100% facial identity (pores, freckles, moles, micro-details); maintain exact body shape and pose; no body reshaping; no facial or anatomical alterations.",
-    ...(isKidsMode ? ["If the subject is a child, keep age and identity unchanged."] : []),
-    `Fabric Pipeline: ${garmentType}.`,
-    ...(garmentType === "Ready-made"
-      ? [
-          "Ready-made: directly map the garment with accurate fit, scale, alignment, and perspective.",
-          `Refine using Output Style: ${styleHint}, Output Format: ${viewHint}.`,
-        ]
-      : [
-          `Fabric: generate garment using Person Type: ${genderHint}${categoryHint ? ` and Clothing Category: ${categoryHint}` : ""}.`,
-          "Define realistic material properties (thickness, weight, elasticity, gravity-driven drape), then apply with precise tailoring, seams, and cloth simulation.",
-          `Style using Output Style: ${styleHint}, Output Format: ${viewHint}.`,
-        ]),
-    "Rendering Fidelity: high photorealism, accurate fabric texture and color, patterns, stitching, seams; natural folds and draping; correct fit and perspective.",
-    "Photography Direction: professional catalog pose (S-curve or 3/4 turn); clean studio or selected environment; soft neutral diffused lighting.",
-    "Camera: 85mm prime lens look; aperture f/22 (all-in-focus clarity).",
-    "Physics & Grounding: realistic cloth physics, tension lines, strong contact shadows + ambient occlusion; no floating/clipping.",
-    mergedPrompt ? `AI Director Notes (optional): ${mergedPrompt}` : "",
-    `Negative Prompt: ${negativePrompt}.`,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  // ── Master Prompt v2.0 — Use hub-aware prompt engine when hub context is available ──
+  let resolvedPrompt: string;
 
-  const aiStudioPrompt = [
-    "Task: Take the clothing from the uploaded product image and put it directly onto the selected model image.",
-    "Constraint 1: Use the exact selected model; do NOT generate a new person.",
-    "Constraint 2: Keep the face, identity, body proportions, skin tone, and pose exactly the same.",
-    "Ensure a realistic fit, accurate fabric draping, natural folds, and correct alignment/perspective.",
-    `Use Background: ${backgroundHint}. Match lighting, shadows, and color grading to this background.`,
-    `Style Output Using: ${styleHint}.`,
-    mergedPrompt ? `AI Director Notes: ${mergedPrompt}` : "",
-    "Photography: clean, ultra-realistic, high-quality premium fashion image.",
-    "Output: the exact same model wearing the product, with proper lighting and artifact-free clarity.",
-    `Negative Prompt: ${negativePrompt}, no person swap, no face swap, no pose change, no identity drift.`,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  if (params.hub) {
+    const promptInputs: PromptInputs = {
+      hub: params.hub,
+      mode: params.mode,
+      productImageUrl: params.garmentImageUrl,
+      modelRefUrl: params.modelImageUrl || undefined,
+      aiNotes: mergedPrompt || undefined,
+      outputStyle: params.outputStyleV2 || styleHint,
+      background: backgroundHint,
+      // Apparel-specific
+      ...(params.hub === "Apparel" ? {
+        segment: params.segment || (params.gender === "Male" || params.gender === "Man" ? "Gents" : params.gender === "Kids" ? "Kids" : "Ladies"),
+        wearType: params.wearType,
+        productType: params.productType || categoryHint,
+      } : {}),
+      // Jewellery-specific
+      ...(params.hub === "Jewellery" ? {
+        jewelleryGenre: params.jewelleryGenre,
+        jewelleryStyle: params.jewelleryStyle,
+      } : {}),
+      // Accessories-specific
+      ...(params.hub === "Accessories" ? {
+        accessoryType: params.accessoryType,
+      } : {}),
+      // Products-specific
+      ...(params.hub === "Products" ? {
+        productFamily: params.productFamily,
+      } : {}),
+    } as PromptInputs;
+
+    resolvedPrompt = buildMasterPrompt(promptInputs);
+    console.log(`[runComfyService] Using Master Prompt v2.0 for hub=${params.hub}`);
+  } else {
+    // Legacy prompt path (backwards compatible)
+    resolvedPrompt = buildLegacyPrompt({
+      mode: params.mode || "Virtual Try-On",
+      isKidsMode,
+      garmentType,
+      genderHint,
+      categoryHint,
+      styleHint,
+      viewHint,
+      backgroundHint,
+      mergedPrompt,
+    });
+  }
 
   // Many image-edit model endpoints expect a single primary image to edit.
   // For AI Studio, the primary image should be the selected model (person), with the product image provided as a reference.
@@ -352,7 +373,7 @@ function buildModelPayload(params: {
   const referenceImageUrl = isAIStudio ? params.garmentImageUrl : params.modelImageUrl;
 
   return {
-    prompt: isVirtualTryOn ? virtualTryOnPrompt : aiStudioPrompt,
+    prompt: resolvedPrompt,
     task: isVirtualTryOn ? "virtual_try_on" : "fashion_generation",
     mode: isVirtualTryOn ? "virtual_try_on" : "studio_generation",
     // RunComfy flux-2 endpoint validates output_format as image type enum: jpeg|png|webp.
@@ -525,6 +546,16 @@ export const runComfyService = {
     outputCount?: number;
     userPoint?: { x: number, y: number } | null;
     clothingPoint?: { x: number, y: number } | null;
+    // Master Prompt v2.0 hub context
+    hub?: Hub;
+    segment?: string;
+    wearType?: string;
+    productType?: string;
+    jewelleryGenre?: string;
+    jewelleryStyle?: string;
+    accessoryType?: string;
+    productFamily?: string;
+    outputStyleV2?: string;
   }) {
     const config = getRunComfyConfig();
 
