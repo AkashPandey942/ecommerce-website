@@ -51,6 +51,7 @@ const SelectionPreviewModal = ({ isOpen, onClose, image }: SelectionPreviewModal
               src={image}
               alt="Model Preview"
               fill
+              sizes="(max-width: 768px) 90vw, 768px"
               loading="lazy"
               className="object-cover"
             />

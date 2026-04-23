@@ -75,21 +75,14 @@ export const StatusController = {
 
         if (runComfyData.status === "completed" && !runComfyData.outputImage) {
           const outputError = runComfyData.error || "Generation completed but no output image was returned";
-          await generationService.updateJob(jobId, {
-            status: "failed",
-            error: outputError,
-          });
-          await generationService.refundJob(jobId);
+          await generationService.refundJob(jobId, outputError);
           return NextResponse.json({ success: true, ...job, status: "failed", error: outputError });
         }
 
         if (runComfyData.status === "failed") {
-          await generationService.updateJob(jobId, {
-            status: "failed",
-            error: runComfyData.error || "Generation failed",
-          });
-          await generationService.refundJob(jobId);
-          return NextResponse.json({ success: true, ...job, status: "failed", error: runComfyData.error || "Generation failed" });
+          const runComfyError = runComfyData.error || "Generation failed";
+          await generationService.refundJob(jobId, runComfyError);
+          return NextResponse.json({ success: true, ...job, status: "failed", error: runComfyError });
         }
 
         return NextResponse.json({ success: true, ...job, status: "processing" });

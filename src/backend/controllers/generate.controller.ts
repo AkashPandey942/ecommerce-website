@@ -24,7 +24,7 @@ const generateRequestSchema = z.object({
   prompt: z.string().nullable().optional(),
   garmentImageUrl: z.string().nullable().optional(),
   modelImageUrl: z.string().nullable().optional(),
-  mode: z.enum(["Virtual Try-On", "AI Studio"]).default("Virtual Try-On"),
+  mode: z.enum(["Virtual Try-On", "AI Studio", "VIDEO_GENERATION"]).default("Virtual Try-On"),
   userPoint: z.object({ x: z.number(), y: z.number() }).nullable().optional(),
   clothingPoint: z.object({ x: z.number(), y: z.number() }).nullable().optional(),
 
@@ -38,6 +38,8 @@ const generateRequestSchema = z.object({
   accessoryType: z.string().nullable().optional(),     // Accessories: Bags | Footwear | etc.
   productFamily: z.string().nullable().optional(),     // Products: Home Decor | Beauty | etc.
   outputStyleV2: z.string().nullable().optional(),     // Catalog | Premium | Social Media | Lifestyle
+  outputViews: z.array(z.string()).optional(),        // Front, Left, Right, etc.
+  videoStyle: z.string().nullable().optional(),       // Straight Walk, Slow Turn, etc.
 });
 
 export const GenerateController = {
@@ -83,6 +85,8 @@ export const GenerateController = {
         accessoryType,
         productFamily,
         outputStyleV2,
+        outputViews,
+        videoStyle,
       } = parsed.data;
 
       const normalizedGarmentImage = garmentImageUrl ?? clothImage ?? "";
@@ -94,6 +98,8 @@ export const GenerateController = {
         mode === "Virtual Try-On" && !normalizedCategory && Boolean(modelId || background)
           ? "AI Studio"
           : mode;
+
+      const isVideo = normalizedMode === "VIDEO_GENERATION";
 
       console.log("[API/Generate] Request received", {
         hub: hub || "Apparel (legacy)",
@@ -113,6 +119,10 @@ export const GenerateController = {
 
       if (!normalizedUserImage && normalizedMode === "Virtual Try-On") {
         return NextResponse.json({ success: false, error: "Model image is required for virtual try-on" }, { status: 400 });
+      }
+
+      if (isVideo && !videoStyle) {
+        return NextResponse.json({ success: false, error: "Video style is required for video generation" }, { status: 400 });
       }
 
       const requiresCategory = normalizedMode === "Virtual Try-On" && normalizedGarmentType === "Fabric";
@@ -143,42 +153,52 @@ export const GenerateController = {
         background: background ?? "default",
         outputStyle: style,
         prompt: normalizedPrompt,
+        creditsCost: isVideo ? 50 : 10,
       });
 
       // 2. Trigger RunComfy workflow
-      const requestId = await runComfyService.triggerWorkflow({
-        garmentImageUrl: normalizedGarmentImage,
-        modelImageUrl: normalizedUserImage || normalizedGarmentImage,
-        prompt: normalizedPrompt,
-        style,
-        gender,
-        garmentType: normalizedGarmentType,
-        category: normalizedCategory || undefined,
-        mode: normalizedMode,
-        outputFormat,
-        outputCount,
-        background: background ?? undefined,
-        userPoint,
-        clothingPoint,
-        // Hub context for Master Prompt v2.0
-        hub: hub ?? undefined,
-        segment: segment ?? undefined,
-        wearType: wearType ?? undefined,
-        productType: productType ?? undefined,
-        jewelleryGenre: jewelleryGenre ?? undefined,
-        jewelleryStyle: jewelleryStyle ?? undefined,
-        accessoryType: accessoryType ?? undefined,
-        productFamily: productFamily ?? undefined,
-        outputStyleV2: outputStyleV2 ?? undefined,
-      });
+      let requestId: string;
+      try {
+        requestId = await runComfyService.triggerWorkflow({
+          garmentImageUrl: normalizedGarmentImage,
+          modelImageUrl: normalizedUserImage || normalizedGarmentImage,
+          prompt: normalizedPrompt,
+          style,
+          gender,
+          garmentType: normalizedGarmentType,
+          category: normalizedCategory || undefined,
+          mode: normalizedMode,
+          outputFormat,
+          outputCount,
+          background: background ?? undefined,
+          userPoint,
+          clothingPoint,
+          // Hub context for Master Prompt v2.0
+          hub: hub ?? undefined,
+          segment: segment ?? undefined,
+          wearType: wearType ?? undefined,
+          productType: productType ?? undefined,
+          jewelleryGenre: jewelleryGenre ?? undefined,
+          jewelleryStyle: jewelleryStyle ?? undefined,
+          accessoryType: accessoryType ?? undefined,
+          productFamily: productFamily ?? undefined,
+          outputStyleV2: outputStyleV2 ?? undefined,
+          outputViews,
+          videoStyle: videoStyle ?? undefined,
+        });
+      } catch (triggerError: any) {
+        console.error("❌ [API/Generate] Trigger failed:", triggerError);
+        await generationService.refundJob(jobId, triggerError.message || "Failed to trigger AI workflow");
+        return NextResponse.json(
+          { success: false, error: triggerError.message || "Failed to start generation request" }, 
+          { status: 502 }
+        );
+      }
 
       console.log("[API/Generate] Trigger response", { jobId, hasRequestId: Boolean(requestId) });
 
       if (!requestId) {
-        await generationService.updateJob(jobId, {
-          status: "failed",
-          error: "Failed to start generation request",
-        });
+        await generationService.refundJob(jobId, "No requestId returned from AI service");
         return NextResponse.json({ success: false, error: "Failed to start generation request" }, { status: 502 });
       }
 

@@ -3,49 +3,115 @@
 import FlowHeader from "@/frontend/components/FlowHeader";
 import ProgressStepper from "@/frontend/components/ProgressStepper";
 import Footer from "@/frontend/components/Footer";
-import { Download, Plus, Play } from "lucide-react";
-import { motion } from "framer-motion";
+import { Download, Plus, Play, RefreshCcw, X, Maximize2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import StackedImagePreview from "@/frontend/components/StackedImagePreview";
+import { useProject } from "@/frontend/context/ProjectContext";
+import { useGeneration } from "@/frontend/context/GenerationContext";
+import { useState } from "react";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
+
+type ResultItem = {
+  title: string;
+  image: string;
+  isVideo: boolean;
+  videoUrl?: string;
+};
 
 export default function FinalResultsPage() {
   const params = useParams();
   const router = useRouter();
   const segment = (params.segment as string) || "Ladies";
   const style = (params.style as string) || "Ethnic Wear";
+  
+  const { currentProject, resetProject } = useProject();
+  const { resetGeneration } = useGeneration();
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [activeItem, setActiveItem] = useState<ResultItem | null>(null);
 
-  const results = [
-    { title: "Prime Render", image: "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg", isVideo: false },
-    { title: "Side View", image: "/assets/ladies/ethnic-wear/woman-sari-with-brown-background.jpg", isVideo: false },
-    { title: "Drape Detail", image: "/assets/ladies/ethnic-wear/ChatGPT Image Apr 1, 2026, 06_21_52 PM.png", isVideo: false },
-    { title: "Slow Turn", image: "/assets/ladies/ethnic-wear/ChatGPT Image Apr 1, 2026, 05_49_51 PM.png", isVideo: true },
+  const outputViews = currentProject?.outputViews || [];
+  const generatedViewLabels = currentProject?.generatedViewLabels || [];
+  const results: ResultItem[] = [
+    ...(outputViews || []).map((v: string, i: number) => ({ title: generatedViewLabels[i] || `View ${i+1}`, image: v, isVideo: false })),
+    ...(currentProject?.videoUrl ? [{ title: "Video Result", image: currentProject?.primeImage || "", videoUrl: currentProject.videoUrl, isVideo: true }] : [])
   ];
 
-  const ResultCard = ({ res, idx }: { res: typeof results[0], idx: number }) => (
+  const handleDownloadAll = async () => {
+    if (!results || results.length === 0) return;
+    try {
+      setIsDownloading(true);
+      const zip = new JSZip();
+      
+      const promises = results.map(async (res, idx) => {
+        const urlToFetch = res.videoUrl || res.image;
+        if (!urlToFetch) return;
+
+        // Use the local proxy to avoid CORS issues
+        const proxyUrl = `/api/proxy?url=${encodeURIComponent(urlToFetch)}`;
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error(`Failed to fetch ${res.title}`);
+        
+        const blob = await response.blob();
+        
+        let ext = res.isVideo ? "mp4" : "png";
+        if (blob.type === "image/jpeg") ext = "jpg";
+        else if (blob.type === "image/webp") ext = "webp";
+        
+        const filename = `${res.title.replace(/\s+/g, "_")}_${idx + 1}.${ext}`;
+        zip.file(filename, blob);
+      });
+
+      await Promise.all(promises);
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, `${segment}_${style.replace(/\s+/g, "_")}_results.zip`);
+    } catch (error) {
+      console.error("Error downloading files:", error);
+      alert("Failed to create download pack. Please try again.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const ResultCard = ({ res, idx }: { res: ResultItem, idx: number }) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: idx * 0.1 }}
       className="flex flex-col items-center gap-3 w-full"
+      onClick={() => setActiveItem(res)}
     >
-      <div className="relative w-full aspect-[166/207] bg-[#1A1E29] rounded-[10px] overflow-hidden border border-white/5 shadow-xl group cursor-pointer hover:border-[#7C4DFF]/30 transition-all">
-        <Image
-          src={res.image}
-          alt={res.title}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-          loading="lazy" 
-        />
-        
-        {res.isVideo && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-            <div className="w-[44px] h-[44px] rounded-full bg-figma-gradient flex items-center justify-center shadow-lg">
-              <Play className="w-5 h-5 text-white fill-white ml-0.5" />
-            </div>
+      <div className="relative w-full aspect-[166/207] bg-[#1A1E29] rounded-[10px] overflow-hidden border border-white/5 shadow-xl group cursor-zoom-in hover:border-[#7C4DFF]/50 transition-all">
+        {res.image ? (
+          <Image
+            src={res.image}
+            alt={res.title}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy" 
+            unoptimized
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-white/5">
+            <Plus className="w-6 h-6 text-white/20" />
           </div>
         )}
+        
+        <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
+          {res.isVideo ? (
+            <div className="w-[44px] h-[44px] rounded-full bg-figma-gradient flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
+              <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+            </div>
+          ) : (
+            <div className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all">
+              <div className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10 flex items-center gap-2">
+                <Maximize2 className="w-3 h-3 text-white" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white">Preview</span>
+              </div>
+            </div>
+          )}
+        </div>
         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
       </div>
       <span className="font-roboto font-medium text-[13px] leading-[15px] text-center text-[#E2E2E8]">
@@ -59,61 +125,58 @@ export default function FinalResultsPage() {
       <FlowHeader title="Results" />
 
       <main className="w-full max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5 flex flex-col items-center">
-        {/* Progress Dots (Figma Style) */}
-        <div className="flex justify-center gap-2 mb-8">
-           {[1, 2, 3, 4, 5].map((dot) => (
-             <div key={dot} className="h-1 w-8 rounded-full bg-[#7C4DFF]" />
-           ))}
+        {/* Progress Stepper (Figma Style) */}
+        <div className="w-full mb-8 flex justify-center">
+           <ProgressStepper currentStep={11} />
         </div>
 
-        <div className="relative w-full aspect-[4/5] max-w-full sm:max-w-[353px] rounded-[24px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] mb-8 border border-white/5">
-           <Image 
-              src={segment.toLowerCase() === "gents" 
-                ? "/assets/men/western-wear/men-fashion-editorial-outdoors.jpg" 
-                : "/assets/ladies/ethnic-wear/woman-sari-stands-front-large-window.jpg"}
-              alt="Final Result"
-              fill
-              className="object-contain"
-           />
+
+        {/* Gallery Grid */}
+        <div className="w-full max-w-[353px] grid grid-cols-2 gap-4 mb-8">
+           {results.map((res, idx) => {
+             const isLastOdd = idx === results.length - 1 && results.length % 2 !== 0;
+             return (
+               <div key={idx} className={isLastOdd ? "col-span-2 flex justify-center" : ""}>
+                 <div className={isLastOdd ? "w-full" : "w-full"}>
+                   <ResultCard res={res} idx={idx} />
+                 </div>
+               </div>
+             );
+           })}
         </div>
 
-        <div className="w-full max-w-full sm:max-w-[353px] flex gap-3 mb-10">
-           <button 
-             onClick={() => router.back()}
-             className="flex-1 h-[51px] bg-white/5 border border-white/10 rounded-xl flex items-center justify-center gap-2 text-sm font-medium"
-           >
-              <Plus className="w-4 h-4" /> More Angles
-           </button>
-           <button 
-             onClick={() => router.push(`/result/mock-id/video-style`)}
-             className="flex-1 h-[51px] bg-white/5 border border-white/10 rounded-xl flex items-center justify-center gap-2 text-sm font-medium"
-           >
-              <Play className="w-4 h-4 ml-0.5" /> Create Video
-           </button>
-        </div>
 
         {/* Dashboard Actions */}
         <div className="w-full max-w-full sm:max-w-[353px] flex flex-col gap-4 mt-auto mb-10">
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full h-[61px] bg-figma-gradient rounded-full shadow-[0_0_30px_rgba(124,77,255,0.4)] flex items-center justify-center gap-3"
+            whileHover={isDownloading ? undefined : { scale: 1.02 }}
+            whileTap={isDownloading ? undefined : { scale: 0.98 }}
+            onClick={handleDownloadAll}
+            disabled={isDownloading}
+            className={`w-full h-[61px] ${isDownloading ? "bg-white/20 cursor-not-allowed" : "bg-figma-gradient hover:shadow-[0_0_30px_rgba(124,77,255,0.4)]"} rounded-full shadow-[0_0_30px_rgba(124,77,255,0.4)] flex items-center justify-center gap-3 transition-all`}
           >
-            <Download className="w-5 h-5 text-white" />
+            {isDownloading ? (
+              <RefreshCcw className="w-5 h-5 text-white animate-spin" />
+            ) : (
+              <Download className="w-5 h-5 text-white" />
+            )}
             <span className="font-roboto font-semibold text-lg text-white">
-              Download All
+              {isDownloading ? "Downloading..." : "Download All"}
             </span>
           </motion.button>
 
-          <Link href="/" className="w-full">
-            <motion.button
-              whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.05)" }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full h-[61px] border border-white/10 rounded-full flex items-center justify-center gap-3 bg-transparent transition-colors text-white font-semibold text-lg"
-            >
-              Create New Project
-            </motion.button>
-          </Link>
+          <motion.button
+            whileHover={{ scale: 1.02, backgroundColor: "rgba(255,255,255,0.05)" }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              resetProject();
+              resetGeneration();
+              router.push("/");
+            }}
+            className="w-full h-[61px] border border-white/10 rounded-full flex items-center justify-center gap-3 bg-transparent transition-colors text-white font-semibold text-lg"
+          >
+            Create New Project
+          </motion.button>
         </div>
 
         {/* Global Footer */}
@@ -121,6 +184,59 @@ export default function FinalResultsPage() {
           <Footer />
         </div>
       </main>
+
+      {/* Clickable Preview Overlay */}
+      <AnimatePresence>
+        {activeItem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-5 cursor-zoom-out"
+            onClick={() => setActiveItem(null)}
+          >
+            <button 
+              onClick={(e) => { e.stopPropagation(); setActiveItem(null); }}
+              className="absolute top-8 right-8 p-3 bg-white/10 hover:bg-white/20 rounded-full border border-white/10 transition-colors z-[210]"
+            >
+              <X className="w-6 h-6 text-white" />
+            </button>
+            
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-5xl aspect-[3/4] md:aspect-[4/5] lg:aspect-square rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {activeItem.isVideo ? (
+                <video 
+                  src={activeItem.videoUrl} 
+                  autoPlay 
+                  controls 
+                  loop 
+                  className="w-full h-full object-contain bg-black"
+                />
+              ) : (
+                <Image 
+                  src={activeItem.image} 
+                  alt="Preview" 
+                  fill 
+                  className="object-contain bg-black/40"
+                  unoptimized
+                />
+              )}
+            </motion.div>
+            
+            <div className="mt-8 text-center">
+              <h3 className="text-xl font-bold text-white mb-1">{activeItem.title}</h3>
+              <p className="text-[#7C4DFF] text-[10px] font-bold uppercase tracking-[0.2em]">
+                {activeItem.isVideo ? "AI Cinematic Synthesis • 4K Editorial" : "High-Fidelity AI Render • Marketplace Ready"}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

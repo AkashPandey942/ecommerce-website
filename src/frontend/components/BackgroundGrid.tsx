@@ -3,8 +3,6 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 
-import { useInteraction } from "@/frontend/hooks/useInteraction";
-
 interface BackgroundGridProps {
   selectedTitle: string | null;
   onSelect: (bg: { title: string; image: string }) => void;
@@ -56,6 +54,7 @@ const BackgroundGrid = ({ selectedTitle, onSelect, onPreview }: BackgroundGridPr
                 alt={bg.title}
                 fill
                 className="object-cover"
+                sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, (max-width: 1280px) 22vw, 180px"
                 loading="lazy"
               />
             </div>

@@ -24,6 +24,8 @@ const envSchema = z.object({
   RUNCOMFY_API_URL: z.string().optional(),
   RUNCOMFY_MODEL_ID: z.string().optional(),
   RUNCOMFY_DEPLOYMENT_ID: z.string().optional(),
+  RUNCOMFY_VIDEO_MODEL_ID: z.string().optional(),
+  RUNCOMFY_VIDEO_DEPLOYMENT_ID: z.string().optional(),
   DISABLE_CREDIT_CHECK: z.string().optional(),
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),

@@ -1,9 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { Check } from "lucide-react";
+import { Check, Eye } from "lucide-react";
 import { motion } from "framer-motion";
-import { useInteraction } from "@/frontend/hooks/useInteraction";
 
 interface ModelItem {
   id: string;
@@ -65,14 +64,36 @@ const ModelScroll = ({ selectedId, onSelect, onPreview, modelsOverride }: ModelS
               alt={`Model option ${model.id}`}
               fill
               className="object-cover"
+              sizes="(max-width: 640px) 40vw, (max-width: 1024px) 180px, 131px"
               loading="lazy"
             />
             
+            {/* Preview trigger */}
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={(event) => {
+                event.stopPropagation();
+                onPreview?.(model);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onPreview?.(model);
+                }
+              }}
+              className="absolute top-1.5 right-1.5 w-[15px] h-[15px] rounded-sm bg-gradient-to-br from-[#00C2FF] via-[#7C4DFF] to-[#FF00C7] flex items-center justify-center"
+              aria-label={`Preview model ${model.id}`}
+            >
+              <Eye className="w-[9px] h-[9px] text-white" />
+            </span>
+
             {/* Selection Indicator */}
             <div
               aria-hidden="true"
-              className={`absolute top-1.5 right-1.5 w-[15px] h-[15px] rounded-sm bg-gradient-to-br from-[#00C2FF] via-[#7C4DFF] to-[#FF00C7] flex items-center justify-center transition-opacity ${
-                isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              className={`absolute bottom-1.5 right-1.5 w-[15px] h-[15px] rounded-sm bg-gradient-to-br from-[#00C2FF] via-[#7C4DFF] to-[#FF00C7] flex items-center justify-center transition-opacity ${
+                isSelected ? "opacity-100" : "opacity-0"
               }`}
             >
               <Check className="w-[10px] h-[10px] text-white" />

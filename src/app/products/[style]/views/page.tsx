@@ -7,14 +7,16 @@ import { Check, Sparkles, Wand2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useProject } from "@/frontend/context/ProjectContext";
 import { useState } from "react";
 import LoadingActionButton from "@/frontend/components/LoadingActionButton";
 import { TAXONOMY } from "@/registry/taxonomy";
 
-export default function ProductsOutputViewsPage() {
+  export default function ProductsOutputViewsPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { currentProject, updateProject } = useProject();
   const styleParam = (params.style as string) || "home";
   const product = searchParams.get("product") || "Product";
 
@@ -62,6 +64,15 @@ export default function ProductsOutputViewsPage() {
   const handleGenerate = async () => {
     setIsGenerating(true);
     await new Promise(resolve => setTimeout(resolve, 2000));
+    updateProject({
+      outputViews: views
+        .filter((v: any) => selectedViews.includes(v.id))
+        .map((v: any) => ({
+           id: v.id,
+           url: currentProject?.primeImage || v.image,
+           style: v.title
+        }))
+    });
     router.push(`/products/${styleParam}/video-style?product=${product}`);
   };
 

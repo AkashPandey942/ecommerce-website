@@ -6,9 +6,11 @@ import { Download, Share2, Play, Plus, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useProject } from "@/frontend/context/ProjectContext";
 
 export default function JewelleryVideoResultPage() {
   const params = useParams();
+  const { currentProject } = useProject();
   const segment = (params.segment as string) || "bridal";
   const style = (params.style as string) || "sets-and-pieces";
 
@@ -38,20 +40,33 @@ export default function JewelleryVideoResultPage() {
           animate={{ opacity: 1, scale: 1 }}
           className="relative w-full max-w-full sm:max-w-[353px] aspect-[9/16] rounded-[24px] overflow-hidden border border-white/10 shadow-[0_0_60px_rgba(124,77,255,0.2)] bg-[#1A1E29]"
         >
-          {/* Using the bridal image as the video thumbnail */}
-          <div className="absolute inset-0 grayscale-[0.2]">
-             <img
-               src="/indian-bride-9-2025-12-2fd0a5885b204639c8156089c6d2ebad-16x9.avif"
-               alt="Jewellery Video Result"
-               className="w-full h-full object-cover"
-             />
-          </div>
+          {currentProject?.videoUrl ? (
+            <video
+              src={currentProject.videoUrl}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <>
+              {/* Using the prime image as the video thumbnail fallback */}
+              <div className="absolute inset-0 grayscale-[0.2]">
+                 <img
+                   src={currentProject?.primeImage || "/indian-bride-9-2025-12-2fd0a5885b204639c8156089c6d2ebad-16x9.avif"}
+                   alt="Jewellery Video Result"
+                   className="w-full h-full object-cover"
+                 />
+              </div>
 
-          <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-             <div className="w-20 h-20 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center animate-pulse">
-                <Play className="w-8 h-8 text-white fill-white" />
-             </div>
-          </div>
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+                 <div className="w-20 h-20 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center animate-pulse">
+                    <Play className="w-8 h-8 text-white fill-white" />
+                 </div>
+              </div>
+            </>
+          )}
 
           {/* Video Metadata Overlay */}
           <div className="absolute bottom-6 left-6 right-6">

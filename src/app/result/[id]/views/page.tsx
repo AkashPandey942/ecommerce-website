@@ -1,32 +1,51 @@
 "use client";
 
 import FlowHeader from "@/frontend/components/FlowHeader";
+import ProgressStepper from "@/frontend/components/ProgressStepper";
 import Footer from "@/frontend/components/Footer";
 import LoadingActionButton from "@/frontend/components/LoadingActionButton";
-import { Check, Sparkles } from "lucide-react";
+import { Check, Sparkles, AlertCircle, RefreshCcw, Film } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useProject } from "@/frontend/context/ProjectContext";
+import { useGenerationPolling } from "@/hooks/useGenerationPolling";
 
 export default function SelectOutputViewsPage() {
   const params = useParams();
   const router = useRouter();
   const jobId = params.id as string;
+  const { currentProject, updateProject } = useProject();
+
+  const [selectedViews, setSelectedViews] = useState<string[]>(["front-view", "side-view", "detail-shot"]);
+  const [showLimitWarning, setShowLimitWarning] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState("");
+
+  const { status, outputImages, outputImage, error, generate, reset } = useGenerationPolling();
+  const isLoading = status === "submitting" || status === "polling";
+  const isCompleted = status === "completed";
+
+  const previewImage = currentProject?.primeImage || "/assets/placeholder-view.jpg";
 
   const views = [
-    { id: "front-view", title: "Front View", image: "/assets/front_view.jpg" },
-    { id: "left-view", title: "Left View", image: "/assets/left_view.png" },
-    { id: "right-view", title: "Right View", image: "/assets/right_view.png" },
-    { id: "close-up", title: "Close-up", image: "/assets/border_closeup.png" },
-    { id: "detail-shot", title: "Detail Shot", image: "/assets/detail_shot.png" },
+    { id: "front-view", title: "Front View", image: previewImage },
+    { id: "side-view", title: "Side View", image: previewImage },
+    { id: "back-view", title: "Back View", image: previewImage },
+    { id: "detail-shot", title: "Detail Shot", image: previewImage },
+    { id: "close-up", title: "Close-up", image: previewImage },
   ];
 
-  const [selectedViews, setSelectedViews] = useState<string[]>(["front-view", "left-view"]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showLimitWarning, setShowLimitWarning] = useState(false);
-
   const isCustomMode = selectedViews.includes("custom");
+
+  useEffect(() => {
+    if (isCompleted) {
+      const imgs = outputImages.length > 0 ? outputImages : outputImage ? [outputImage] : [];
+      updateProject({ outputViews: imgs });
+      router.push(`/result/${jobId}/video-style`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCompleted]);
 
   const toggleView = (id: string) => {
     if (!selectedViews.includes(id) && selectedViews.length >= 4) {
@@ -39,16 +58,59 @@ export default function SelectOutputViewsPage() {
     );
   };
 
-  const handleGenerate = async () => {
-    setIsLoading(true);
-    // Simulate generation
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    router.push(`/apparel/ladies/ethnic-wear/final-results`);
+  const handleGenerate = () => {
+    if (!previewImage) return;
+    reset();
+    generate({
+      garmentImageUrl: previewImage,
+      modelImageUrl: currentProject?.modelImageUrl || previewImage,
+      mode: "AI Studio",
+      hub: "Apparel", // Default for generic results, or detect from context
+      style: currentProject?.styleId || "Catalog",
+      background: currentProject?.backgroundId || "Studio White",
+      outputFormat: selectedViews.length <= 1 ? "single" : selectedViews.length <= 3 ? "triple" : "multi-view",
+      outputCount: Math.min(selectedViews.length, 6),
+      outputViews: selectedViews,
+      prompt: customPrompt,
+    });
   };
 
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="Output Views" />
+
+      {/* Generating Overlay */}
+      <AnimatePresence>
+        {isLoading && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center gap-8"
+          >
+            <div className="relative w-32 h-32">
+              <div className="absolute inset-0 border-4 border-[#7C4DFF]/20 rounded-full" />
+              <motion.div 
+                className="absolute inset-0 border-4 border-t-[#7C4DFF] rounded-full"
+                animate={{ rotate: 360 }} 
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }} 
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Sparkles className="w-10 h-10 text-[#7C4DFF] animate-pulse" />
+              </div>
+            </div>
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-white mb-2 font-manrope italic">Generating Multi-Views</h2>
+              <p className="text-[#C2C6D6] text-base animate-pulse">Running studio render pipeline...</p>
+              <div className="mt-4 px-6 py-2 bg-white/5 border border-white/10 rounded-full">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#7C4DFF]">
+                  {selectedViews.length} Editorial Perspectives
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Floating Limit Warning */}
       <AnimatePresence>
@@ -65,22 +127,11 @@ export default function SelectOutputViewsPage() {
       </AnimatePresence>
 
       <main className="w-full flex-1 max-w-[393px] mx-auto pt-[120px] px-5 flex flex-col">
-        {/* Progress Dots (Figma Style) */}
-        <div className="w-full flex gap-2 mb-8 items-center justify-center">
-          {[1, 2, 3, 4, 5, 6].map((step) => (
-            <div 
-              key={step} 
-              className={`h-1 w-full rounded-full transition-all duration-500 ${
-                step <= 5 
-                  ? "bg-gradient-to-r from-[#7C3AED] to-[#EC4899]" 
-                  : "bg-white/10"
-              }`} 
-            />
-          ))}
-        </div>
+        {/* Progress Dots */}
+        <ProgressStepper currentStep={9} />
 
         {/* Heading Section */}
-        <section className="mb-10 text-left">
+        <section className="mb-10 text-left mt-8">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -94,6 +145,20 @@ export default function SelectOutputViewsPage() {
             </p>
           </motion.div>
         </section>
+
+        {error && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }} 
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3"
+          >
+            <AlertCircle className="w-5 h-5 text-red-400" />
+            <p className="text-red-400 text-sm">{error}</p>
+            <button onClick={handleGenerate} className="ml-auto text-red-400 text-sm underline flex items-center gap-1">
+              <RefreshCcw className="w-3 h-3" /> Retry
+            </button>
+          </motion.div>
+        )}
 
         {/* Views Grid (2-column) */}
         <div className="grid grid-cols-2 gap-4 mb-10">
@@ -116,6 +181,7 @@ export default function SelectOutputViewsPage() {
                     alt={view.title} 
                     fill 
                     className="object-cover transition-transform group-hover:scale-105"
+                    unoptimized
                   />
                   
                   {/* Selection Indicator Overlay */}
@@ -134,7 +200,7 @@ export default function SelectOutputViewsPage() {
             );
           })}
 
-          {/* Custom Card (Figma: Group 76) */}
+          {/* Custom Card */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -161,7 +227,7 @@ export default function SelectOutputViewsPage() {
           </motion.div>
         </div>
 
-        {/* AI Custom Angle Prompt (Toggles with Custom Card) */}
+        {/* AI Custom Angle Prompt */}
         <AnimatePresence>
           {isCustomMode && (
             <motion.section 
@@ -186,6 +252,8 @@ export default function SelectOutputViewsPage() {
 
               <div className="relative group">
                 <textarea
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
                   className="w-full h-[120px] bg-[#1A1E29] border border-white/10 rounded-[12px] p-4 font-roboto text-sm text-white focus:border-[#7C4DFF] focus:ring-1 focus:ring-[#7C4DFF] outline-none transition-all placeholder:text-[#C2C6D6]/40 resize-none shadow-inner"
                   placeholder="E.g. Focus on the golden pallu details, add warm sunlight flare from left..."
                 />
@@ -197,12 +265,13 @@ export default function SelectOutputViewsPage() {
           )}
         </AnimatePresence>
 
-        {/* Generate Button (Figma: Group 43) */}
+        {/* Generate Button */}
         <div className="w-full mb-20 mt-auto">
           <LoadingActionButton
             isLoading={isLoading}
             onClick={handleGenerate}
             className="w-full h-[61px] rounded-[100px] font-roboto font-semibold text-[18px] text-white shadow-[0_10px_40px_rgba(124,77,255,0.3)]"
+            disabled={selectedViews.length === 0 || isLoading}
           >
             Generate Outputs
           </LoadingActionButton>

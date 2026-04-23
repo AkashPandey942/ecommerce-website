@@ -3,31 +3,78 @@
 import FlowHeader from "@/frontend/components/FlowHeader";
 import Footer from "@/frontend/components/Footer";
 import ProgressStepper from "@/frontend/components/ProgressStepper";
-import { Download, Share2, CornerUpRight, Image as ImageIcon, CheckCircle2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { Download, Share2, CornerUpRight, Image as ImageIcon, CheckCircle2, RefreshCcw, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 import StackedImagePreview from "@/frontend/components/StackedImagePreview";
+import { useProject } from "@/frontend/context/ProjectContext";
 
 export default function AccessoriesResultPage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const { currentProject } = useProject();
   const style = (params.style as string) || "bags";
   const product = searchParams.get("product") || "Handbag";
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [activeItem, setActiveItem] = useState<any>(null);
 
   const results = [
-    { id: 1, type: "Prime", image: "/assets/categories/handbag.png" },
-    { id: 2, type: "Side View", image: "/assets/categories/footwear.png" },
-    { id: 3, type: "Detail", image: "/assets/categories/watch.png" },
-    { id: 4, type: "Category Pan (Video)", image: "/assets/categories/handbag.png", isVideo: true },
+    ...(currentProject?.primeImage ? [{ id: 1, type: "Prime", image: currentProject.primeImage, isVideo: false }] : []),
+    ...(currentProject?.outputViews?.map((v: any, i: number) => ({
+      id: i + 2,
+      type: v.style || `Style ${i+1}`,
+      image: v.url || v,
+      isVideo: false
+    })) || []),
+    ...(currentProject?.videoUrl ? [{ id: 4, type: "Category Pan (Video)", image: currentProject?.primeImage || "", videoUrl: currentProject.videoUrl, isVideo: true }] : []),
   ];
+
+  const handleDownloadAll = async () => {
+    if (!results || results.length === 0) return;
+    try {
+      setIsDownloading(true);
+      const zip = new JSZip();
+      
+      const promises = results.map(async (res, idx) => {
+        const urlToFetch = res.videoUrl || res.image;
+        if (!urlToFetch) return;
+
+        const proxyUrl = `/api/proxy?url=${encodeURIComponent(urlToFetch)}`;
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error(`Failed to fetch ${res.type}`);
+        
+        const blob = await response.blob();
+        
+        let ext = res.isVideo ? "mp4" : "png";
+        if (blob.type === "image/jpeg") ext = "jpg";
+        else if (blob.type === "image/webp") ext = "webp";
+        
+        const filename = `${res.type.replace(/\s+/g, "_")}_${idx + 1}.${ext}`;
+        zip.file(filename, blob);
+      });
+
+      await Promise.all(promises);
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, `${style.replace(/\s+/g, "_")}_results.zip`);
+    } catch (error) {
+      console.error("Error downloading files:", error);
+      alert("Failed to create download pack. Please try again.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const ResultCard = ({ res, idx }: { res: typeof results[0], idx: number }) => (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: idx * 0.1 }}
-      className="group relative flex flex-col gap-4"
+      className="group relative flex flex-col gap-4 cursor-zoom-in"
+      onClick={() => setActiveItem(res)}
     >
       <div className="relative aspect-[1/1.2] rounded-2xl overflow-hidden shadow-2xl border border-white/5 bg-[#1A1E29]">
         <Image 
@@ -85,9 +132,17 @@ export default function AccessoriesResultPage() {
               <Share2 className="w-4 h-4" />
               <span>Share Pack</span>
             </button>
-            <button className="flex-1 lg:flex-none h-12 px-6 rounded-full bg-figma-gradient flex items-center justify-center gap-2 hover:shadow-[0_0_20px_rgba(124,77,255,0.4)] transition-all font-semibold">
-              <Download className="w-4 h-4" />
-              <span>Download All</span>
+            <button 
+              onClick={handleDownloadAll}
+              disabled={isDownloading}
+              className={`flex-1 lg:flex-none h-12 px-6 rounded-full ${isDownloading ? "bg-white/20 cursor-not-allowed" : "bg-figma-gradient hover:shadow-[0_0_20px_rgba(124,77,255,0.4)]"} flex items-center justify-center gap-2 transition-all font-semibold`}
+            >
+              {isDownloading ? (
+                <RefreshCcw className="w-4 h-4 text-white animate-spin" />
+              ) : (
+                <Download className="w-4 h-4 text-white" />
+              )}
+              <span>{isDownloading ? "Downloading..." : "Download All"}</span>
             </button>
           </div>
         </section>
@@ -128,6 +183,59 @@ export default function AccessoriesResultPage() {
 
         <Footer />
       </main>
+
+      {/* Clickable Preview Overlay */}
+      <AnimatePresence>
+        {activeItem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-5 cursor-zoom-out"
+            onClick={() => setActiveItem(null)}
+          >
+            <button 
+              onClick={(e) => { e.stopPropagation(); setActiveItem(null); }}
+              className="absolute top-8 right-8 p-3 bg-white/10 hover:bg-white/20 rounded-full border border-white/10 transition-colors z-[210]"
+            >
+              <X className="w-6 h-6 text-white" />
+            </button>
+            
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-5xl aspect-[3/4] md:aspect-[4/5] lg:aspect-square rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {activeItem.isVideo ? (
+                <video 
+                  src={activeItem.videoUrl} 
+                  autoPlay 
+                  controls 
+                  loop 
+                  className="w-full h-full object-contain bg-black"
+                />
+              ) : (
+                <Image 
+                  src={activeItem.image} 
+                  alt="Preview" 
+                  fill 
+                  className="object-contain bg-black/40"
+                  unoptimized
+                />
+              )}
+            </motion.div>
+            
+            <div className="mt-8 text-center">
+              <h3 className="text-xl font-bold text-white mb-1">{activeItem.type}</h3>
+              <p className="text-[#7C4DFF] text-[10px] font-bold uppercase tracking-[0.2em]">
+                {activeItem.isVideo ? "AI Cinematic Synthesis • 4K Editorial" : "High-Fidelity AI Render • Marketplace Ready"}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

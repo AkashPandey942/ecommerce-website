@@ -7,7 +7,6 @@ import Footer from "@/frontend/components/Footer";
 import { useParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useState } from "react";
-import { motion } from "framer-motion";
 import LoadingActionButton from "@/frontend/components/LoadingActionButton";
 import { Skeleton } from "@/frontend/components/ui/Skeleton";
 import ProductTag from "@/frontend/components/ProductTag";
@@ -15,6 +14,7 @@ import ProductTag from "@/frontend/components/ProductTag";
 // Services & Context
 import { useAuth } from "@/frontend/context/AuthContext";
 import { useGeneration } from "@/frontend/context/GenerationContext";
+import { useProject } from "@/frontend/context/ProjectContext";
 import { storageService } from "@/backend/services/storageService";
 
 // Dynamic components
@@ -37,6 +37,7 @@ export default function UnifiedUploadSetupPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { updateProject } = useProject();
   const { 
     selectionState, 
     updateSelection, 
@@ -57,11 +58,14 @@ export default function UnifiedUploadSetupPage() {
   // Preview States
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [selectedModelImage, setSelectedModelImage] = useState<string | null>(null);
 
   const outputStyles = ["Catalog", "Premium", "Social Media", "Lifestyle"];
 
   const handleModelSelect = (model: { id: string; image: string }) => {
-    updateSelection({ modelId: modelId === model.id ? null : model.id });
+    const isSameModel = modelId === model.id;
+    updateSelection({ modelId: isSameModel ? null : model.id });
+    setSelectedModelImage(isSameModel ? null : model.image);
   };
 
   const handleModelPreview = (model: { id: string; image: string }) => {
@@ -97,6 +101,28 @@ export default function UnifiedUploadSetupPage() {
 
   const filteredModels = getFilteredModels();
 
+  const resolveModelImage = () => {
+    if (selectedModelImage) {
+      return selectedModelImage;
+    }
+
+    if (!modelId) {
+      return null;
+    }
+
+    const fromFiltered = filteredModels.find((model) => model.id === modelId)?.image;
+    if (fromFiltered) {
+      return fromFiltered;
+    }
+
+    const numericId = Number.parseInt(modelId, 10);
+    if (!Number.isNaN(numericId)) {
+      return `/Model_${numericId}.jpg`;
+    }
+
+    return null;
+  };
+
   const handleGenerate = async () => {
     if (!user) {
       setError("Please sign in to generate images.");
@@ -115,29 +141,29 @@ export default function UnifiedUploadSetupPage() {
       const imageUrl = await storageService.uploadGarment(user.id, rawFile);
       setUploadedImageUrl(imageUrl);
 
-      // 2. Call the server-side API to create the job + trigger RunComfy
-      //    (generationService runs only on the server via this route)
-      const apiResponse = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          garmentImageUrl: imageUrl,
-          modelId,
-          background: backgroundId,
-          style: styleId,
-          prompt,
-        }),
+      // 2. Persist project setup for approve-prime generation step.
+      updateProject({
+        garmentImageUrl: imageUrl,
+        productImageUrl: imageUrl,
+        modelId: modelId || undefined,
+        modelImageUrl: resolveModelImage() || undefined,
+        backgroundId: backgroundId || undefined,
+        styleId: styleId || undefined,
+        prompt: prompt || "",
+        primeImage: undefined,
+        outputViews: [],
+        selectedOutputViews: [],
+        generatedViewLabels: [],
+        isCustomViewEnabled: false,
+        customViewPrompt: "",
+        videoStyle: undefined,
+        videoPrompt: "",
+        videoUrl: undefined,
+        approvedPrime: false,
       });
 
-      if (!apiResponse.ok) {
-        const errData = await apiResponse.json();
-        throw new Error(errData.error || "API call failed");
-      }
-
-      const { jobId } = await apiResponse.json();
-
-      // 3. Redirect to Result Page
-      router.push(`/result/${jobId}`);
+      // 3. Continue to generated-result screen where polling/render happens.
+      router.push(`/apparel/${segment}/${style}/approve-prime`);
 
     } catch (err: unknown) {
       console.error("❌ [Generate Flow] Error:", err);

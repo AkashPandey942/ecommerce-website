@@ -23,8 +23,6 @@ export default function ProductSelectionPage() {
     }
   }, [style, segment, router]);
 
-  if (style === "select-style") return null;
-
   const isGents = segment.toLowerCase() === "gents" || segment.toLowerCase() === "men";
 
   // Define dynamic image arrays for styles
@@ -93,6 +91,8 @@ export default function ProductSelectionPage() {
 
   // Start with no tag selected
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+
+  if (style === "select-style") return null;
 
   return (
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30 mt-auto">

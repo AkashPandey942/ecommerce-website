@@ -71,14 +71,16 @@ export const generationService = {
   /**
    * Refund credits for a failed job.
    */
-  async refundJob(jobId: string) {
+  async refundJob(jobId: string, errorMessage?: string) {
     await dbConnect();
     const job = await Generation.findById(jobId);
     if (!job || job.status === "failed") return; // Prevent double refund
 
+    const finalError = errorMessage || "Generation failed.";
+
     if (!shouldEnforceCredits()) {
       job.status = "failed";
-      job.error = "Generation failed.";
+      job.error = finalError;
       await job.save();
       return;
     }
@@ -90,7 +92,7 @@ export const generationService = {
     }
 
     job.status = "failed";
-    job.error = "Generation failed. Credits refunded.";
+    job.error = `${finalError} Credits refunded.`;
     await job.save();
   }
 };

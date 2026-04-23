@@ -1,8 +1,8 @@
 /**
  * ─────────────────────────────────────────────────────────────────
- *  DIGITAL ATELIER — MASTER PROMPT ENGINE v3.0
- *  Hub-routed · Photorealistic · Marketplace-ready
- *  Covers: Apparel · Jewellery · Accessories · Products
+ *  DIGITAL ATELIER — MASTER PROMPT ENGINE v5.0
+ *  End-to-End · Every Screen · Full App Flow
+ *  Apparel · Jewellery · Accessories · Products
  * ─────────────────────────────────────────────────────────────────
  */
 
@@ -27,6 +27,8 @@ export interface SharedInputs {
   outputStyle?: OutputStyle;
   background?: Background;
   aiNotes?: string | null;
+  outputViews?: string[]; // Screen 7: Front, Left, Right, Close-up, Detail, Custom
+  videoStyle?: string;   // Screen 9: Straight Walk, Slow Turn, Elegant Reveal, etc.
 }
 
 export interface ApparelInputs extends SharedInputs {
@@ -81,32 +83,32 @@ export type PromptInputs =
 const UNIVERSAL_ISOLATION = `
 UNIVERSAL PRODUCT-TYPE OUTPUT ISOLATION (MANDATORY)
 Final output MUST strictly match the selected input category/type.
-No deviation. No mixing. No substitution.
+No deviation. No mixing. No substitution. No AI-assumed additions.
 `.trim();
 
 const IDENTITY_LOCK = `
 IDENTITY LOCK — ABSOLUTE. NON-NEGOTIABLE.
 Face geometry · pores · freckles · moles · micro-details → 100% preserved.
-Skin tone + undertone → exact match to MODEL_REF.
+Skin tone + undertone → exact match to MODEL_REF. No shift.
 Body shape · limb volume · proportions · posture → unchanged.
 Hair colour · length · texture · style → unchanged.
 Eye colour · shape · position → unchanged.
 Expression → unchanged unless explicitly stated in AI_NOTES.
 No slimming · no reshaping · no enhancement · no beautification.
-Identity must be pixel-consistent across all regenerations.
+Identity must be pixel-consistent across all views and all video frames.
 `.trim();
 
 const QUALITY_GATES = `
 QUALITY GATES — ALL MUST PASS:
-✓ Output strictly matches selected category/type (Apparel/Jewellery/Accessories/Products)
-✓ No cross-category or cross-type elements present
+✓ Output matches selected category/type exactly
+✓ No cross-category elements present
 ✓ Only items visible in PRODUCT_IMAGE are rendered
-✓ Item colour exact match to source image
-✓ All surface detail reproduced — zero AI averaging or simplification
+✓ Item colour exact match to source — zero drift
+✓ All surface detail reproduced — zero AI averaging
 ✓ Model identity 100% preserved from MODEL_REF
-✓ Fabric / material physics correct for identified type
-✓ Background and model lighting consistent — direction · temperature · intensity
-✓ Correct composition and framing for OUTPUT_STYLE
+✓ Fabric physics correct for identified type
+✓ Background and subject lighting consistent
+✓ Correct composition for OUTPUT_STYLE
 ✓ Single image — no collage · no watermark · no text overlay
 ✓ Resolution minimum 1024×1024 · target 2048×2048
 ✓ Marketplace-safe: Meesho · Myntra · Amazon · Ajio · Nykaa ready
@@ -116,10 +118,9 @@ REJECT AND REGENERATE if any gate fails.
 const NEGATIVE_PROMPT = `
 --no category mixing, no hybrid/fusion unless in PRODUCT_IMAGE,
 no AI-added extra items, no assumption-based styling,
-no replacement of product type,
-no face change, no skin tone shift, no body distortion,
-no slimming, no reshaping, no body enhancement, no blur,
-no low resolution, no waxy skin, no plastic skin,
+no replacement of product type, no face change, no skin tone shift,
+no body distortion, no slimming, no reshaping, no body enhancement,
+no blur, no low resolution, no waxy skin, no plastic skin,
 no broken anatomy, no extra limbs, no missing limbs,
 no fabric warping, no texture stretching, no pattern scale error,
 no tile distortion, no embroidery averaging, no garment colour drift,
@@ -135,48 +136,41 @@ no chromatic aberration, no label text distortion
 function background(bg: string): string {
   const b = bg.toLowerCase();
   const rule =
-    "LIGHTING RULE: Light direction · colour temperature · intensity " +
-    "on subject MUST match background exactly. No flat-lit subject on " +
-    "dramatic background. No bright subject on dark background without rim light.";
+    "LIGHTING RULE: Light direction · colour temperature · intensity on subject " +
+    "MUST match background exactly.";
 
   const map: Record<string, string> = {
     "white studio":
-      "Pure white seamless sweep · soft-box front light + fill · faint natural floor shadow.",
+      "White Studio   → Pure white seamless sweep · soft-box front light + fill · faint natural floor shadow.",
     "premium studio":
-      "Dark charcoal textured wall · Rembrandt or split lighting · " +
-      "warm gold or cool silver rim light · rich deep shadow.",
+      "Premium Studio → Dark charcoal textured wall · Rembrandt or split lighting · warm gold or cool silver rim light · rich deep shadow.",
     "saree festival":
-      "Decorated mandap or temple corridor · marigold garlands · diyas · warm amber light.",
+      "Saree Festival → Decorated mandap or temple corridor · marigold garlands · diyas · warm amber light.",
     outdoor:
-      "Garden or heritage monument · natural directional sunlight · soft fill · accurate shadows.",
+      "Outdoor        → Garden or heritage monument · natural directional sunlight · soft fill · accurate cast shadows.",
     "modern office":
-      "Contemporary interior · large windows · diffused indoor daylight · neutral clean tones.",
+      "Modern Office  → Contemporary interior · large windows · diffused daylight · neutral clean tones.",
   };
 
   const matched = Object.entries(map).find(([key]) => b.includes(key));
   const scene = matched ? matched[1] : `${bg} — professional studio environment.`;
-  return `BACKGROUND: ${scene} ${rule}`;
+  return `${scene}\n${rule}`;
 }
 
 function outputStyle(style: string): string {
   const s = style.toLowerCase();
   const map: Record<string, string> = {
     catalog:
-      "Full body portrait 3:4 · centred · neutral or soft expression · " +
-      "hands relaxed · no props · minimal post-processing. " +
-      "Marketplace-standard composition.",
+      "Catalog      → Full body portrait 3:4 · centred · neutral expression · hands relaxed · no props. Marketplace-standard.",
     premium:
-      "Editorial · off-centre · 3/4 body · dramatic lighting · " +
-      "confident gaze · rich deep colour grade. Luxury feel.",
+      "Premium      → Editorial · off-centre · 3/4 body · dramatic lighting · confident gaze · rich colour grade. Luxury feel.",
     "social media":
-      "Vertical 9:16 · waist-up or above-knee crop · " +
-      "vibrant · high energy · expressive. Optimised for Instagram / Reels.",
+      "Social Media → Vertical 9:16 · waist-up · vibrant · high energy. Optimised for Instagram / Reels.",
     lifestyle:
-      "Environmental portrait 3:4 or 4:5 · candid feel · " +
-      "warm atmospheric light · airy edit. Natural lifestyle context.",
+      "Lifestyle    → Environmental portrait 3:4 or 4:5 · candid feel · warm atmospheric light · airy edit.",
   };
   const matched = Object.entries(map).find(([key]) => s.includes(key));
-  return `OUTPUT STYLE [${style.toUpperCase()}]: ${matched ? matched[1] : style}`;
+  return matched ? matched[1] : style;
 }
 
 function aiNotes(notes: string | null | undefined): string {
@@ -194,65 +188,45 @@ function drapingRules(productType: string): string {
 
   const rules: Record<string, string> = {
     saree:
-      "SAREE: Nivi drape (default unless source shows otherwise) · " +
-      "Petticoat neatly tucked at waist · " +
-      "5–7 uniform front pleats, centred, sharp folds · " +
-      "Pallu over left shoulder, natural diagonal fall, full design visible · " +
-      "Blouse fitted front and back, no pull, no gap, no stretch.",
+      "SAREE:\n  Nivi drape (default unless source shows otherwise).\n  Petticoat neatly tucked at waist.\n  5–7 uniform front pleats, centred, sharp folds.\n  Pallu over left shoulder, natural diagonal fall, full design visible.\n  Blouse fitted front and back — no pull, no gap, no stretch.",
     lehenga:
-      "LEHENGA: Full circular flare · even ankle-length hem all around · " +
-      "Choli fitted bodice, neckline exactly from source · " +
-      "Dupatta over both shoulders or one shoulder as in source.",
+      "LEHENGA:\n  Full circular flare · even ankle-length hem all around.\n  Choli fitted bodice, neckline exactly from source.\n  Dupatta over both shoulders or one shoulder as in source.",
     "kurta set":
-      "KURTA SET / SALWAR SUIT: Kurta straight or A-line per source · " +
-      "Churidar gathers at ankle or palazzo wide and even · " +
-      "Dupatta diagonal chest drape or over both shoulders.",
-    "salwar suit":
-      "SALWAR SUIT: Kurta straight or A-line per source · " +
-      "Churidar gathers at ankle or palazzo wide and even · " +
-      "Dupatta diagonal chest drape or over both shoulders.",
+      "KURTA SET / SALWAR SUIT:\n  Kurta straight or A-line per source.\n  Churidar gathers at ankle or palazzo wide and even.\n  Dupatta diagonal chest drape or over both shoulders.",
+    salwar:
+      "KURTA SET / SALWAR SUIT:\n  Kurta straight or A-line per source.\n  Churidar gathers at ankle or palazzo wide and even.\n  Dupatta diagonal chest drape or over both shoulders.",
     kurti:
-      "KURTI: Show with neutral bottom (white or black) " +
-      "unless source shows specific paired bottom.",
+      "KURTI:\n  Show with neutral bottom (white or black)\n  unless source shows specific paired bottom.",
+    "dupatta set":
+      "DUPATTA SET:\n  Draped naturally over both shoulders or one shoulder.\n  Full length visible. Print/embroidery unobstructed.",
+    blouse:
+      "BLOUSE:\n  Neckline · sleeve · back design all visible.\n  Show with plain petticoat unless source shows full saree.",
     sherwani:
-      "SHERWANI: All buttons fastened · straight placket · " +
-      "even knee-length hem all around · " +
-      "Churidar fitted through leg, clean ankle gathers.",
+      "SHERWANI:\n  All buttons fastened · straight placket.\n  Even knee-length hem · Churidar fitted through leg, clean ankle gathers.",
     gown:
-      "GOWN / PARTYWEAR: Train fully visible and in frame if present in source · " +
-      "Silhouette A-line / mermaid / ball gown exactly per source.",
-    partywear:
-      "PARTYWEAR GOWN: Train fully visible · silhouette per source. " +
-      "Maximum garment drama — no flattening of volume or structure.",
+      "GOWN / PARTYWEAR:\n  Train fully visible and in frame if present.\n  Silhouette A-line / mermaid / ball gown exactly per source.\n  Maximum garment drama — no flattening of volume or structure.",
   };
 
   for (const [key, rule] of Object.entries(rules)) {
     if (pt.includes(key)) return rule;
   }
 
-  // Western / default
-  if (/dress|top|co-?ord|blazer|shirt|t-shirt|jacket|trousers|skirt/.test(pt)) {
-    return (
-      "WESTERN FIT: Structured or relaxed per source fabric weight · " +
-      "natural body-conforming silhouette · " +
-      "seams and construction lines from source reproduced exactly."
-    );
-  }
-
-  return "Apply garment with natural draping physics appropriate to identified style.";
+  return (
+    "WESTERN FIT:\n  Structured or relaxed per source fabric weight.\n  Natural body-conforming silhouette.\n  Seams and construction lines from source reproduced exactly."
+  );
 }
 
-function apparelIsolation(productType: string, segment: string): string {
+function apparelIsolation(productType: string): string {
   const pt = productType.toLowerCase();
-  const s = segment.toLowerCase();
-  if (pt.includes("saree")) return "→ Output ONLY Saree (with blouse + petticoat support)\n→ ❌ No lehenga / kurti / gown / fusion";
-  if (pt.includes("lehenga")) return "→ ONLY Lehenga set (lehenga + choli + dupatta)\n→ ❌ No saree drape / gown mix";
-  if (pt.includes("kurti")) return "→ ONLY Kurti (with neutral bottom if needed)\n→ ❌ No saree / lehenga styling";
-  if (pt.includes("kurta set") || pt.includes("salwar suit")) return "→ ONLY full set (kurta + bottom + dupatta if present)\n→ ❌ No unrelated garment mix";
-  if (pt.includes("blouse")) return "→ ONLY blouse-focused output\n→ ❌ No full saree/lehenga unless in PRODUCT_IMAGE";
-  if (pt.includes("sherwani") || pt.includes("menswear") || pt.includes("ethnic menswear")) return "→ ONLY that exact structure\n→ ❌ No casual/western merge";
-  if (s.includes("kids")) return "→ ONLY selected kids category\n→ Must be age-appropriate\n→ ❌ No adult styling";
-  return "→ ONLY selected western type\n→ ❌ No ethnic blending";
+  if (pt.includes("saree")) return "  Saree       → Output ONLY Saree (blouse + petticoat support)\n                ❌ No lehenga / kurti / gown / fusion";
+  if (pt.includes("lehenga")) return "  Lehenga     → ONLY Lehenga set (lehenga + choli + dupatta)\n                ❌ No saree drape / gown mix";
+  if (pt.includes("kurti")) return "  Kurti       → ONLY Kurti (neutral bottom if needed)\n                ❌ No saree / lehenga styling";
+  if (pt.includes("kurta set") || pt.includes("salwar suit")) return "  Kurta Set   → ONLY full set (kurta + bottom + dupatta if present)\n                ❌ No unrelated garment mix";
+  if (pt.includes("blouse")) return "  Blouse      → ONLY blouse-focused output\n                ❌ No full saree/lehenga unless in PRODUCT_IMAGE";
+  if (pt.includes("sherwani")) return "  Sherwani    → ONLY that ethnic menswear structure\n                ❌ No casual/western merge";
+  if (pt.includes("dupatta")) return "  Dupatta Set → ONLY dupatta with neutral base garment\n                ❌ No full bridal styling unless in source";
+  if (pt.includes("kids")) return "  Kids        → ONLY selected kids category · age-appropriate\n                ❌ No adult styling";
+  return "  Western     → ONLY selected western type\n                ❌ No ethnic blending";
 }
 
 function buildApparelPrompt(inputs: ApparelInputs): string {
@@ -265,19 +239,19 @@ function buildApparelPrompt(inputs: ApparelInputs): string {
     modelRefUrl,
     mode,
     aiNotes: notes,
+    outputViews,
   } = inputs;
 
   const isKids = /kids/i.test(segment);
 
-  const header =
-    `[HUB: APPAREL] [SEGMENT: ${segment}] ` +
-    `[WEAR TYPE: ${wearType}]` +
-    (productType ? ` [PRODUCT TYPE: ${productType}]` : "");
-
-  const isolation = `${UNIVERSAL_ISOLATION}\n${apparelIsolation(productType, segment)}`;
+  const header = `[HUB: APPAREL] [SEGMENT: ${segment}] [WEAR TYPE: ${wearType}] [PRODUCT TYPE: ${productType}]`;
+  const isolation = `${UNIVERSAL_ISOLATION}\n${apparelIsolation(productType)}`;
 
   const extract = `
-GARMENT EXTRACTION — SOURCE OF TRUTH: PRODUCT_IMAGE. Zero deviation.
+── GARMENT EXTRACTION ──────────────────────────────────────────────────────
+
+SOURCE OF TRUTH: PRODUCT_IMAGE. Zero deviation permitted.
+
 COLOUR       Exact hex-level match. No brightening · darkening · saturation shift.
              Render faithfully under output lighting — never recolour.
 PRINT        All-over · block · digital · woven patterns at full fidelity.
@@ -285,54 +259,62 @@ PRINT        All-over · block · digital · woven patterns at full fidelity.
 EMBROIDERY   Zari · resham · mirror · cutdana · sequin · gota patti.
              Render every element individually. No averaging. No blur.
 BORDERS      Exact width · motif · colour as in source. Pallu and hem borders match.
-FABRIC ID    Identify material from visual cues. Apply correct physics:
-             Silk        → high sheen · structured · stiff drape
-             Chiffon     → translucent · floaty · light soft folds
-             Cotton      → matte · soft · relaxed natural fall
-             Georgette   → medium flow · subtle surface texture
-             Net/Organza → sheer · stiff · visible mesh structure
-             Velvet      → deep pile · directional sheen · heavy fall
-             Crepe       → matte · heavy · clean structured fall
-             Tissue      → metallic sheen · semi-stiff · crisp folds
+FABRIC ID    Silk→high sheen·stiff | Chiffon→translucent·floaty | Cotton→matte·soft |
+             Georgette→medium flow | Net/Organza→sheer·stiff | Velvet→deep pile·heavy |
+             Crepe→matte·heavy·structured | Tissue→metallic sheen·semi-stiff
 CUT          Neckline · sleeve length · hem length · silhouette exactly from source.
   `.trim();
 
+  const modelDirective = modelRefUrl
+    ? `
+── MODEL DIRECTIVE ──────────────────────────────────────────────────────────
+
+${mode === "Virtual Try-On" ? "TASK: Virtual Try-On. Redress subject in MODEL_REF with clothing from PRODUCT_IMAGE.\nReplace ONLY the clothing. Strictly preserve subject identity." : "Apply garment to MODEL_REF only. No other model."}
+
+${IDENTITY_LOCK}
+
+Correct draping physics for identified fabric weight.
+No gaps · no pulls · no warping · no misalignment.
+
+${isKids ? "IF SEGMENT = Kids:\n  Scale all proportions to child body.\n  Age-appropriate styling only. No adult proportions." : ""}
+    `.trim()
+    : "Show garment on appropriate figure or flat-lay with correct draping.";
+
   const physics = `
-CLOTH PHYSICS:
+── CLOTH PHYSICS ───────────────────────────────────────────────────────────
+
 Gravity-driven drape · correct tension at shoulder, waist, and hip.
 Seams and stitching reproduced from source.
 Sheer fabrics → correct opacity · background visible only where physically accurate.
 Opaque fabrics → zero background bleed-through.
 No floating · no clipping · no misalignment at any seam.
 Multi-layer contact shadows and ambient occlusion applied throughout.
-  `.trim();
+`.trim();
 
-  const modelDirective = modelRefUrl
-    ? `
-DRESS MODEL:
-${mode === "Virtual Try-On" ? "TASK: Virtual Try-On. Redress the subject in the MODEL_REF image with the clothing from the PRODUCT_IMAGE.\nReplace ONLY the clothing while strictly preserving the subject." : "Apply garment to MODEL_REF only."}
-${IDENTITY_LOCK}
-Correct draping physics for identified fabric weight.
-No gaps · no pulls · no warping · no misalignment.
-${isKids ? "KIDS: Scale all proportions to child body. No adult proportions. Age-appropriate styling only." : ""}
-    `.trim()
-    : "Show garment on appropriate figure or flat-lay with correct draping.";
-
-  return [
+  const basePrompt = [
     header,
+    "\n── PRODUCT TYPE ISOLATION ──────────────────────────────────────────────────\n",
     isolation,
     extract,
+    "\n── DRAPING RULES ───────────────────────────────────────────────────────────\n",
     drapingRules(productType),
     physics,
     modelDirective,
+    "\n── BACKGROUND ───────────────────────────────────────────────────────────────\n",
     background(bg),
+    "\n── OUTPUT STYLE ─────────────────────────────────────────────────────────────\n",
     outputStyle(style),
-    QUALITY_GATES,
     aiNotes(notes),
+    QUALITY_GATES,
+    "\n── NEGATIVE PROMPT ──────────────────────────────────────────────────────────\n",
     NEGATIVE_PROMPT,
-  ]
-    .filter(Boolean)
-    .join("\n\n");
+  ].filter(Boolean).join("\n");
+
+  if (outputViews && outputViews.length > 0) {
+    return buildMultiViewPrompt(basePrompt, outputViews);
+  }
+
+  return basePrompt;
 }
 
 // ─── Jewellery Builder ───────────────────────────────────────────
@@ -357,34 +339,22 @@ function jewelleryGenreDirective(genre: string): string {
   const g = genre.toLowerCase();
   const map: Record<string, string> = {
     bridal:
-      "BRIDAL: Full set visible — necklace layered correctly · maang tikka centred · " +
-      "earrings symmetrical · bangles stacked. Rich warm lighting. " +
-      "Background: mandap, floral drape, or deep jewel tone.",
+      "Bridal     → Full set · necklace layered · maang tikka centred · earrings symmetrical · bangles stacked · rich warm lighting · mandap or deep jewel tone background.",
     fashion:
-      "FASHION: Clean isolated product shot or styled on model. " +
-      "Minimalist background. Highlight shine, form, and design intent.",
+      "Fashion    → Clean isolated or styled on model · minimalist background · highlight design.",
     traditional:
-      "TRADITIONAL / VINTAGE: Warm amber or candlelight tones. " +
-      "Temple / Kundan — deep red, green, or ivory backdrop. " +
-      "Antique pieces: matte warm lighting, no harsh flash.",
+      "Traditional→ Warm amber tones · Temple/Kundan → deep red, green, or ivory backdrop.",
     "daily wear":
-      "DAILY WEAR / MINIMAL: Clean white or soft pastel background. " +
-      "Lightweight pieces — thin chains, small studs. " +
-      "Natural light feel. No drama. No heavy styling.",
+      "Daily Wear → White or soft pastel background · lightweight pieces · natural light.",
   };
-
   const matched = Object.entries(map).find(([key]) => g.includes(key));
-  return matched
-    ? matched[1]
-    : "Render jewellery with professional studio lighting and clean background.";
+  return matched ? matched[1] : "Professional jewellery photography.";
 }
 
-function jewelleryIsolation(genre: string, style: string): string {
+function jewelleryIsolation(genre: string): string {
   const g = genre.toLowerCase();
-  if (g.includes("bridal")) return "→ Full set only (necklace, earrings, maang tikka, etc.)\n→ ❌ No minimal/studs-only output";
-  if (g.includes("traditional") || g.includes("temple") || g.includes("kundan") || g.includes("polki")) return "→ ONLY that heritage style\n→ ❌ No modern/minimal conversion";
-  if (g.includes("daily") || g.includes("minimal")) return "→ ONLY lightweight/simple pieces\n→ ❌ No bridal heaviness";
-  return "→ ONLY that specific item\n→ ❌ No full set unless source shows";
+  if (g.includes("bridal")) return "Bridal → Full set only\n❌ No minimal output";
+  return "→ ONLY that specific item\n❌ No full set unless in source";
 }
 
 function buildJewelleryPrompt(inputs: JewelleryInputs): string {
@@ -395,44 +365,44 @@ function buildJewelleryPrompt(inputs: JewelleryInputs): string {
     background: bg = "White Studio",
     modelRefUrl,
     aiNotes: notes,
+    outputViews,
   } = inputs;
 
-  const header =
-    `[HUB: JEWELLERY] [GENRE: ${jewelleryGenre}]` +
-    (jewelleryStyle ? ` [STYLE: ${jewelleryStyle}]` : "");
-
-  const isolation = `${UNIVERSAL_ISOLATION}\n${jewelleryIsolation(jewelleryGenre, jewelleryStyle)}`;
+  const header = `[HUB: JEWELLERY] [GENRE: ${jewelleryGenre}] [STYLE: ${jewelleryStyle}]`;
+  const isolation = `${UNIVERSAL_ISOLATION}\n${jewelleryIsolation(jewelleryGenre)}`;
 
   const extract = `
 JEWELLERY EXTRACTION — SOURCE OF TRUTH: PRODUCT_IMAGE. Zero deviation.
-METAL FINISH  Gold · Silver · Rose Gold · Oxidised · Antique — exact tone. No colour drift.
-STONE COLOUR  Every gemstone reproduced exactly. Emerald ≠ jade. Ruby ≠ garnet.
-STONE SETTING Kundan · Prong · Bezel · Pavé — preserve setting type exactly.
-TEXTURE       Filigree · engraving · polished · matte · hammered — full resolution.
-SCALE         Piece must appear correct size relative to body. Not oversized. Not miniaturised.
-COMPONENTS    Every chain · pendant · earring back · clasp · tassel from source present in output.
+METAL FINISH  Exact tone — Gold · Silver · Rose Gold · Oxidised · Antique.
+STONE COLOUR  Every gemstone exact. Emerald ≠ jade. Ruby ≠ garnet.
+STONE SETTING Kundan · Prong · Bezel · Pavé · Polki — preserved exactly.
+TEXTURE       Filigree · engraving · polished · matte · hammered.
+SCALE         Correct size relative to body. Not oversized.
+COMPONENTS    Every chain · pendant · earring back · clasp · tassel present.
   `.trim();
 
-  const shotType = modelRefUrl
-    ? "SHOT: Show worn on body. Correct anatomical placement. Correct scale."
-    : "SHOT: Isolated product — flat lay or prop stand · macro detail · " +
-      "45° or overhead angle · human hand or body part for scale reference.";
-
-  return [
+  const basePrompt = [
     header,
+    "\n── PRODUCT TYPE ISOLATION ──────────────────────────────────────────────────\n",
     isolation,
     extract,
     jewelleryGenreDirective(jewelleryGenre),
-    shotType,
+    modelRefUrl ? "SHOT: Worn on body. Anatomical placement. Scale." : "SHOT: Isolated product shot.",
     jewelleryLighting(jewelleryGenre, jewelleryStyle),
+    "\n── OUTPUT STYLE ─────────────────────────────────────────────────────────────\n",
     outputStyle(style),
+    "\n── BACKGROUND ───────────────────────────────────────────────────────────────\n",
     background(bg),
     QUALITY_GATES,
     aiNotes(notes),
     NEGATIVE_PROMPT,
-  ]
-    .filter(Boolean)
-    .join("\n\n");
+  ].filter(Boolean).join("\n");
+
+  if (outputViews && outputViews.length > 0) {
+    return buildMultiViewPrompt(basePrompt, outputViews);
+  }
+
+  return basePrompt;
 }
 
 // ─── Accessories Builder ──────────────────────────────────────────
@@ -456,13 +426,13 @@ function accessoryTypeRules(type: string): string {
 
 function accessoryIsolation(type: string): string {
   const t = type.toLowerCase();
-  if (t.includes("bag")) return "Bags → ONLY bag (correct structure)\n❌ No cross-accessory generation";
-  if (t.includes("footwear") || t.includes("shoe") || t.includes("boot")) return "Footwear → ONLY footwear pair/single as per source\n❌ No cross-accessory generation";
-  if (t.includes("watch")) return "Watches → ONLY watch (correct dial + strap)\n❌ No cross-accessory generation";
-  if (t.includes("eyewear") || t.includes("glass")) return "Eyewear → ONLY eyewear (frame + lens exact)\n❌ No cross-accessory generation";
-  if (t.includes("belt")) return "Belts → ONLY belt\n❌ No cross-accessory generation";
-  if (t.includes("scarf") || t.includes("stole") || t.includes("muffler")) return "Scarves → ONLY scarf\n❌ No cross-accessory generation";
-  return "❌ No cross-accessory generation (e.g., bag + shoes combo NOT allowed unless source shows)";
+  if (t.includes("bag")) return "  Bags     → ONLY bag ❌ No cross-accessory";
+  if (t.includes("footwear") || t.includes("shoe") || t.includes("boot")) return "  Footwear → ONLY footwear pair/single ❌ No cross-accessory";
+  if (t.includes("watch")) return "  Watches  → ONLY watch ❌ No cross-accessory";
+  if (t.includes("eyewear") || t.includes("glass")) return "  Eyewear  → ONLY eyewear ❌ No cross-accessory";
+  if (t.includes("belt")) return "  Belts    → ONLY belt ❌ No cross-accessory";
+  if (t.includes("scarf") || t.includes("stole") || t.includes("muffler")) return "  Scarves  → ONLY scarf ❌ No cross-accessory";
+  return "❌ No cross-accessory generation";
 }
 
 function buildAccessoriesPrompt(inputs: AccessoriesInputs): string {
@@ -471,45 +441,127 @@ function buildAccessoriesPrompt(inputs: AccessoriesInputs): string {
     outputStyle: style = "Catalog",
     background: bg = "White Studio",
     aiNotes: notes,
+    outputViews,
   } = inputs;
 
-  const header =
-    "[HUB: ACCESSORIES]" +
-    (accessoryType ? ` [TYPE: ${accessoryType}]` : "");
-
+  const header = `[HUB: ACCESSORIES] [TYPE: ${accessoryType}]`;
   const isolation = `${UNIVERSAL_ISOLATION}\n${accessoryIsolation(accessoryType)}`;
 
-  const extract = `
-ACCESSORY EXTRACTION — SOURCE OF TRUTH: PRODUCT_IMAGE. Zero deviation.
-MATERIAL  Leather grain · canvas weave · metal finish · rubber · fabric — exact material physics.
-COLOUR    Exact. No shift. Black leather is not dark brown.
-HARDWARE  Buckles · zips · clasps · logos — all reproduced precisely.
-STITCHING Visible stitching lines · thread colour from source.
-SHAPE     Silhouette and proportions exactly as source.
-  `.trim();
-
-  const shotStyle = (() => {
-    const s = style.toLowerCase();
-    if (s.includes("catalog"))   return "SHOT: White/grey seamless · product centred · 45° angle · soft shadow · no props.";
-    if (s.includes("premium"))   return "SHOT: Dark surface · dramatic side light · deep shadows · luxury feel · optional lifestyle props.";
-    if (s.includes("lifestyle")) return "SHOT: Worn or in context — bag on arm · watch on wrist · shoes on feet · natural setting.";
-    return "SHOT: Professional product photography · clean and well-lit.";
-  })();
-
-  return [
+  const basePrompt = [
     header,
+    "\n── PRODUCT TYPE ISOLATION ──────────────────────────────────────────────────\n",
     isolation,
-    extract,
+    `ACCESSORY EXTRACTION — SOURCE OF TRUTH: PRODUCT_IMAGE. Zero deviation.
+MATERIAL  Leather grain · canvas weave · metal finish · rubber — exact physics.
+COLOUR    Exact. Black leather ≠ dark brown. Navy ≠ black.
+HARDWARE  Buckles · zips · clasps · logos · rivets — all reproduced precisely.
+STITCHING Visible stitching lines · thread colour from source.
+SHAPE     Silhouette and proportions exactly as source.`,
     accessoryTypeRules(accessoryType),
-    shotStyle,
-    background(bg),
+    "\n── OUTPUT STYLE ─────────────────────────────────────────────────────────────\n",
     outputStyle(style),
+    "\n── BACKGROUND ───────────────────────────────────────────────────────────────\n",
+    background(bg),
     QUALITY_GATES,
     aiNotes(notes),
     NEGATIVE_PROMPT,
-  ]
-    .filter(Boolean)
-    .join("\n\n");
+  ].filter(Boolean).join("\n");
+
+  if (outputViews && outputViews.length > 0) {
+    return buildMultiViewPrompt(basePrompt, outputViews);
+  }
+
+  return basePrompt;
+}
+
+// ─── Multi-View & Video Builders ──────────────────────────────────
+
+function buildMultiViewPrompt(basePrompt: string, views: string[]): string {
+  const viewDirectives: Record<string, string> = {
+    "Front View": "Front View → Model facing camera directly · full body 3:4 · garment front fully visible · centred composition.",
+    "Left View":  "Left View → Model turned 45–90° to the left · left side of garment fully visible · natural shoulder posture.",
+    "Right View": "Right View → Model turned 45–90° to the right · right side of garment fully visible · natural shoulder posture.",
+    "Close-up":   "Close-up → Waist-up or bust-up frame · face and upper garment in sharp focus · background softly blurred.",
+    "Detail Shot": "Detail Shot → Extreme macro on hero detail (embroidery/border/stone/hardware/label/texture). No full body. Sharp focus throughout.",
+    "Custom":     "Custom → Apply exactly as specified in AI_NOTES. Maintain identity lock and extraction lock.",
+  };
+
+  const selectedDirectives = views
+    .map(v => viewDirectives[v] || viewDirectives[Object.keys(viewDirectives).find(k => v.includes(k)) || ""] || "")
+    .filter(Boolean);
+
+  return `
+${basePrompt}
+
+── MULTI-VIEW GENERATION ───────────────────────────────────────────────────
+VIEWS REQUESTED: ${views.join(", ")}
+
+Each view must be independently generated. No reuse across views.
+
+${selectedDirectives.join("\n")}
+  `.trim();
+}
+
+function buildVideoPrompt(inputs: PromptInputs): string {
+  const { videoStyle, hub, aiNotes: notes } = inputs;
+
+  const styleDirectives: Record<string, string> = {
+    "Straight Walk": "STRAIGHT WALK:\n  Model walks directly toward camera in a straight line.\n  Natural confident stride. Garment movement and drape captured in full.\n  Fabric dynamics visible throughout. 3–5 second clip.\n  Camera remains static at eye level. No zoom.",
+    "Slow Turn":     "SLOW TURN:\n  Model performs a slow 180° or 360° turn on axis.\n  All sides of garment revealed — front · left · back · right.\n  Movement graceful and unhurried. Fabric flow and drape captured.\n  Consistent studio lighting throughout rotation. Seamless loop preferred.",
+    "Elegant Reveal": "ELEGANT REVEAL:\n  Model enters frame from one side. Comes to a graceful stop at centre.\n  Subtle pose adjustment to reveal garment hero details.\n  Slow push-in on face and upper body at end.\n  Cinematic and aspirational tone.",
+    "Fabric Flow":   "FABRIC FLOW:\n  Camera focuses on fabric movement.\n  Model performs a slow spin or gentle sway.\n  Dupatta · pallu · lehenga flare · or fabric hem in fluid motion.\n  Extreme slow motion on fabric dynamics.\n  Warm atmospheric lighting — golden hour or soft studio.",
+    "Cinematic":     "CINEMATIC:\n  Slow dolly push-in. Shallow depth of field. Film grain overlay.\n  Warm colour grade. 24fps feel.\n  Dramatic reveal from environment wide shot to garment/product close detail.",
+    "Reel":          "REEL:\n  Dynamic 9:16 vertical. Fast cuts every 1–2 seconds.\n  Upbeat energy. Vibrant colour. Motion blur on transitions.\n  Optimised for Instagram Reels / TikTok.",
+    "Slow Motion":   "SLOW MOTION:\n  120fps playback at 24fps output.\n  Fabric movement · hair flow · jewellery glint captured in detail.\n  Smooth, graceful. No judder.",
+    "360 Turntable": "360 TURNTABLE:\n  Product or model rotates full 360° on axis.\n  Consistent studio lighting throughout rotation.\n  Seamless loop. No background change. No lighting shift.",
+    "Zoom Focus":    "ZOOM FOCUS:\n  Start wide (full body / full product).\n  Slow zoom to hero detail — embroidery · stone · hardware · label.\n  Sharp focus maintained throughout.",
+  };
+
+  const styleRule = styleDirectives[videoStyle!] || styleDirectives[Object.keys(styleDirectives).find(k => videoStyle!.includes(k)) || ""] || "Generic cinematic product motion.";
+
+  return `
+[HUB: ${hub}] [MODE: VIDEO GENERATION] [VIDEO_STYLE: ${videoStyle}]
+
+SOURCE IMAGES (APPROVED — LOCKED):
+  Use ONLY the approved images from APPROVE_AND_CONTINUE.
+  No regeneration of product, model, background, or identity.
+
+── VIDEO MOTION DIRECTIVE ───────────────────────────────────────────────────
+${styleRule}
+
+── IDENTITY IN VIDEO ────────────────────────────────────────────────────────
+${IDENTITY_LOCK}
+Identity must be pixel-consistent across every frame of the video.
+
+── TEMPORAL STABILITY ───────────────────────────────────────────────────────
+Every frame must be visually consistent with the previous.
+No flicker · no pop · no identity drift · no lighting change · no colour shift.
+Fabric physics must be continuous and physically plausible in motion.
+Motion must feel natural for the subject type and garment weight.
+
+── VIDEO QUALITY GATES ──────────────────────────────────────────────────────
+ALL MUST PASS:
+✓ Motion style matches selected VIDEO_STYLE exactly
+✓ Model identity consistent across every frame
+✓ No temporal flicker · no frame instability · no ghosting
+✓ No identity drift between frames
+✓ Lighting and colour grade consistent throughout
+✓ Fabric/material physics maintained in motion
+✓ No artifacts · no frame drops · no morphing
+✓ Single AI-generated video — no static demo or placeholder
+✓ MP4 · 4K · correct aspect ratio
+REJECT AND REGENERATE if any gate fails.
+
+${aiNotes(notes)}
+
+── VIDEO NEGATIVE PROMPT ────────────────────────────────────────────────────
+--no flickering, no frame instability, no temporal artifacts,
+no identity drift across frames, no ghosting, no morphing,
+no static demo video, no slideshow, no cached content,
+no watermark, no text overlay, no UI elements,
+no lighting changes between frames, no colour shift across frames,
+no fabric texture loss in motion, no background pop or change
+  `.trim();
 }
 
 // ─── Products Builder ─────────────────────────────────────────────
@@ -532,12 +584,12 @@ function productFamilyRules(family: string): string {
 
 function productIsolation(family: string): string {
   const f = family.toLowerCase();
-  if (f.includes("home decor")) return "Home Decor → ONLY decor item (in context)\n❌ No unrelated product addition\n❌ No bundle unless present in PRODUCT_IMAGE";
-  if (f.includes("beauty") || f.includes("cosmetic")) return "Beauty / Cosmetics → ONLY that product (label visible)\n❌ No unrelated product addition\n❌ No bundle unless present in PRODUCT_IMAGE";
-  if (f.includes("handicraft")) return "Handicrafts → ONLY craft item\n❌ No unrelated product addition\n❌ No bundle unless present in PRODUCT_IMAGE";
-  if (f.includes("packaged")) return "Packaged Products → ONLY packaging SKU(s)\n❌ No unrelated product addition\n❌ No bundle unless present in PRODUCT_IMAGE";
-  if (f.includes("gift") || f.includes("lifestyle")) return "Gifts / Lifestyle → ONLY relevant product arrangement\n❌ No unrelated product addition\n❌ No bundle unless present in PRODUCT_IMAGE";
-  return "❌ No unrelated product addition\n❌ No bundle unless present in PRODUCT_IMAGE";
+  if (f.includes("home decor")) return "  Home Decor  → ONLY decor item in context ❌ No unrelated product";
+  if (f.includes("beauty") || f.includes("cosmetic")) return "  Beauty      → ONLY that product (label visible) ❌ No unrelated product";
+  if (f.includes("handicraft")) return "  Handicraft  → ONLY craft item ❌ No unrelated product";
+  if (f.includes("packaged")) return "  Packaged    → ONLY packaging SKU(s) ❌ No unrelated product";
+  if (f.includes("gift") || f.includes("lifestyle")) return "  Gifts       → ONLY relevant product arrangement ❌ No unrelated product";
+  return "❌ No unrelated product addition";
 }
 
 function buildProductsPrompt(inputs: ProductsInputs): string {
@@ -546,46 +598,43 @@ function buildProductsPrompt(inputs: ProductsInputs): string {
     outputStyle: style = "Catalog",
     background: bg = "White Studio",
     aiNotes: notes,
+    outputViews,
   } = inputs;
 
-  const header =
-    "[HUB: PRODUCTS]" +
-    (productFamily ? ` [FAMILY: ${productFamily}]` : "");
-
+  const header = `[HUB: PRODUCTS] [FAMILY: ${productFamily}]`;
   const isolation = `${UNIVERSAL_ISOLATION}\n${productIsolation(productFamily)}`;
 
   const extract = `
-PRODUCT EXTRACTION — SOURCE OF TRUTH: PRODUCT_IMAGE. Zero deviation.
-SHAPE       Exact form. No rounding or smoothing of edges.
-COLOUR      Exact — critical for cosmetics and packaging. No drift.
-LABEL/TEXT  All text · logos · label graphics reproduced legibly at full resolution.
-FINISH      Matte · Gloss · Frosted · Metallic · Textured — correct material response to light.
-SIZE        Relative scale must feel physically correct in final image.
+PRODUCT EXTRACTION: SHAPE (Exact) · COLOUR (Critical for cosmetics) · LABEL/TEXT (Legible) · FINISH (Matte/Gloss).
+Relative scale must feel physically correct. Label text must be fully legible.
   `.trim();
 
-  const shotStyle = (() => {
-    const s = style.toLowerCase();
-    if (s.includes("catalog"))   return "SHOT: White seamless · centred · product fills 70% of frame · soft shadow · no props · label fully readable.";
-    if (s.includes("premium"))   return "SHOT: Dark or textured surface · dramatic lighting · editorial props · rich depth.";
-    if (s.includes("lifestyle")) return "SHOT: Product in real-world context · ambient styling · natural light or warm interior.";
-    return "SHOT: Professional product photography.";
-  })();
-
-  return [
+  const basePrompt = [
     header,
+    "\n── PRODUCT TYPE ISOLATION ──────────────────────────────────────────────────\n",
     isolation,
-    extract,
+    `PRODUCT EXTRACTION — SOURCE OF TRUTH: PRODUCT_IMAGE. Zero deviation.
+SHAPE      Exact form. No rounding or smoothing.
+COLOUR     Exact — critical for cosmetics and packaging. No drift.
+LABEL/TEXT All text · logos · graphics legible at full resolution.
+FINISH     Matte · Gloss · Frosted · Metallic · Textured — correct light response.
+SIZE       Relative scale physically correct in final image.
+Label and logo text must be fully legible at full resolution.`,
     productFamilyRules(productFamily),
-    shotStyle,
-    background(bg),
+    "\n── OUTPUT STYLE ─────────────────────────────────────────────────────────────\n",
     outputStyle(style),
+    "\n── BACKGROUND ───────────────────────────────────────────────────────────────\n",
+    background(bg),
     QUALITY_GATES,
-    "Label and logo text must be fully legible.",
     aiNotes(notes),
     NEGATIVE_PROMPT,
-  ]
-    .filter(Boolean)
-    .join("\n\n");
+  ].filter(Boolean).join("\n");
+
+  if (outputViews && outputViews.length > 0) {
+    return buildMultiViewPrompt(basePrompt, outputViews);
+  }
+
+  return basePrompt;
 }
 
 // ─── Master Router ────────────────────────────────────────────────
@@ -597,6 +646,10 @@ SIZE        Relative scale must feel physically correct in final image.
  * Returns a single production-ready prompt string.
  */
 export function buildMasterPrompt(inputs: PromptInputs): string {
+  if (inputs.videoStyle) {
+    return buildVideoPrompt(inputs);
+  }
+
   switch (inputs.hub) {
     case "Apparel":     return buildApparelPrompt(inputs);
     case "Jewellery":   return buildJewelleryPrompt(inputs);

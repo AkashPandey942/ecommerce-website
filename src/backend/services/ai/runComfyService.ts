@@ -38,10 +38,15 @@ function getRunComfyConfig() {
 
   const baseUrl = normalizeBaseUrl(resolveBaseUrl(configuredBaseUrl, deploymentId));
 
+  const videoModelId = env.RUNCOMFY_VIDEO_MODEL_ID?.trim() || modelId;
+  const videoDeploymentId = env.RUNCOMFY_VIDEO_DEPLOYMENT_ID?.trim() || deploymentId;
+
   return {
     apiKey,
     deploymentId,
     modelId,
+    videoModelId,
+    videoDeploymentId,
     baseUrl,
     isDeploymentMode: Boolean(deploymentId),
   };
@@ -56,7 +61,11 @@ function isNanoBananaEditModel(modelId: string) {
 }
 
 function isSeedreamEditModel(modelId: string) {
-  return /bytedance\/seedream-4-5\/edit/i.test(modelId);
+  return /bytedance\/seedream-4-5\/edit/i.test(modelId) && !/sequential/i.test(modelId);
+}
+
+function isSeedreamSequentialModel(modelId: string) {
+  return /bytedance\/seedream-4-5\/edit-sequential/i.test(modelId);
 }
 
 function isImageEditModel(modelId: string) {
@@ -69,25 +78,27 @@ function buildNanoBananaEditPayload(params: {
   prompt?: string;
   style?: string;
   background?: string;
-  mode?: "Virtual Try-On" | "AI Studio";
+  mode?: "Virtual Try-On" | "AI Studio" | "VIDEO_GENERATION";
   gender?: "Male" | "Female" | "Kids" | "Man" | "Woman" | "Person";
   garmentType?: "Fabric" | "Ready-made";
   category?: string;
   outputFormat?: "single" | "triple" | "multi-view";
   outputCount?: number;
+  // Hub fields
+  hub?: Hub;
+  segment?: string;
+  wearType?: string;
+  productType?: string;
+  jewelleryGenre?: string;
+  jewelleryStyle?: string;
+  accessoryType?: string;
+  productFamily?: string;
+  outputStyleV2?: string;
+  outputViews?: string[];
+  videoStyle?: string;
 }) {
   const base = buildModelPayload({
-    garmentImageUrl: params.garmentImageUrl,
-    modelImageUrl: params.modelImageUrl,
-    prompt: params.prompt,
-    style: params.style,
-    background: params.background,
-    mode: params.mode,
-    gender: params.gender,
-    garmentType: params.garmentType,
-    category: params.category,
-    outputFormat: params.outputFormat,
-    outputCount: params.outputCount,
+    ...params,
     userPoint: null,
     clothingPoint: null,
   });
@@ -107,6 +118,51 @@ function buildNanoBananaEditPayload(params: {
     num_outputs: base.num_outputs,
     output_format: outputFormat,
     mode: editMode,
+  };
+}
+
+function buildSeedreamSequentialPayload(params: {
+  garmentImageUrl: string;
+  modelImageUrl: string;
+  prompt?: string;
+  style?: string;
+  background?: string;
+  mode?: "Virtual Try-On" | "AI Studio" | "VIDEO_GENERATION";
+  gender?: "Male" | "Female" | "Kids" | "Man" | "Woman" | "Person";
+  garmentType?: "Fabric" | "Ready-made";
+  category?: string;
+  outputFormat?: "single" | "triple" | "multi-view";
+  outputCount?: number;
+  // Hub fields
+  hub?: Hub;
+  segment?: string;
+  wearType?: string;
+  productType?: string;
+  jewelleryGenre?: string;
+  jewelleryStyle?: string;
+  accessoryType?: string;
+  productFamily?: string;
+  outputStyleV2?: string;
+  outputViews?: string[];
+  videoStyle?: string;
+}) {
+  const base = buildModelPayload({
+    ...params,
+    userPoint: null,
+    clothingPoint: null,
+  });
+
+  const imageUrls = [params.modelImageUrl, params.garmentImageUrl].filter(Boolean);
+  const requestedCount = base.num_outputs || 1;
+
+  // Pydantic is expecting root-level fields
+  return {
+    prompt: base.prompt,
+    images: imageUrls,
+    mode: "edit",
+    num_outputs: requestedCount,
+    output_format: base.output_format || "png",
+    sequential_image_generation_options: requestedCount
   };
 }
 
@@ -268,13 +324,67 @@ function mapGenderToPromptSubject(value?: "Male" | "Female" | "Kids" | "Man" | "
   return "person";
 }
 
+function resolvePrompt(params: any): string {
+  const mergedPrompt = (params.prompt || "").trim();
+  const styleHint = params.style || "Natural";
+  const backgroundHint = params.background || "studio";
+  const categoryHint = (params.category || "").trim();
+  const garmentType = params.garmentType || "Fabric";
+  const genderHint = mapGenderToPromptSubject(params.gender);
+  const isKidsMode = (params.gender || "").toLowerCase() === "kids";
+  const viewHint = params.outputFormat === "single" ? "Single: Generate one high-quality image" : params.outputFormat === "triple" ? "3 Views: Generate Front, Side, Back views" : "6 Views: Generate Front, Back, Left, Right, Close-up, Detail views";
+
+  if (params.hub) {
+    const promptInputs: PromptInputs = {
+      hub: params.hub,
+      mode: params.mode,
+      productImageUrl: params.garmentImageUrl,
+      modelRefUrl: params.modelImageUrl || undefined,
+      aiNotes: mergedPrompt || undefined,
+      outputStyle: params.outputStyleV2 || styleHint,
+      background: backgroundHint,
+      outputViews: params.outputViews,
+      videoStyle: params.videoStyle,
+      ...(params.hub === "Apparel" ? {
+        segment: params.segment || (params.gender === "Male" || params.gender === "Man" ? "Gents" : params.gender === "Kids" ? "Kids" : "Ladies"),
+        wearType: params.wearType,
+        productType: params.productType || categoryHint,
+      } : {}),
+      ...(params.hub === "Jewellery" ? {
+        jewelleryGenre: params.jewelleryGenre,
+        jewelleryStyle: params.jewelleryStyle,
+      } : {}),
+      ...(params.hub === "Accessories" ? {
+        accessoryType: params.accessoryType,
+      } : {}),
+      ...(params.hub === "Products" ? {
+        productFamily: params.productFamily,
+      } : {}),
+    } as PromptInputs;
+
+    return buildMasterPrompt(promptInputs);
+  }
+
+  return buildLegacyPrompt({
+    mode: params.mode || "Virtual Try-On",
+    isKidsMode,
+    garmentType,
+    genderHint,
+    categoryHint,
+    styleHint,
+    viewHint,
+    backgroundHint,
+    mergedPrompt,
+  });
+}
+
 function buildModelPayload(params: {
   garmentImageUrl: string;
   modelImageUrl: string;
   prompt?: string;
   style?: string;
   background?: string;
-  mode?: "Virtual Try-On" | "AI Studio";
+  mode?: "Virtual Try-On" | "AI Studio" | "VIDEO_GENERATION";
   gender?: "Male" | "Female" | "Kids" | "Man" | "Woman" | "Person";
   garmentType?: "Fabric" | "Ready-made";
   category?: string;
@@ -292,80 +402,16 @@ function buildModelPayload(params: {
   accessoryType?: string;
   productFamily?: string;
   outputStyleV2?: string;
+  outputViews?: string[];
+  videoStyle?: string;
 }) {
   const requestedViewLayout = params.outputFormat || "multi-view";
   const outputImageFormat = "png";
-
-  const mergedPrompt = (params.prompt || "").trim();
-
-  const styleHint = params.style || "Natural";
-  const backgroundHint = params.background || "studio";
   const isVirtualTryOn = params.mode === "Virtual Try-On";
   const isAIStudio = params.mode === "AI Studio";
   const requestedCount = Math.max(1, Math.min(8, params.outputCount || (params.outputFormat === "single" ? 1 : params.outputFormat === "triple" ? 3 : 6)));
-  const genderHint = mapGenderToPromptSubject(params.gender);
-  const isKidsMode = (params.gender || "").toLowerCase() === "kids";
-  const viewHint =
-    params.outputFormat === "single"
-      ? "Single: Generate one high-quality image"
-      : params.outputFormat === "triple"
-        ? "3 Views: Generate Front, Side, Back views"
-        : "6 Views: Generate Front, Back, Left, Right, Close-up, Detail views";
-  const categoryHint = (params.category || "").trim();
-  const garmentType = params.garmentType || "Fabric";
 
-  const negativePrompt =
-    "no face change, no body distortion, no slimming, no blur, no low-res, no waxy skin, no broken anatomy, no extra limbs, no fabric distortion, no texture stretching, no lighting mismatch";
-
-  // ── Master Prompt v2.0 — Use hub-aware prompt engine when hub context is available ──
-  let resolvedPrompt: string;
-
-  if (params.hub) {
-    const promptInputs: PromptInputs = {
-      hub: params.hub,
-      mode: params.mode,
-      productImageUrl: params.garmentImageUrl,
-      modelRefUrl: params.modelImageUrl || undefined,
-      aiNotes: mergedPrompt || undefined,
-      outputStyle: params.outputStyleV2 || styleHint,
-      background: backgroundHint,
-      // Apparel-specific
-      ...(params.hub === "Apparel" ? {
-        segment: params.segment || (params.gender === "Male" || params.gender === "Man" ? "Gents" : params.gender === "Kids" ? "Kids" : "Ladies"),
-        wearType: params.wearType,
-        productType: params.productType || categoryHint,
-      } : {}),
-      // Jewellery-specific
-      ...(params.hub === "Jewellery" ? {
-        jewelleryGenre: params.jewelleryGenre,
-        jewelleryStyle: params.jewelleryStyle,
-      } : {}),
-      // Accessories-specific
-      ...(params.hub === "Accessories" ? {
-        accessoryType: params.accessoryType,
-      } : {}),
-      // Products-specific
-      ...(params.hub === "Products" ? {
-        productFamily: params.productFamily,
-      } : {}),
-    } as PromptInputs;
-
-    resolvedPrompt = buildMasterPrompt(promptInputs);
-    console.log(`[runComfyService] Using Master Prompt v2.0 for hub=${params.hub}`);
-  } else {
-    // Legacy prompt path (backwards compatible)
-    resolvedPrompt = buildLegacyPrompt({
-      mode: params.mode || "Virtual Try-On",
-      isKidsMode,
-      garmentType,
-      genderHint,
-      categoryHint,
-      styleHint,
-      viewHint,
-      backgroundHint,
-      mergedPrompt,
-    });
-  }
+  const resolvedPrompt = resolvePrompt(params);
 
   // Many image-edit model endpoints expect a single primary image to edit.
   // For AI Studio, the primary image should be the selected model (person), with the product image provided as a reference.
@@ -409,13 +455,55 @@ function buildModelPayload(params: {
   };
 }
 
+function buildVideoPayload(params: {
+  initImageUrl: string;
+  videoStyle?: string;
+  prompt?: string;
+  hub?: string;
+}) {
+  const style = (params.videoStyle || "").toLowerCase();
+  
+  // Aspect Ratio Logic from v5.0
+  let width = 720;
+  let height = 1280;
+
+  if (style.includes("turntable") || params.hub === "Products") {
+    width = 1024;
+    height = 1024;
+  } else if (style.includes("reel")) {
+    width = 720;
+    height = 1280;
+  }
+
+  const payload = {
+    image_url: params.initImageUrl,
+    input_image_url: params.initImageUrl,
+    prompt: params.prompt,
+    text: params.prompt, // Required by Wan 2.1 / Seedance models
+    video_style: params.videoStyle,
+    hub: params.hub,
+    motion_bucket_id: 127,
+    fps: 24,
+    num_frames: 81,
+    width,
+    height,
+    steps: 30,
+    cfg: 6,
+    sampling_method: "euler",
+    scheduler: "normal",
+    denoise: 1.0,
+  };
+
+  return payload;
+}
+
 function buildDeploymentPayload(params: {
   garmentImageUrl: string;
   modelImageUrl: string;
   prompt?: string;
   style?: string;
   background?: string;
-  mode?: "Virtual Try-On" | "AI Studio";
+  mode?: "Virtual Try-On" | "AI Studio" | "VIDEO_GENERATION";
   gender?: "Male" | "Female" | "Kids" | "Man" | "Woman" | "Person";
   garmentType?: "Fabric" | "Ready-made";
   category?: string;
@@ -423,6 +511,18 @@ function buildDeploymentPayload(params: {
   outputCount?: number;
   userPoint?: { x: number; y: number } | null;
   clothingPoint?: { x: number; y: number } | null;
+  // Hub fields
+  hub?: Hub;
+  segment?: string;
+  wearType?: string;
+  productType?: string;
+  jewelleryGenre?: string;
+  jewelleryStyle?: string;
+  accessoryType?: string;
+  productFamily?: string;
+  outputStyleV2?: string;
+  outputViews?: string[];
+  videoStyle?: string;
 }) {
   const input = buildModelPayload(params);
   const isVirtualTryOn = params.mode === "Virtual Try-On";
@@ -538,7 +638,7 @@ export const runComfyService = {
     prompt?: string;
     style?: string;
     background?: string;
-    mode?: "Virtual Try-On" | "AI Studio";
+    mode?: "Virtual Try-On" | "AI Studio" | "VIDEO_GENERATION";
     gender?: "Male" | "Female" | "Kids" | "Man" | "Woman" | "Person";
     garmentType?: "Fabric" | "Ready-made";
     category?: string;
@@ -556,6 +656,8 @@ export const runComfyService = {
     accessoryType?: string;
     productFamily?: string;
     outputStyleV2?: string;
+    outputViews?: string[];
+    videoStyle?: string;
   }) {
     const config = getRunComfyConfig();
 
@@ -563,67 +665,46 @@ export const runComfyService = {
       throw new Error("RUNCOMFY_API_KEY is missing");
     }
 
+    const isVideo = params.mode === "VIDEO_GENERATION";
+    const activeModelId = isVideo ? config.videoModelId : config.modelId;
+    const activeDeploymentId = isVideo ? config.videoDeploymentId : config.deploymentId;
+    const isDeployment = Boolean(activeDeploymentId);
+
     // AI Studio / Virtual Try-On require image conditioning (product + model images).
     // The Flux "text-to-image" model endpoint ignores image inputs and will generate unrelated outfits.
-    if (!config.isDeploymentMode && isTextToImageModel(config.modelId)) {
+    if (!isDeployment && !isVideo && isTextToImageModel(activeModelId)) {
       const mode = params.mode || "AI Studio";
       throw new Error(
-        `RunComfy is configured with a text-to-image model (${config.modelId}). ` +
+        `RunComfy is configured with a text-to-image model (${activeModelId}). ` +
           `${mode} requires an image-conditioned ComfyUI deployment to apply the uploaded product onto the selected model. ` +
           `Set RUNCOMFY_DEPLOYMENT_ID to your deployed try-on workflow (recommended), or switch RUNCOMFY_MODEL_ID to a workflow/model that supports image inputs.`
       );
     }
 
     try {
-      const url = config.isDeploymentMode
-        ? `${config.baseUrl}/deployments/${config.deploymentId}/inference`
-        : `${config.baseUrl}/models/${config.modelId}`;
+      const url = isDeployment
+        ? `${config.baseUrl}/deployments/${activeDeploymentId}/inference`
+        : `${config.baseUrl}/models/${activeModelId}`;
 
-      const requestPayload = config.isDeploymentMode
-        ? buildDeploymentPayload({
-            garmentImageUrl: params.garmentImageUrl,
-            modelImageUrl: params.modelImageUrl,
-            prompt: params.prompt,
-            style: params.style,
-            background: params.background,
-            mode: params.mode,
-            gender: params.gender,
-            garmentType: params.garmentType,
-            category: params.category,
-            outputFormat: params.outputFormat,
-            outputCount: params.outputCount,
-            userPoint: params.userPoint,
-            clothingPoint: params.clothingPoint,
-          })
-        : isImageEditModel(config.modelId)
-          ? buildNanoBananaEditPayload({
-              garmentImageUrl: params.garmentImageUrl,
-              modelImageUrl: params.modelImageUrl,
-              prompt: params.prompt,
-              style: params.style,
-              background: params.background,
-              mode: params.mode,
-              gender: params.gender,
-              garmentType: params.garmentType,
-              category: params.category,
-              outputFormat: params.outputFormat,
-              outputCount: params.outputCount,
-            })
-          : buildModelPayload({
-              garmentImageUrl: params.garmentImageUrl,
-              modelImageUrl: params.modelImageUrl,
-              prompt: params.prompt,
-              style: params.style,
-              background: params.background,
-              mode: params.mode,
-              gender: params.gender,
-              garmentType: params.garmentType,
-              category: params.category,
-              outputFormat: params.outputFormat,
-              outputCount: params.outputCount,
-              userPoint: params.userPoint,
-              clothingPoint: params.clothingPoint,
-            });
+      let requestPayload: any;
+
+      if (isVideo) {
+        const videoPayload = buildVideoPayload({
+          initImageUrl: params.garmentImageUrl,
+          videoStyle: params.videoStyle,
+          prompt: resolvePrompt(params),
+          hub: params.hub,
+        });
+        requestPayload = isDeployment ? { input: videoPayload } : videoPayload;
+      } else if (isDeployment) {
+        requestPayload = buildDeploymentPayload(params);
+      } else if (isSeedreamSequentialModel(activeModelId)) {
+        requestPayload = buildSeedreamSequentialPayload(params);
+      } else if (isImageEditModel(activeModelId)) {
+        requestPayload = buildNanoBananaEditPayload(params);
+      } else {
+        requestPayload = buildModelPayload(params);
+      }
 
       const response = await fetch(url, {
         method: "POST",
@@ -725,6 +806,16 @@ export const runComfyService = {
         }
 
         const resultData = await resultResponse.json();
+
+        // If the result actually indicates a failure despite the status endpoint saying completed
+        if (mapRunComfyStatus(resultData.status) === "failed") {
+          return {
+            status: "failed" as const,
+            outputImage: null,
+            error: resultData.error || resultData.message || "Generation failed in result",
+          };
+        }
+
         const outputImages = extractOutputImages(resultData);
         const outputImage = outputImages[0] || extractOutputImage(resultData);
 
