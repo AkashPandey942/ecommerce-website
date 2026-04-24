@@ -7,7 +7,7 @@ import { Download, Share2, CornerUpRight, Image as ImageIcon, CheckCircle2, Refr
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useParams, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import StackedImagePreview from "@/frontend/components/StackedImagePreview";
@@ -21,12 +21,17 @@ export default function AccessoriesResultPage() {
   const product = searchParams.get("product") || "Handbag";
   const [isDownloading, setIsDownloading] = useState(false);
   const [activeItem, setActiveItem] = useState<any>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const results = [
     ...(currentProject?.primeImage ? [{ id: 1, type: "Prime", image: currentProject.primeImage, isVideo: false }] : []),
     ...(currentProject?.outputViews?.map((v: any, i: number) => ({
       id: i + 2,
-      type: v.style || `Style ${i+1}`,
+      type: currentProject.generatedViewLabels?.[i] || v.style || `Style ${i+1}`,
       image: v.url || v,
       isVideo: false
     })) || []),
@@ -161,7 +166,7 @@ export default function AccessoriesResultPage() {
               <div className="h-px flex-1 bg-white/10" />
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 min-h-[220px]">
-              {results.filter(r => !r.isVideo).map((res, idx) => (
+              {isMounted && results.filter(r => !r.isVideo).map((res, idx) => (
                 <ResultCard key={res.id} res={res} idx={idx} />
               ))}
             </div>
@@ -174,7 +179,7 @@ export default function AccessoriesResultPage() {
               <div className="h-px flex-1 bg-white/10" />
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-              {results.filter(r => r.isVideo).map((res, idx) => (
+              {isMounted && results.filter(r => r.isVideo).map((res, idx) => (
                 <ResultCard key={res.id} res={res} idx={idx} />
               ))}
             </div>

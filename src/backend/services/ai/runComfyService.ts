@@ -2,6 +2,8 @@
 import { env } from "@/shared/config/env";
 import { buildMasterPrompt, type Hub, type PromptInputs } from "@/backend/services/ai/promptEngine";
 import { buildLegacyPrompt } from "@/backend/services/ai/legacyPrompts";
+import { buildVideoPrompt } from "@/backend/services/ai/videoPrompts";
+import type { VideoStyle } from "@/backend/services/ai/types";
 
 // Node IDs from ComfyUI Workflow (Customize based on your workflow_api.json)
 const DEFAULT_MODEL_ID = "blackforestlabs/flux-2/dev/text-to-image";
@@ -467,10 +469,10 @@ function buildVideoPayload(params: {
   let width = 720;
   let height = 1280;
 
-  if (style.includes("turntable") || params.hub === "Products") {
+  if (style.includes("turn") || style.includes("turntable") || params.hub === "Products") {
     width = 1024;
     height = 1024;
-  } else if (style.includes("reel")) {
+  } else if (style.includes("reel") || style.includes("walk")) {
     width = 720;
     height = 1280;
   }
@@ -594,9 +596,6 @@ function buildDeploymentPayload(params: {
       ...vtonWorkflow,
       workflow_type: isVirtualTryOn ? "virtual_try_on" : "ai_studio_try_on",
     },
-    ...input,
-    ...vtonWorkflow,
-    workflow_type: isVirtualTryOn ? "virtual_try_on" : "ai_studio_try_on",
   };
 }
 
@@ -689,10 +688,16 @@ export const runComfyService = {
       let requestPayload: any;
 
       if (isVideo) {
+        const videoPrompt = buildVideoPrompt({
+          videoStyle: (params.videoStyle ?? "Straight Walk") as VideoStyle,
+          hub: params.hub ?? "Apparel",
+          background: params.background,
+          aiNotes: params.prompt || null,
+        });
         const videoPayload = buildVideoPayload({
           initImageUrl: params.garmentImageUrl,
           videoStyle: params.videoStyle,
-          prompt: resolvePrompt(params),
+          prompt: videoPrompt,
           hub: params.hub,
         });
         requestPayload = isDeployment ? { input: videoPayload } : videoPayload;
@@ -817,7 +822,7 @@ export const runComfyService = {
         }
 
         const outputImages = extractOutputImages(resultData);
-        const outputImage = outputImages[0] || extractOutputImage(resultData);
+        const outputImage = outputImages[0] ?? null;
 
         return {
           status: "completed" as const,

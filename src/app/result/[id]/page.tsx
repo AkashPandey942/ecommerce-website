@@ -40,7 +40,9 @@ function ResultContent({ jobId }: { jobId: string }) {
   useEffect(() => {
     if (!jobId) return;
 
-    let interval: NodeJS.Timeout;
+    let isFinished = false;
+    let intervalId: NodeJS.Timeout | null = null;
+
     const poll = async () => {
       try {
         const res = await fetch(`/api/status?jobId=${jobId}`);
@@ -54,20 +56,27 @@ function ResultContent({ jobId }: { jobId: string }) {
 
         if (data.status === "completed" && data.outputImage) {
           setProjectData({ ...(currentProject || {}), primeImage: data.outputImage });
-          clearInterval(interval);
+          isFinished = true;
+          if (intervalId) clearInterval(intervalId);
         } else if (data.status === "failed") {
           setError(data.error || "Generation failed.");
-          clearInterval(interval);
+          isFinished = true;
+          if (intervalId) clearInterval(intervalId);
         }
       } catch (err: any) {
         console.error("Polling error:", err);
       }
     };
 
-    poll();
-    interval = setInterval(poll, 3000);
-    return () => clearInterval(interval);
-  }, [jobId, setProjectData]);
+    poll().then(() => {
+      if (!isFinished) {
+        intervalId = setInterval(poll, 3000);
+      }
+    });
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };  }, [jobId, setProjectData]);
 
   const isProcessing = !job || job.status === "pending" || job.status === "processing";
   const isFailed = job?.status === "failed" || error;

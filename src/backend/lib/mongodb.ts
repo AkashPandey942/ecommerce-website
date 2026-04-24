@@ -39,7 +39,8 @@ function isServerSelectionTimeout(error: unknown): boolean {
 
   return (
     error.name === "MongoServerSelectionError" ||
-    error.message.toLowerCase().includes("server selection timed out")
+    error.message.toLowerCase().includes("server selection timed out") ||
+    error.message.toLowerCase().includes("whitelisted")
   );
 }
 

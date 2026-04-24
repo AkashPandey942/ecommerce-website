@@ -13,6 +13,12 @@ import LoadingActionButton from "@/frontend/components/LoadingActionButton";
 import { TAXONOMY } from "@/registry/taxonomy";
 import { useGenerationPolling } from "@/hooks/useGenerationPolling";
 
+function useMounted() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted;
+}
+
 export default function AccessoriesOutputViewsPage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -30,25 +36,54 @@ export default function AccessoriesOutputViewsPage() {
     const matchedStyle = TAXONOMY.accessories.styles.find(
       (s: any) => s.title.toLowerCase() === styleParam.toLowerCase() || s.leafNodes?.some((n: string) => n.toLowerCase() === product.toLowerCase())
     );
-    const viewTitles = matchedStyle?.recommendedViews || ["Front View", "Side View", "Detail shot"];
-    return viewTitles.map((title: string) => ({
-      id: title.toLowerCase().replace(/\s+/g, "-"),
-      title,
-      previewImage: currentProject?.primeImage || null,
-    }));
+    const viewTitles = matchedStyle?.recommendedViews || ["Front View", "Left View", "Right View", "Close-up", "Detail Shot"];
+    return viewTitles.slice(0, 5).map((title: string) => {
+      const id = title.toLowerCase().replace(/\s+/g, "-");
+      let viewStyles = "object-cover transition-all duration-700";
+      
+      // Dynamic CSS generation for categorized views based on prime image
+      if (id === "front-view") viewStyles += " object-[center_center] scale-100";
+      else if (id === "left-view") viewStyles += " object-[25%_center] scale-110";
+      else if (id === "right-view") viewStyles += " object-[75%_center] scale-110";
+      else if (id === "close-up") viewStyles += " object-[center_20%] scale-[1.5]";
+      else if (id === "detail-shot") viewStyles += " object-[center_60%] scale-[2]";
+
+      return {
+        id,
+        title,
+        previewImage: currentProject?.primeImage || "/assets/placeholder.jpg",
+        viewStyles
+      };
+    });
   };
 
   const views = getRecommendedViews();
-  const [selectedViews, setSelectedViews] = useState<string[]>(views.slice(0, 3).map((v: any) => v.id));
+  const [selectedViews, setSelectedViews] = useState<string[]>(
+    views.slice(0, 5).map((v: any) => v.id)
+  );
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [showMaxWarning, setShowMaxWarning] = useState(false);
   const [customPrompt, setCustomPrompt] = useState("");
-  const MAX_VIEWS = 4;
+  const MAX_VIEWS = 5;
 
   useEffect(() => {
     if (isCompleted) {
       const imgs = outputImages.length > 0 ? outputImages : outputImage ? [outputImage] : [];
-      updateProject({ outputViews: imgs });
+      
+      const selectedTitles = views
+        .filter((view: { id: string; title: string }) => selectedViews.includes(view.id))
+        .map((view: { title: string }) => view.title);
+
+      if (isCustomMode) {
+        selectedTitles.push("Custom View");
+      }
+
+      const generatedViewLabels = imgs.map((_, index) => selectedTitles[index] || `View ${index + 1}`);
+
+      updateProject({ 
+        outputViews: imgs,
+        generatedViewLabels
+      });
       router.push(`/accessories/${styleParam}/video-style?product=${product}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,6 +92,14 @@ export default function AccessoriesOutputViewsPage() {
   const handleGenerate = () => {
     if (!currentProject?.garmentImageUrl && !currentProject?.productImageUrl) return;
     reset();
+
+    // Map IDs back to Titles for dynamic display in results
+    const newLabels = [
+      ...selectedViews.map(id => views.find(v => v.id === id)?.title || "AI Result"),
+      ...(isCustomMode ? ["Custom View"] : [])
+    ];
+    updateProject({ generatedViewLabels: newLabels });
+
     const count = selectedViews.length + (isCustomMode ? 1 : 0);
     generate({
       garmentImageUrl: currentProject?.garmentImageUrl || currentProject?.productImageUrl || "",
@@ -86,113 +129,129 @@ export default function AccessoriesOutputViewsPage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="Output Pack" />
       <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5">
-        <ProgressStepper currentStep={9} />
-
-        <AnimatePresence>
-          {showMaxWarning && (
-            <motion.div initial={{ opacity: 0, y: 50, x: "-50%" }} animate={{ opacity: 1, y: 0, x: "-50%" }} exit={{ opacity: 0, y: 20, x: "-50%" }}
-              className="fixed bottom-24 left-1/2 z-[100] px-6 py-3 bg-[#E5484D] rounded-full shadow-2xl flex items-center gap-3"
-            >
-              <Sparkles className="w-3 h-3 text-white" />
-              <span className="text-white font-medium text-sm">Maximum 4 views can be selected</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="flex justify-center gap-2 mb-12 mt-2">
+          {[1, 2, 3, 4, 5, 6].map((dot) => (
+            <div key={dot} className={`h-1 w-full max-w-[44px] rounded-full ${dot <= 5 ? "bg-gradient-to-r from-[#7C3AED] to-[#EC4899]" : "bg-white/10"}`} />
+          ))}
+        </div>
 
         <AnimatePresence>
           {isGenerating && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center gap-6"
             >
-              <div className="relative w-20 h-20">
+              <div className="relative w-24 h-24">
                 <div className="absolute inset-0 border-4 border-white/10 rounded-full" />
                 <motion.div className="absolute inset-0 border-4 border-t-[#7C4DFF] rounded-full"
                   animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Sparkles className="w-10 h-10 text-[#7C4DFF] animate-pulse" />
+                </div>
               </div>
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-white mb-2">Generating Secondary Assets</h2>
-                <p className="text-[#99A1AF] text-sm animate-pulse">Processing {selectedViews.length} views for {product}...</p>
+              <div className="text-center px-5">
+                <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Generating Secondary Assets</h2>
+                <p className="text-[#99A1AF] text-sm animate-pulse font-medium">Processing {selectedViews.length} views for {product}...</p>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
 
         {isFailed && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3">
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 max-w-[353px] lg:max-w-[800px] mx-auto"
+          >
             <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
-            <p className="text-red-400 text-sm">{error || "Generation failed."}</p>
-            <button onClick={handleGenerate} className="ml-auto text-red-400 text-sm underline flex items-center gap-1">
+            <p className="text-red-400 text-sm font-medium">{error || "Generation failed."}</p>
+            <button onClick={handleGenerate} className="ml-auto text-red-400 text-sm font-bold underline flex items-center gap-1">
               <RefreshCcw className="w-3 h-3" /> Retry
             </button>
-          </div>
+          </motion.div>
         )}
 
-        <section className="mt-8 mb-10">
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <h1 className="font-roboto font-semibold text-3xl lg:text-[36px] leading-tight text-[#E2E2E8] mb-4">Select Secondary Assets</h1>
-            <p className="font-roboto font-normal text-base text-[#C2C6D6]">Choose the derivative outputs for your {product} catalog.</p>
+        <section className="mb-10 text-center flex flex-col items-center">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <h1 className="font-roboto font-bold text-[32px] md:text-[42px] leading-tight tracking-[-1px] text-white mb-3 px-4">Select Output Views</h1>
+            <p className="font-roboto font-normal text-[15px] leading-[22px] text-[#9CA3AF] max-w-[320px] lg:max-w-none px-4">Choose the derivative outputs for your {product} catalog.</p>
           </motion.div>
         </section>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {views.map((view: any, idx: number) => {
+        <div className="grid grid-cols-2 gap-4 lg:gap-8 mb-10 max-w-[353px] lg:max-w-[800px] mx-auto">
+          {views.map((view: { id: string; title: string; previewImage: string; viewStyles: string }, idx: number) => {
             const isSelected = selectedViews.includes(view.id);
             return (
               <motion.div key={view.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }} onClick={() => toggleView(view.id)}
                 className="flex flex-col items-center gap-3 group cursor-pointer"
               >
-                <div className={`relative w-full aspect-[1/1.2] rounded-xl overflow-hidden border-2 transition-all ${isSelected ? "border-transparent" : "border-white/5 hover:border-white/20"}`}>
-                  {view.previewImage ? (
-                    <Image src={view.previewImage} alt={view.title} fill className="object-cover transition-transform group-hover:scale-105" unoptimized />
+                <div className={`relative w-full aspect-[166/207] rounded-[16px] overflow-hidden border transition-all duration-300 ${isSelected ? "border-[#7C4DFF] border-[2px] shadow-[0_0_20px_rgba(124,77,255,0.3)]" : "border-white/10 border-[1px] hover:border-white/30"}`}>
+                  {mounted && view.previewImage ? (
+                    <Image 
+                      src={view.previewImage} 
+                      alt={view.title} 
+                      fill 
+                      className={`${view.viewStyles} ${isSelected ? "" : "opacity-80 group-hover:opacity-100"}`} 
+                      loading="lazy" 
+                      unoptimized 
+                    />
                   ) : (
                     <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                      <Sparkles className="w-6 h-6 text-white/20" />
+                      <Sparkles className="w-8 h-8 text-white/10" />
                     </div>
                   )}
-                  {isSelected && <><div className="absolute inset-0 border-[3px] border-figma-gradient rounded-[8px]" /><div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-figma-gradient flex items-center justify-center shadow-lg"><Check className="w-3.5 h-3.5 text-white" /></div></>}
+                  <div className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 ${isSelected ? "bg-[#7C4DFF] shadow-lg" : "bg-black/40 border border-white/20 backdrop-blur-md"}`}>
+                    {isSelected && <Check className="w-3 h-3 text-white stroke-[4px]" />}
+                  </div>
                 </div>
-                <span className={`text-[13px] font-medium transition-colors ${isSelected ? "text-white" : "text-[#E2E2E8]"}`}>{view.title}</span>
+                <span className={`font-roboto font-medium text-[13px] leading-[15px] transition-colors ${isSelected ? "text-white" : "text-[#9CA3AF] group-hover:text-white"}`}>{view.title}</span>
               </motion.div>
             );
           })}
 
-          <motion.div onClick={() => setIsCustomMode(!isCustomMode)} className="flex flex-col items-center gap-3 group cursor-pointer">
-            <div className={`relative w-full aspect-[1/1.2] bg-[#1A1E29] rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-4 ${isCustomMode ? "border-transparent" : "border-white/5 hover:border-white/20"}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isCustomMode ? "bg-figma-gradient" : "bg-black/40"}`}>
-                <Sparkles className={`w-5 h-5 ${isCustomMode ? "text-white" : "text-[#00C2FF]"}`} />
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: views.length * 0.05 }}
+            onClick={() => setIsCustomMode(!isCustomMode)} className="flex flex-col items-center gap-3 group cursor-pointer"
+          >
+            <div className={`relative w-full aspect-[166/207] rounded-[16px] overflow-hidden border transition-all duration-300 bg-[#060B18] ${isCustomMode ? "border-[#7C4DFF] border-[2px] shadow-[0_0_20px_rgba(124,77,255,0.3)]" : "border-white/10 border-[1px] hover:border-white/30"}`}>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 ${isCustomMode ? "bg-[#7C4DFF]/20 scale-110 shadow-[0_0_30px_rgba(124,77,255,0.1)]" : "bg-white/5 border border-white/5 group-hover:scale-110"}`}>
+                  <Sparkles className={`w-8 h-8 transition-colors duration-500 ${isCustomMode ? "text-[#7C4DFF]" : "text-white/20"}`} />
+                </div>
               </div>
-              <span className="text-sm font-medium text-white">Custom Angle</span>
-              {isCustomMode && <><div className="absolute inset-0 border-[3px] border-figma-gradient rounded-[8px]" /><div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-figma-gradient flex items-center justify-center shadow-lg"><Check className="w-3.5 h-3.5 text-white" /></div></>}
+              <div className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 ${isCustomMode ? "bg-[#7C4DFF] shadow-lg" : "bg-black/40 border border-white/20 backdrop-blur-md"}`}>
+                {isCustomMode && <Check className="w-3 h-3 text-white stroke-[4px]" />}
+              </div>
             </div>
-            <span className={`text-[13px] font-medium transition-colors ${isCustomMode ? "text-white" : "text-[#E2E2E8]"}`}>Request Tool</span>
+            <span className={`font-roboto font-medium text-[13px] leading-[15px] transition-colors ${isCustomMode ? "text-white" : "text-[#9CA3AF] group-hover:text-white"}`}>Custom</span>
           </motion.div>
         </div>
 
-        <AnimatePresence>
-          {isCustomMode && (
-            <motion.section initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-12 overflow-hidden">
-              <h2 className="text-xl font-semibold text-white mb-4">Request Perspective <span className="text-xs text-[#C5B6DE]">(Expert Mode)</span></h2>
-              <textarea value={customPrompt} onChange={e => setCustomPrompt(e.target.value)}
-                className="w-full h-32 bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:border-[#7C4DFF] outline-none placeholder:text-white/20 text-sm mb-3 resize-none"
-                placeholder="E.g. Bird's eye view showing the interior lining..."
-              />
-              <div className="flex items-center gap-2 text-[#99A1AF] bg-white/5 border border-white/5 p-3 rounded-lg">
-                <Wand2 className="w-4 h-4 text-[#7C4DFF]" />
-                <p className="text-[12px] font-medium italic">Professional output depends on the precision of your prompt.</p>
-              </div>
-            </motion.section>
-          )}
-        </AnimatePresence>
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-12 mb-12 max-w-[353px] lg:max-w-[800px] mx-auto w-full px-1">
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="font-roboto font-bold text-[18px] text-white tracking-tight">AI Custom Angle</h2>
+            <span className="font-roboto font-normal text-[13px] text-[#9CA3AF] opacity-60">(Optional)</span>
+          </div>
+          <textarea 
+            value={customPrompt} 
+            onChange={e => setCustomPrompt(e.target.value)}
+            className="w-full h-[120px] bg-[#0A0A0A] border border-white/10 rounded-[20px] p-5 font-roboto text-[15px] leading-relaxed text-white focus:border-[#7C4DFF]/50 focus:ring-1 focus:ring-[#7C4DFF]/50 outline-none transition-all placeholder:text-white/20 resize-none shadow-inner"
+            placeholder="E.g. Focus on the golden pallu details, add warm sunlight flare from left..."
+          />
+          <div className="flex items-center gap-2 text-[#9CA3AF] mt-4 px-1">
+            <Sparkles className="w-3.5 h-3.5 text-[#7C4DFF]" />
+            <p className="text-[11px] font-medium tracking-wide italic opacity-80 uppercase">Professional output depends on the precision of your prompt.</p>
+          </div>
+        </motion.section>
 
-        <div className="w-full mt-16 mb-20 flex justify-center">
-          <LoadingActionButton isLoading={isGenerating} onClick={handleGenerate}
-            className="w-full max-w-full sm:max-w-[353px] h-[61px]"
+        <div className="w-full mt-10 mb-20 flex justify-center px-5">
+          <LoadingActionButton 
+            isLoading={isGenerating} 
+            onClick={handleGenerate}
+            className="w-full max-w-[353px] lg:max-w-[400px] h-[61px] rounded-full bg-figma-gradient font-roboto font-bold text-[18px] text-white shadow-[0_10px_40px_rgba(124,77,255,0.4)] hover:shadow-[0_10px_50px_rgba(124,77,255,0.6)] transition-all active:scale-[0.98]" 
             disabled={selectedViews.length === 0 || isGenerating}
           >
-            <div className="flex items-center gap-2"><Wand2 className="w-5 h-5" /><span>Generate Pack</span></div>
+            Generate Outputs
           </LoadingActionButton>
         </div>
+
       </main>
       <Footer />
     </div>

@@ -22,7 +22,7 @@ export const TAXONOMY: Record<string, any> = {
             "/assets/ladies/ethnic-wear/elegant-purple-gold-banarasi-silk-sari-with-intricate-weaving.jpg",
             "/assets/ladies/ethnic-wear/ethnic_wear_sample_4.png"
           ],
-          recommendedViews: ["Front View", "Left View", "Right View", "Back View", "Drape Detail", "Border Close-up"]
+          recommendedViews: ["Front View", "Left View", "Right View", "Close-up", "Detail Shot"]
         },
         { 
           title: "Western Wear", 
@@ -32,7 +32,7 @@ export const TAXONOMY: Record<string, any> = {
             "/assets/ladies/western-wear/photo-beautiful-female-model.jpg",
             "/hero_image.png"
           ],
-          recommendedViews: ["Front View", "Side View", "Back View", "Walking Pose", "Texture Detail"]
+          recommendedViews: ["Front View", "Left View", "Right View", "Close-up", "Detail Shot"]
         },
         { title: "Custom", image: "/hero_image.png", fullWidth: true, leafNodes: ["Custom Design", "Other"] }
       ],
@@ -41,14 +41,14 @@ export const TAXONOMY: Record<string, any> = {
           title: "Ethnic Wear", 
           image: "/assets/men/ethnic-wear/elegant-indian-man-culture-character.jpg", 
           leafNodes: ["Kurta", "Sherwani", "Nehru Jacket", "Ethnic Set", "Other"],
-          recommendedViews: ["Front View", "Side View", "Fabric Detail", "Collar Detail"]
+          recommendedViews: ["Front View", "Left View", "Right View", "Close-up", "Detail Shot"]
         },
-        { title: "Western Wear", image: "/assets/men/western-wear/men-fashion-editorial-outdoors.jpg", leafNodes: ["Shirt", "T-shirt", "Blazer", "Jacket", "Trousers", "Casual Set", "Other"] },
+        { title: "Western Wear", image: "/assets/men/western-wear/men-fashion-editorial-outdoors.jpg", leafNodes: ["Shirt", "T-shirt", "Blazer", "Jacket", "Trousers", "Casual Set", "Other"], recommendedViews: ["Front View", "Left View", "Right View", "Close-up", "Detail Shot"] },
         { title: "Custom", image: "/hero_image.png", fullWidth: true, leafNodes: ["Custom Design", "Other"] }
       ],
       Kids: [
-        { title: "Ethnic Wear", image: "/hero_image.png", leafNodes: ["Kids Kurta Set", "Kids Lehenga", "Festive Set", "Other"] },
-        { title: "Western Wear", image: "/hero_image.png", leafNodes: ["Frock", "Shirt", "Top", "Bottomwear", "Partywear Set", "Other"] },
+        { title: "Ethnic Wear", image: "/hero_image.png", leafNodes: ["Kids Kurta Set", "Kids Lehenga", "Festive Set", "Other"], recommendedViews: ["Front View", "Left View", "Right View", "Close-up", "Detail Shot"] },
+        { title: "Western Wear", image: "/hero_image.png", leafNodes: ["Frock", "Shirt", "Top", "Bottomwear", "Partywear Set", "Other"], recommendedViews: ["Front View", "Left View", "Right View", "Close-up", "Detail Shot"] },
         { title: "Custom", image: "/hero_image.png", fullWidth: true, leafNodes: ["Custom Design", "Other"] }
       ]
     }
@@ -63,24 +63,24 @@ export const TAXONOMY: Record<string, any> = {
         Daily: ["Studs", "Thin Chains", "Light Bracelets", "Minimal Rings", "Other"],
         Custom: ["Open Prompt", "Unsupported Style", "Other"]
       },
-      recommendedViews: ["Main Set", "Earring Detail", "Necklace Shine", "Staged Box View", "Model Portrait"]
+      recommendedViews: ["Front View", "Left View", "Right View", "Close-up", "Detail Shot"]
     }
   },
   accessories: {
     styles: [
-      { title: "Bags", image: "/assets/categories/handbag.png", leafNodes: ["Handbag", "Backpack", "Clutch", "Tote", "Sling Bag", "Briefcase", "Duffel", "Other"], recommendedViews: ["Front View", "Inside Detail", "Handle View", "Side Profile"] },
-      { title: "Footwear", image: "/assets/categories/footwear.png", leafNodes: ["Sneakers", "Heels", "Boots", "Formal Shoes", "Loafers", "Sandals", "Flip Flops", "Other"], recommendedViews: ["Pair View", "Side Profile", "Sole Detail", "Heel Height"] },
-      { title: "Watches", image: "/assets/categories/watch.png", leafNodes: ["Luxury", "Sports", "Smartwatch", "Vintage", "Minimalist", "Chronograph", "Other"], recommendedViews: ["Dial Close-up", "Side Crown", "Strap Detail", "Box View"] },
-      { title: "Eyewear", image: "/assets/categories/eyewear.png", leafNodes: ["Sunglasses", "Optical Frames", "Sport Glasses", "Reading Glasses", "Blue Light", "Other"] },
-      { title: "Belts", image: "/assets/categories/belts.png", leafNodes: ["Leather", "Fabric", "Formal", "Casual", "Braided", "Other"] },
-      { title: "Scarves / Small Accessories", image: "/assets/categories/scarves.png", leafNodes: ["Silk Scarf", "Woolen Muffler", "Bandana", "Stole", "Shawl", "Pins", "Gloves", "Other"] },
+      { title: "Bags", image: "/assets/categories/handbag.png", leafNodes: ["Handbag", "Backpack", "Clutch", "Tote", "Sling Bag", "Briefcase", "Duffel", "Other"], recommendedViews: ["Front View", "Left View", "Right View", "Close-up", "Detail Shot"] },
+      { title: "Footwear", image: "/assets/categories/footwear.png", leafNodes: ["Sneakers", "Heels", "Boots", "Formal Shoes", "Loafers", "Sandals", "Flip Flops", "Other"], recommendedViews: ["Pair View", "Left View", "Right View", "Close-up", "Detail Shot"] },
+      { title: "Watches", image: "/assets/categories/watch.png", leafNodes: ["Luxury", "Sports", "Smartwatch", "Vintage", "Minimalist", "Chronograph", "Other"], recommendedViews: ["Front View", "Left View", "Right View", "Close-up", "Detail Shot"] },
+      { title: "Eyewear", image: "/assets/categories/eyewear.png", leafNodes: ["Sunglasses", "Optical Frames", "Sport Glasses", "Reading Glasses", "Blue Light", "Other"], recommendedViews: ["Front View", "Left View", "Right View", "Close-up", "Detail Shot"] },
+      { title: "Belts", image: "/assets/categories/belts.png", leafNodes: ["Leather", "Fabric", "Formal", "Casual", "Braided", "Other"], recommendedViews: ["Front View", "Left View", "Right View", "Close-up", "Detail Shot"] },
+      { title: "Scarves / Small Accessories", image: "/assets/categories/scarves.png", leafNodes: ["Silk Scarf", "Woolen Muffler", "Bandana", "Stole", "Shawl", "Pins", "Gloves", "Other"], recommendedViews: ["Front View", "Left View", "Right View", "Close-up", "Detail Shot"] },
       { title: "Custom / Other", image: "/assets/categories/custom_accessory.png", fullWidth: true, leafNodes: ["Custom Item", "Other"] }
     ]
   },
   products: {
     families: [
-      { title: "Home Decor", image: "/assets/categories/home_decor.png", leafNodes: ["Vase", "Lamp", "Wall Art", "Cushion", "Rug", "Ornament", "Other"], recommendedViews: ["Front View", "Staged Setting", "Texture Detail"] },
-      { title: "Beauty / Cosmetics", image: "/assets/categories/beauty.png", leafNodes: ["Serum", "Cream", "Lipstick", "Perfume", "Facewash", "Oil", "Other"], recommendedViews: ["Bottle View", "Texture/Swatch", "Ingredient Shot"] },
+      { title: "Home Decor", image: "/assets/categories/home_decor.png", leafNodes: ["Vase", "Lamp", "Wall Art", "Cushion", "Rug", "Ornament", "Other"], recommendedViews: ["Front View", "Left View", "Right View", "Close-up", "Detail Shot"] },
+      { title: "Beauty / Cosmetics", image: "/assets/categories/beauty.png", leafNodes: ["Serum", "Cream", "Lipstick", "Perfume", "Facewash", "Oil", "Other"], recommendedViews: ["Front View", "Left View", "Right View", "Close-up", "Detail Shot"] },
       { title: "Handicrafts", image: "/assets/categories/handicrafts.png", leafNodes: ["Woodwork", "Pottery", "Metalwork", "Textiles", "Bamboo", "Other"] },
       { title: "Packaged Products", image: "/assets/categories/packaged_products.png", leafNodes: ["Box", "Bottle", "Jar", "Pouch", "Tube", "Other"] },
       { title: "Gifts / Lifestyle", image: "/assets/categories/gifts.png", fullWidth: true, leafNodes: ["Gift Set", "Hamper", "Journal", "Accessory", "Other"] },

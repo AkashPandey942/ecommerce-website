@@ -12,6 +12,17 @@ import { TAXONOMY } from "@/registry/taxonomy";
 import { useProject } from "@/frontend/context/ProjectContext";
 import { useGenerationPolling } from "@/hooks/useGenerationPolling";
 
+/**
+ * Hydration-safe Wrapper
+ * Ensures that client-side context state (like currentProject) 
+ * doesn't cause mismatches between SSR and CSR.
+ */
+function useMounted() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted;
+}
+
 export default function SelectOutputViewsPage() {
   const params = useParams();
   const router = useRouter();
@@ -19,6 +30,7 @@ export default function SelectOutputViewsPage() {
   const styleParam = (params.style as string) || "ethnic-wear";
 
   const { currentProject, updateProject } = useProject();
+  const mounted = useMounted();
   const { status, outputImages, outputImage, error, generate, reset } = useGenerationPolling();
 
   const isGenerating = status === "submitting" || status === "polling";
@@ -30,24 +42,37 @@ export default function SelectOutputViewsPage() {
     const styleKey = styleParam.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
     const styles = TAXONOMY.apparel.styles[s] || [];
     const matchedStyle = styles.find((st: { title: string; recommendedViews?: string[] }) => st.title === styleKey);
-    const viewTitles = matchedStyle?.recommendedViews || ["Front View", "Left View", "Right View", "Back View", "Swipe Detail"];
-    return viewTitles.slice(0, 5).map((title: string) => ({
-      id: title.toLowerCase().replace(/\s+/g, "-"),
-      title,
-      previewImage: currentProject?.primeImage || null,
-    }));
+    const viewTitles = matchedStyle?.recommendedViews || ["Front View", "Left View", "Right View", "Close-up", "Detail Shot"];
+    return viewTitles.slice(0, 5).map((title: string) => {
+      const id = title.toLowerCase().replace(/\s+/g, "-");
+      let viewStyles = "object-cover transition-all duration-700";
+      
+      // Dynamic CSS generation for categorized views based on prime image
+      if (id === "front-view") viewStyles += " object-[center_center] scale-100";
+      else if (id === "left-view") viewStyles += " object-[25%_center] scale-110";
+      else if (id === "right-view") viewStyles += " object-[75%_center] scale-110";
+      else if (id === "close-up") viewStyles += " object-[center_20%] scale-[1.5]";
+      else if (id === "detail-shot") viewStyles += " object-[center_60%] scale-[2]";
+
+      return {
+        id,
+        title,
+        previewImage: currentProject?.primeImage || "/assets/placeholder.jpg",
+        viewStyles
+      };
+    });
   };
 
   const views = getRecommendedViews();
   const [selectedViews, setSelectedViews] = useState<string[]>(
     (currentProject?.selectedOutputViews && currentProject.selectedOutputViews.length > 0)
       ? currentProject.selectedOutputViews
-      : views.slice(0, 4).map((v: { id: string }) => v.id)
+      : views.slice(0, 5).map((v: { id: string }) => v.id)
   );
   const [isCustomMode, setIsCustomMode] = useState(Boolean(currentProject?.isCustomViewEnabled));
   const [showMaxWarning, setShowMaxWarning] = useState(false);
   const [customPrompt, setCustomPrompt] = useState(currentProject?.customViewPrompt || "");
-  const MAX_VIEWS = 4;
+  const MAX_VIEWS = 5;
 
   const normalizeModelImageUrl = (value: string | undefined, fallback: string) => {
     if (value && (value.startsWith("http://") || value.startsWith("https://"))) {
@@ -83,7 +108,7 @@ export default function SelectOutputViewsPage() {
         customViewPrompt: customPrompt,
         generatedViewLabels,
       });
-      router.push(`/apparel/${segment}/${styleParam}/result`);
+      router.push(`/apparel/${segment}/${styleParam}/video-style`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCompleted]);
@@ -131,9 +156,9 @@ export default function SelectOutputViewsPage() {
     <div className="relative flex flex-col min-h-screen bg-black text-white selection:bg-figma-gradient/30">
       <FlowHeader title="Output Views" />
       <main className="w-full flex-1 max-w-full lg:max-w-7xl mx-auto pt-[120px] px-5">
-        <div className="flex justify-center gap-2 mb-8 mt-2">
-          {[1, 2, 3, 4, 5].map((dot) => (
-            <div key={dot} className={`h-[3px] w-8 rounded-full ${dot <= 5 ? "bg-gradient-to-r from-[#7C3AED] to-[#EC4899]" : "bg-white/10"}`} />
+        <div className="flex justify-center gap-2 mb-12 mt-2">
+          {[1, 2, 3, 4, 5, 6].map((dot) => (
+            <div key={dot} className={`h-1 w-full max-w-[44px] rounded-full ${dot <= 5 ? "bg-gradient-to-r from-[#7C3AED] to-[#EC4899]" : "bg-white/10"}`} />
           ))}
         </div>
 
@@ -143,17 +168,17 @@ export default function SelectOutputViewsPage() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center gap-6"
             >
-              <div className="relative w-20 h-20">
+              <div className="relative w-24 h-24">
                 <div className="absolute inset-0 border-4 border-white/10 rounded-full" />
                 <motion.div className="absolute inset-0 border-4 border-t-[#7C4DFF] rounded-full"
                   animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Sparkles className="w-7 h-7 text-[#7C4DFF] animate-pulse" />
+                  <Sparkles className="w-10 h-10 text-[#7C4DFF] animate-pulse" />
                 </div>
               </div>
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-white mb-2">Generating {totalSelectedCount} Output Views</h2>
-                <p className="text-[#99A1AF] text-sm animate-pulse">Running multi-view render pipeline...</p>
+              <div className="text-center px-5">
+                <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Generating {totalSelectedCount} High-Fashion Views</h2>
+                <p className="text-[#99A1AF] text-sm animate-pulse font-medium">Running multi-perspective render pipeline...</p>
               </div>
             </motion.div>
           )}
@@ -162,39 +187,29 @@ export default function SelectOutputViewsPage() {
         {/* Error banner */}
         {isFailed && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3"
+            className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 max-w-[353px] lg:max-w-[800px] mx-auto"
           >
             <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
-            <p className="text-red-400 text-sm">{error || "Generation failed."}</p>
-            <button onClick={handleGenerate} className="ml-auto text-red-400 text-sm underline flex items-center gap-1">
+            <p className="text-red-400 text-sm font-medium">{error || "Generation failed."}</p>
+            <button onClick={handleGenerate} className="ml-auto text-red-400 text-sm font-bold underline flex items-center gap-1">
               <RefreshCcw className="w-3 h-3" /> Retry
             </button>
           </motion.div>
         )}
 
-        {showMaxWarning && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-5 p-3 bg-[#7C4DFF]/15 border border-[#7C4DFF]/30 rounded-lg text-xs text-[#E2E2E8]"
-          >
-            You can select up to {MAX_VIEWS} views including Custom.
-          </motion.div>
-        )}
-
-        <section className="mb-10 text-center">
+        <section className="mb-10 text-center flex flex-col items-center">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <h1 className="font-roboto font-semibold text-[32px] md:text-[36px] leading-tight tracking-[-0.9px] text-[#E2E2E8] mb-2">
+            <h1 className="font-roboto font-bold text-[32px] md:text-[42px] leading-tight tracking-[-1px] text-white mb-3 px-4">
               Select Output Views
             </h1>
-            <p className="font-roboto font-normal text-[14px] leading-[19px] text-[#C2C6D6]">
+            <p className="font-roboto font-normal text-[15px] leading-[22px] text-[#9CA3AF] max-w-[320px] lg:max-w-none px-4">
               Choose the outputs you want to generate for your high-fashion catalog.
             </p>
           </motion.div>
         </section>
 
-        <div className="grid grid-cols-2 gap-4 mb-10">
-          {views.map((view: { id: string; title: string; previewImage: string | null }, idx: number) => {
+        <div className="grid grid-cols-2 gap-4 lg:gap-8 mb-10 max-w-[353px] lg:max-w-[800px] mx-auto">
+          {views.map((view: { id: string; title: string; previewImage: string; viewStyles: string }, idx: number) => {
             const isSelected = selectedViews.includes(view.id);
             return (
               <motion.div key={view.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -202,22 +217,27 @@ export default function SelectOutputViewsPage() {
                 onClick={() => toggleView(view.id)}
                 className="flex flex-col items-center gap-3 group cursor-pointer"
               >
-                <div className={`relative w-full aspect-[166/207] rounded-[10px] overflow-hidden border-2 transition-all ${isSelected ? "border-transparent" : "border-white/5 hover:border-white/20"}`}>
-                  {view.previewImage ? (
-                    <Image src={view.previewImage} alt={view.title} fill className="object-cover transition-transform group-hover:scale-105" loading="lazy" unoptimized />
+                <div className={`relative w-full aspect-[166/207] rounded-[16px] overflow-hidden border transition-all duration-300 ${isSelected ? "border-[#7C4DFF] border-[2px] shadow-[0_0_20px_rgba(124,77,255,0.3)]" : "border-white/10 border-[1px] hover:border-white/30"}`}>
+                  {mounted && view.previewImage ? (
+                    <Image 
+                      src={view.previewImage} 
+                      alt={view.title} 
+                      fill 
+                      className={`${view.viewStyles} ${isSelected ? "" : "opacity-80 group-hover:opacity-100"}`} 
+                      loading="lazy" 
+                      unoptimized 
+                    />
                   ) : (
                     <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                      <Sparkles className="w-6 h-6 text-white/20" />
+                      <Sparkles className="w-8 h-8 text-white/10" />
                     </div>
                   )}
-                  {isSelected && <div className="absolute inset-0 border-[2px] border-[#7C4DFF] rounded-[10px] z-10" />}
-                  {isSelected && (
-                    <div className="absolute top-2 right-2 w-[18px] h-[18px] rounded-full bg-[#7C4DFF] flex items-center justify-center shadow-lg z-20">
-                      <Check className="w-3 h-3 text-white" />
-                    </div>
-                  )}
+                  
+                  <div className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 ${isSelected ? "bg-[#7C4DFF] shadow-lg" : "bg-black/40 border border-white/20 backdrop-blur-md"}`}>
+                    {isSelected && <Check className="w-3 h-3 text-white stroke-[4px]" />}
+                  </div>
                 </div>
-                <span className={`font-roboto font-medium text-[13px] leading-[15px] transition-colors ${isSelected ? "text-white" : "text-[#E2E2E8]"}`}>
+                <span className={`font-roboto font-medium text-[13px] leading-[15px] transition-colors ${isSelected ? "text-white" : "text-[#9CA3AF] group-hover:text-white"}`}>
                   {view.title}
                 </span>
               </motion.div>
@@ -231,56 +251,50 @@ export default function SelectOutputViewsPage() {
             onClick={toggleCustom}
             className="flex flex-col items-center gap-3 group cursor-pointer"
           >
-            <div className={`relative w-full aspect-[166/207] rounded-[10px] overflow-hidden border-2 transition-all bg-[#060B18] ${isCustomMode ? "border-[#7C4DFF]" : "border-white/10 hover:border-white/20"}`}>
+            <div className={`relative w-full aspect-[166/207] rounded-[16px] overflow-hidden border transition-all duration-300 bg-[#060B18] ${isCustomMode ? "border-[#7C4DFF] border-[2px] shadow-[0_0_20px_rgba(124,77,255,0.3)]" : "border-white/10 border-[1px] hover:border-white/30"}`}>
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-14 h-14 rounded-xl bg-black/40 border border-[#7C4DFF]/50 flex items-center justify-center">
-                  <Sparkles className="w-7 h-7 text-[#4CC6FF]" />
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 ${isCustomMode ? "bg-[#7C4DFF]/20 scale-110 shadow-[0_0_30px_rgba(124,77,255,0.1)]" : "bg-white/5 border border-white/5 group-hover:scale-110"}`}>
+                  <Sparkles className={`w-8 h-8 transition-colors duration-500 ${isCustomMode ? "text-[#7C4DFF]" : "text-white/20"}`} />
                 </div>
               </div>
-              {isCustomMode && <div className="absolute inset-0 border-[2px] border-[#7C4DFF] rounded-[10px] z-10" />}
-              {isCustomMode && (
-                <div className="absolute top-2 right-2 w-[18px] h-[18px] rounded-full bg-[#7C4DFF] flex items-center justify-center shadow-lg z-20">
-                  <Check className="w-3 h-3 text-white" />
-                </div>
-              )}
+              <div className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-300 ${isCustomMode ? "bg-[#7C4DFF] shadow-lg" : "bg-black/40 border border-white/20 backdrop-blur-md"}`}>
+                {isCustomMode && <Check className="w-3 h-3 text-white stroke-[4px]" />}
+              </div>
             </div>
-            <span className={`font-roboto font-medium text-[13px] leading-[15px] transition-colors ${isCustomMode ? "text-white" : "text-[#E2E2E8]"}`}>
+            <span className={`font-roboto font-medium text-[13px] leading-[15px] transition-colors ${isCustomMode ? "text-white" : "text-[#9CA3AF] group-hover:text-white"}`}>
               Custom
             </span>
           </motion.div>
-
         </div>
 
-          <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-8 mb-8">
-            <div className="flex items-center gap-2 mb-3">
-              <h2 className="font-roboto font-semibold text-[16px] text-white">AI Custom Angle</h2>
-              <span className="font-roboto font-normal text-[12px] text-[#C5B6DE]">(Optional)</span>
-            </div>
-            <textarea 
-              value={customPrompt} 
-              onChange={e => setCustomPrompt(e.target.value)}
-              className="w-full h-[100px] bg-[#0A0A0A] border border-white/5 rounded-[10px] p-4 font-roboto text-sm text-white focus:border-[#7C4DFF] focus:ring-1 focus:ring-[#7C4DFF] outline-none transition-all placeholder:text-[#C2C6D6]/40 resize-none"
-              placeholder="E.g. Focus on the golden pallu details, add warm sunlight flare from left..."
-            />
-            <div className="flex items-center gap-2 text-[#99A1AF] mt-3">
-              <Sparkles className="w-3 h-3 text-[#7C4DFF]" />
-              <p className="text-[10px] font-medium italic opacity-60">Professional output depends on the precision of your prompt.</p>
-            </div>
-          </motion.section>
-
-
-        <div className="w-full mt-12 mb-10 lg:mb-16">
-          <div className="w-full max-w-full sm:max-w-[353px] mx-auto lg:max-w-[400px]">
-            <LoadingActionButton 
-              isLoading={isGenerating} 
-              onClick={handleGenerate}
-              className="w-full h-[61px] rounded-[100px] bg-gradient-to-r from-[#4CC6FF] to-[#FF00C7] font-roboto font-bold text-[18px] text-white shadow-[0_10px_40px_rgba(124,77,255,0.3)]" 
-              disabled={totalSelectedCount === 0 || isGenerating}
-            >
-              Generate Outputs
-            </LoadingActionButton>
+        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-12 mb-12 max-w-[353px] lg:max-w-[800px] mx-auto w-full px-1">
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="font-roboto font-bold text-[18px] text-white tracking-tight">AI Custom Angle</h2>
+            <span className="font-roboto font-normal text-[13px] text-[#9CA3AF] opacity-60">(Optional)</span>
           </div>
+          <textarea 
+            value={customPrompt} 
+            onChange={e => setCustomPrompt(e.target.value)}
+            className="w-full h-[120px] bg-[#0A0A0A] border border-white/10 rounded-[20px] p-5 font-roboto text-[15px] leading-relaxed text-white focus:border-[#7C4DFF]/50 focus:ring-1 focus:ring-[#7C4DFF]/50 outline-none transition-all placeholder:text-white/20 resize-none shadow-inner"
+            placeholder="E.g. Focus on the golden pallu details, add warm sunlight flare from left..."
+          />
+          <div className="flex items-center gap-2 text-[#9CA3AF] mt-4 px-1">
+            <Sparkles className="w-3.5 h-3.5 text-[#7C4DFF]" />
+            <p className="text-[11px] font-medium tracking-wide italic opacity-80 uppercase">Professional output depends on the precision of your prompt.</p>
+          </div>
+        </motion.section>
+
+        <div className="w-full mt-10 mb-20 flex justify-center px-5">
+          <LoadingActionButton 
+            isLoading={isGenerating} 
+            onClick={handleGenerate}
+            className="w-full max-w-[353px] lg:max-w-[400px] h-[61px] rounded-full bg-figma-gradient font-roboto font-bold text-[18px] text-white shadow-[0_10px_40px_rgba(124,77,255,0.4)] hover:shadow-[0_10px_50px_rgba(124,77,255,0.6)] transition-all active:scale-[0.98]" 
+            disabled={totalSelectedCount === 0 || isGenerating}
+          >
+            Generate Outputs
+          </LoadingActionButton>
         </div>
+
       </main>
       <Footer />
     </div>

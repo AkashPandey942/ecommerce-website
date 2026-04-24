@@ -25,7 +25,7 @@ export const geminiService = {
         return `${input.segment} ${input.style} on a ${input.model} model, ${input.background} background.`;
       }
 
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
       const systemPrompt = `
         You are an expert Fashion Creative Director and Prompt Engineer for high-end AI image generation.

@@ -66,7 +66,7 @@ const FlowHeader = ({ title, showBack = true }: FlowHeaderProps) => {
                   {breadcrumbs}
                 </span>
               )}
-              <h1 className="font-roboto font-semibold text-lg md:text-xl lg:text-2xl text-[#E2E2E8]">
+              <h1 className="font-roboto font-bold text-[20px] md:text-2xl text-white">
                 {title}
               </h1>
             </div>
@@ -108,11 +108,11 @@ const FlowHeader = ({ title, showBack = true }: FlowHeaderProps) => {
                 <div
                   role="status"
                   aria-label={`${credits} credits remaining`}
-                  className="flex items-center gap-2 px-2 md:px-3 py-1.5 rounded-full bg-[#1A1E29] border border-[#7C4DFF]/30 shadow-[0_0_15px_rgba(124,77,255,0.15)]"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#1A1E29] border border-[#7C4DFF]/20 shadow-[0_4px_15px_rgba(0,0,0,0.4)]"
                 >
-                  <Wallet className="w-3.5 h-3.5 md:w-4 h-4 text-[#7C4DFF]" aria-hidden="true" />
-                  <span className="font-roboto font-bold text-xs md:text-sm text-white" aria-hidden="true">
-                    {credits} <span className="hidden sm:inline text-[#C2C6D6]/60 font-normal ml-0.5">Credits</span>
+                  <Wallet className="w-3.5 h-3.5 text-[#7C4DFF]" aria-hidden="true" />
+                  <span className="font-roboto font-bold text-xs text-white tracking-wide" aria-hidden="true">
+                    {credits} <span className="text-[#7C4DFF] ml-0.5 uppercase opacity-80">CREDITS</span>
                   </span>
                 </div>
 

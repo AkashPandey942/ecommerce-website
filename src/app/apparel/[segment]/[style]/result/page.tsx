@@ -4,15 +4,21 @@ import FlowHeader from "@/frontend/components/FlowHeader";
 import Footer from "@/frontend/components/Footer";
 import ProgressStepper from "@/frontend/components/ProgressStepper";
 import ResultCarousel from "@/frontend/components/ResultCarousel";
-import { Download, RefreshCcw, PlayCircle, Camera } from "lucide-react";
-import { motion } from "framer-motion";
+import { Download, RefreshCcw, PlayCircle, Camera, Plus, Play, Maximize2, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useProject } from "@/frontend/context/ProjectContext";
 import { useGeneration } from "@/frontend/context/GenerationContext";
-import JSZip from "jszip";
-import { saveAs } from "file-saver";
+
+type ResultItem = {
+  title: string;
+  image: string;
+  isVideo: boolean;
+  videoUrl?: string;
+};
 
 export default function ResultPage() {
   const params = useParams();
@@ -23,6 +29,12 @@ export default function ResultPage() {
   const { currentProject, resetProject } = useProject();
   const { resetGeneration } = useGeneration();
   const [isDownloading, setIsDownloading] = useState(false);
+  const [activeItem, setActiveItem] = useState<ResultItem | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const hasPrime = Boolean(currentProject?.primeImage);
@@ -32,12 +44,13 @@ export default function ResultPage() {
     }
   }, [currentProject, params.segment, params.style, router]);
 
-  // Map generated images from context. If none exist, show an empty array to prevent static leakage.
-  const resultImages = currentProject?.outputViews?.length
-    ? currentProject.outputViews
-    : currentProject?.primeImage
-      ? [currentProject.primeImage]
-      : [];
+  // Map generated images and their corresponding labels from context.
+  const resultImages = currentProject?.outputViews || [];
+  const resultLabels = currentProject?.generatedViewLabels || [];
+
+  const results: ResultItem[] = [
+    ...(resultImages || []).map((v: string, i: number) => ({ title: resultLabels[i] || `View ${i+1}`, image: v, isVideo: false })),
+  ];
 
   const handleDownloadAll = async () => {
     if (resultImages.length === 0) return;
@@ -74,6 +87,52 @@ export default function ResultPage() {
     router.push("/");
   };
 
+  const ResultCard = ({ res, idx }: { res: ResultItem, idx: number }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: idx * 0.1 }}
+      className="flex flex-col items-center gap-3 w-full"
+      onClick={() => setActiveItem(res)}
+    >
+      <div className="relative w-full aspect-[166/207] bg-[#1A1E29] rounded-[10px] overflow-hidden border border-white/5 shadow-xl group cursor-zoom-in hover:border-[#7C4DFF]/50 transition-all">
+        {res.image ? (
+          <Image
+            src={res.image}
+            alt={res.title}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy" 
+            unoptimized
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-white/5">
+            <Plus className="w-6 h-6 text-white/20" />
+          </div>
+        )}
+        
+        <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
+          {res.isVideo ? (
+            <div className="w-[44px] h-[44px] rounded-full bg-figma-gradient flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
+              <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+            </div>
+          ) : (
+            <div className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all">
+              <div className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full border border-white/10 flex items-center gap-2">
+                <Maximize2 className="w-3 h-3 text-white" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-white">Preview</span>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+      </div>
+      <span className="font-roboto font-medium text-[13px] leading-[15px] text-center text-[#E2E2E8]">
+        {res.title}
+      </span>
+    </motion.div>
+  );
+
   return (
     <div className="relative min-h-screen bg-black text-white selection:bg-figma-gradient/30 lg:pb-0">
       <FlowHeader title="Results" />
@@ -84,15 +143,23 @@ export default function ResultPage() {
           <ProgressStepper currentStep={6} />
         </div>
 
-        {/* Multi-image Carousel (Rule 5.0, 6.6) */}
-        {resultImages.length > 0 ? (
-          <ResultCarousel images={resultImages} />
-        ) : (
-          <div className="w-full aspect-[4/5] max-w-full sm:max-w-[353px] rounded-[24px] bg-white/5 flex flex-col items-center justify-center gap-4 border border-white/10">
-            <RefreshCcw className="w-10 h-10 text-[#7C4DFF] animate-spin" />
-            <p className="text-[#99A1AF] text-sm">Waiting for AI outputs...</p>
-          </div>
-        )}
+        {/* Categorized Views Grid */}
+        <div className="w-full max-w-[353px] lg:max-w-[800px] mb-8">
+          {resultImages.length > 0 ? (
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-8 w-full justify-items-center">
+              {isMounted && results.map((res, idx) => (
+                <div key={idx} className="w-full max-w-[166px] lg:max-w-[200px]">
+                  <ResultCard res={res} idx={idx} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="w-full aspect-[4/5] max-w-full sm:max-w-[353px] mx-auto rounded-[24px] bg-white/5 flex flex-col items-center justify-center gap-4 border border-white/10">
+              <RefreshCcw className="w-10 h-10 text-[#7C4DFF] animate-spin" />
+              <p className="text-[#99A1AF] text-sm">Waiting for AI outputs...</p>
+            </div>
+          )}
+        </div>
 
         {/* Action Buttons Hierarchy (Figma iPhone 16 - 9) */}
         <div className="w-full max-w-full sm:max-w-[353px] flex flex-col gap-4 mt-10 mb-10">
@@ -160,6 +227,59 @@ export default function ResultPage() {
         <Footer />
         <div className="h-[120px] lg:hidden" />
       </main>
+
+      {/* Clickable Preview Overlay */}
+      <AnimatePresence>
+        {activeItem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center p-5 cursor-zoom-out"
+            onClick={() => setActiveItem(null)}
+          >
+            <button 
+              onClick={(e) => { e.stopPropagation(); setActiveItem(null); }}
+              className="absolute top-8 right-8 p-3 bg-white/10 hover:bg-white/20 rounded-full border border-white/10 transition-colors z-[210]"
+            >
+              <X className="w-6 h-6 text-white" />
+            </button>
+            
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-5xl aspect-[3/4] md:aspect-[4/5] lg:aspect-square rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {activeItem.isVideo ? (
+                <video 
+                  src={activeItem.videoUrl} 
+                  autoPlay 
+                  controls 
+                  loop 
+                  className="w-full h-full object-contain bg-black"
+                />
+              ) : (
+                <Image 
+                  src={activeItem.image} 
+                  alt="Preview" 
+                  fill 
+                  className="object-contain bg-black/40"
+                  unoptimized
+                />
+              )}
+            </motion.div>
+            
+            <div className="mt-8 text-center">
+              <h3 className="text-xl font-bold text-white mb-1">{activeItem.title}</h3>
+              <p className="text-[#7C4DFF] text-[10px] font-bold uppercase tracking-[0.2em]">
+                {activeItem.isVideo ? "AI Cinematic Synthesis • 4K Editorial" : "High-Fidelity AI Render • Marketplace Ready"}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

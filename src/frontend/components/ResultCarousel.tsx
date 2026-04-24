@@ -6,9 +6,10 @@ import Image from "next/image";
 
 interface ResultCarouselProps {
   images: string[];
+  labels?: string[];
 }
 
-const ResultCarousel = ({ images }: ResultCarouselProps) => {
+const ResultCarousel = ({ images, labels = [] }: ResultCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const nextImage = () => {
@@ -58,12 +59,27 @@ const ResultCarousel = ({ images }: ResultCarouselProps) => {
           </motion.div>
         </AnimatePresence>
 
-        {/* High Fidelity AI Badge (matches Figma style) */}
+        {/* High Fidelity AI Badge */}
         <div className="absolute top-4 left-4 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
           <span className="font-roboto text-[10px] font-bold text-white uppercase tracking-wider">
             High Fidelity AI
           </span>
+        </div>
+
+        {/* Dynamic View Label Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 pt-12 pointer-events-none">
+          <motion.p 
+            key={`label-${currentIndex}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="font-roboto font-bold text-xl text-white tracking-tight"
+          >
+            {labels[currentIndex] || `View ${currentIndex + 1}`}
+          </motion.p>
+          <p className="text-[#9CA3AF] text-[10px] font-bold uppercase tracking-[1.5px] mt-1 opacity-70">
+            AI Generated Output
+          </p>
         </div>
       </div>
 

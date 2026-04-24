@@ -26,7 +26,7 @@ export default function ProductsResultPage() {
     ...(currentProject?.primeImage ? [{ id: 1, type: "Prime shot", image: currentProject.primeImage, isVideo: false }] : []),
     ...(currentProject?.outputViews?.map((v: any, i: number) => ({
       id: i + 2,
-      type: v.style || `Style ${i+1}`,
+      type: currentProject.generatedViewLabels?.[i] || v.style || `Style ${i+1}`,
       image: v.url || v,
       isVideo: false
     })) || []),

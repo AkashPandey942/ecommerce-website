@@ -30,8 +30,7 @@ export const falService = {
         body: JSON.stringify({
           model_image: modelImageUrl,
           garment_image: garmentImageUrl,
-          // Optional: Add prompt info if the model supports it in future/other versions
-          // For v1.5, garment/model images are core.
+          ...(prompt ? { prompt } : {}),
         }),
       });
 

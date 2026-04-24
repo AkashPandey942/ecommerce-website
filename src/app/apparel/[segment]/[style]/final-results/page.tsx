@@ -9,7 +9,7 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useProject } from "@/frontend/context/ProjectContext";
 import { useGeneration } from "@/frontend/context/GenerationContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 
@@ -30,6 +30,11 @@ export default function FinalResultsPage() {
   const { resetGeneration } = useGeneration();
   const [isDownloading, setIsDownloading] = useState(false);
   const [activeItem, setActiveItem] = useState<ResultItem | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const outputViews = currentProject?.outputViews || [];
   const generatedViewLabels = currentProject?.generatedViewLabels || [];
@@ -133,7 +138,7 @@ export default function FinalResultsPage() {
 
         {/* Gallery Grid */}
         <div className="w-full max-w-[353px] grid grid-cols-2 gap-4 mb-8">
-           {results.map((res, idx) => {
+           {isMounted && results.map((res, idx) => {
              const isLastOdd = idx === results.length - 1 && results.length % 2 !== 0;
              return (
                <div key={idx} className={isLastOdd ? "col-span-2 flex justify-center" : ""}>
