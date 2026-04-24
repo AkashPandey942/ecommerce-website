@@ -1,9 +1,8 @@
 // src/services/runComfyService.ts
 import { env } from "@/shared/config/env";
-import { buildMasterPrompt, type Hub, type PromptInputs } from "@/backend/services/ai/promptEngine";
+import { buildMasterPrompt, type Hub, type PromptInputs, type Background, type VideoStyle } from "@/backend/services/ai/promptEngine";
 import { buildLegacyPrompt } from "@/backend/services/ai/legacyPrompts";
 import { buildVideoPrompt } from "@/backend/services/ai/videoPrompts";
-import type { VideoStyle } from "@/backend/services/ai/types";
 
 // Node IDs from ComfyUI Workflow (Customize based on your workflow_api.json)
 const DEFAULT_MODEL_ID = "blackforestlabs/flux-2/dev/text-to-image";
@@ -689,11 +688,12 @@ export const runComfyService = {
 
       if (isVideo) {
         const videoPrompt = buildVideoPrompt({
+          productImageUrl: params.garmentImageUrl || "",
           videoStyle: (params.videoStyle ?? "Straight Walk") as VideoStyle,
-          hub: params.hub ?? "Apparel",
-          background: params.background,
+          hub: (params.hub ?? "Apparel") as Hub,
+          background: params.background as Background,
           aiNotes: params.prompt || null,
-        });
+        } as PromptInputs);
         const videoPayload = buildVideoPayload({
           initImageUrl: params.garmentImageUrl,
           videoStyle: params.videoStyle,

@@ -93,7 +93,7 @@ export default function JewelleryOutputViewsPage() {
     
     // Map IDs back to Titles for dynamic display in results
     const newLabels = [
-      ...selectedViews.map(id => views.find(v => v.id === id)?.title || "AI Result"),
+      ...selectedViews.map(id => views.find((v: any) => v.id === id)?.title || "AI Result"),
       ...(isCustomMode ? ["Custom View"] : [])
     ];
     

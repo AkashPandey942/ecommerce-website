@@ -24,6 +24,7 @@ export default function AccessoriesOutputViewsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { currentProject, updateProject } = useProject();
+  const mounted = useMounted();
   const styleParam = (params.style as string) || "bags";
   const product = searchParams.get("product") || "Handbag";
 
@@ -95,7 +96,7 @@ export default function AccessoriesOutputViewsPage() {
 
     // Map IDs back to Titles for dynamic display in results
     const newLabels = [
-      ...selectedViews.map(id => views.find(v => v.id === id)?.title || "AI Result"),
+      ...selectedViews.map(id => views.find((v: any) => v.id === id)?.title || "AI Result"),
       ...(isCustomMode ? ["Custom View"] : [])
     ];
     updateProject({ generatedViewLabels: newLabels });

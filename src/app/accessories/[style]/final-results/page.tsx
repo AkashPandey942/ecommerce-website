@@ -44,7 +44,7 @@ export default function AccessoriesResultPage() {
       setIsDownloading(true);
       const zip = new JSZip();
       
-      const promises = results.map(async (res, idx) => {
+      const promises = results.map(async (res: any, idx) => {
         const urlToFetch = res.videoUrl || res.image;
         if (!urlToFetch) return;
 
